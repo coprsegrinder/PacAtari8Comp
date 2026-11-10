@@ -1,0 +1,20 @@
+    ... by a ghost eaten after the last power pellet and already home again                  349
+  catch events (one per frame of contact)                                                    1453
+  catch events before the first power pellet / phase not running                             1104
+  catch events while the frightened phase was running (FC > 0)                               349
+  ghosts eaten                                                                               17
+  power pellets                                                                              35
+first catch events during the phase (frame, ghost, states g0-g3, FC, last pellet, eaten, home again, bit7 of the four ghosts):
+   (1874, 3, [130, 144, 136, 2], 38, 896, 903, 1177, [1, 1, 1, 0])
+   (2690, 1, [130, 32, 136, 160], 14, 2304, 2433, 2530, [1, 0, 1, 1])
+   (6304, 2, [130, 136, 2, 160], 78, 4352, 4481, 4813, [1, 1, 0, 1])
+   (7123, 3, [130, 136, 130, 2], 28, 6400, 6529, 6678, [1, 1, 1, 0])
+   (9150, 0, [32, 136, 130, 4], 25, 8448, 8577, 8767, [0, 1, 1, 0])
+   (9702, 1, [2, 2, 130, 8], 47, 8448, 9341, 9451, [0, 0, 1, 0])
+   (10464, 3, [2, 2, 130, 2], 78, 8448, 8883, 9118, [0, 0, 1, 0])
+   (11048, 1, [2, 2, 130, 2], 17, 10496, 10635, 10764, [0, 0, 1, 0])
+   (11124, 3, [2, 2, 130, 2], 20, 10496, 10601, 10736, [0, 0, 1, 0])
+   (11441, 0, [32, 32, 130, 32], 33, 10496, 10513, 10636, [0, 0, 1, 0])
+   (12403, 2, [16, 8, 2, 2], 72, 10496, 11478, 11713, [0, 0, 0, 0])
+   (13576, 2, [144, 136, 2, 130], 40, 12544, 12673, 12901, [1, 1, 0, 1])
+catches not explained by 'eaten after the last pellet and home again': 0

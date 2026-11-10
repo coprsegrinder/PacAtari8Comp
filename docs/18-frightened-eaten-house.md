@@ -40,3 +40,10 @@ From then on a ghost moving up or down when a pellet was eaten got direction 0, 
 - Frightened ghosts in the start route (`$81`): one case seen, behaving like the others.
 - The frightened time and the flashing are in `14-levels.md`; the siren and sound are not covered.
 - The eaten ghost when Pac-Man moves onto the door square, and two ghosts eaten in one frame, were not provoked separately.
+
+## Catches while the frightened phase runs (verified 2026-11-11)
+Question from the board-71 human session: Pac-Man was caught while the (endless) frightened phase was running. **Cause: a ghost that was eaten earlier in the same frightened episode and has come home is an ordinary, non-frightened ghost until the next power pellet.**
+- Code (`test_frightened_house.py`, `CollisionRule`): the contact test ($A851-$A883) skips eaten ghosts (bit 6); for a ghost in contact, bit 7 set -> `GhostEaten` ($A886), bit 7 clear -> the death routine ($A923). Bit 7 is set for all ghosts by a power pellet, and cleared for good when an eaten ghost reaches home (`state AND $0F` = `$04`, $B764). Nothing re-frightens it before the next pellet, however long the phase runs - on an endless level (`14-levels.md`) that is the rest of the board.
+- Live (`tools/altirra_catch.cmd`, level counter 70, Pac-Man invulnerable, a power pellet and then a ghost eaten every 2,048 frames; analyzer `tools/analyze_catch_log.py`, `analysis/evidence-catch-while-frightened-summary.txt`): 35 power pellets, 17 ghosts eaten, 1,453 contact-frame events of which 349 happened while the phase was running (FC > 0). **In all 349 the ghost in contact was one that had been eaten after the last power pellet and had already come home (its `$B764` store logged); 0 catches by any other ghost.** The bit 7 of the other ghosts was still set at the time in the examples (for instance frame 1,874: ghost 3 state $02 while ghosts 0-2 were $82/$90/$88).
+- The other 1,104 contact events were before the first pellet of a cycle (phase not running).
+- Limit: the eating and the contacts were produced with test aids (Pac-Man moved onto a ghost; invulnerable), not by a person.

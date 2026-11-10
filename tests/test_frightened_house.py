@@ -85,5 +85,14 @@ class Model(unittest.TestCase):
         self.assertEqual(A.allowed(0, 0, 0x00), {8})
 
 
+class CollisionRule(unittest.TestCase):
+    def test_contact_with_a_ghost(self):
+        # $A851: ghosts with bit 6 (eaten) are skipped; after the player/missile and |dy| < 5 tests, $A87F: bit 7 set -> GhostEaten ($A886), otherwise JMP $A923 (the death routine)
+        self.assertEqual(at(0xA851, 4), hx("B5CE0A30"))               # LDA GhostState,X / ASL / BMI skip
+        self.assertEqual(at(0xA87F, 7), hx("B5CE3003" "4C23A9"))      # LDA GhostState,X / BMI GhostEaten / JMP $A923
+        self.assertEqual(at(0xA886, 4), hx("A94295CE"))               # GhostEaten: state := $42
+        # so a ghost that is not frightened (bit 7 clear) and not eaten kills Pac-Man even while the frightened phase runs
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
