@@ -3,3 +3,4 @@
 a99b2dd10b546d90d14de56d73a58a9d38e19ec411e37e33dcbd7e0633d8a56a  8192  original/Pac-Man.rom
 1afa7d69b5463a2379aeb1197dc66e918346a7b56a22a2fc6f09c421bfae2090  16051  original/Decompilation steps.txt
 3130f4de3c5108d2911b7eb0587ada55737219df840b0b0713881ab8f3741ddc  225063  original/reference-AtariAge-thread-291065.htm
+63973d5e86b1ae5b6fca5b119a7f7589e817e19acc3ca54e54462c9dfb619e73  10240  original/Atari OS Rev B (19xx)(Atari)(NTSC)[400-800].rom

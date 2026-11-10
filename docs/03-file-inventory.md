@@ -7,6 +7,7 @@ Written in Step A3 (2026-11-10). Covers checklist stages 6, 7 and 8.
 | File | Format | Size (bytes) | Location (local only) |
 |---|---|---|---|
 | `Pac-Man.rom` | Raw Atari 8-bit cartridge image, no header | 8,192 | `original/` (+ backup, see §4) |
+| `Atari OS Rev B (19xx)(Atari)(NTSC)[400-800].rom` | Raw OS ROM image, Atari 400/800 Rev B, NTSC (added 2026-11-10, owner-supplied) | 10,240 | `original/` |
 | `Decompilation steps.txt` | Plain text, 100-stage methodology | 16,051 | `original/` |
 | `reference-AtariAge-thread-291065.htm` (+ `_files/`, 49 files, 1,926,115 bytes) | Saved web page (evidence for ROM identity) | 225,063 | `original/` |
 
@@ -15,6 +16,7 @@ Written in Step A3 (2026-11-10). Covers checklist stages 6, 7 and 8.
 | File | SHA-256 | SHA-1 | MD5 | CRC-32 |
 |---|---|---|---|---|
 | Pac-Man.rom | a99b2dd10b546d90d14de56d73a58a9d38e19ec411e37e33dcbd7e0633d8a56a | bc600ef63f8d1bdd3911981c2752ea23db959960 | e66e9af9af01b019cd4e54aba813fbac | 61CF6167 |
+| Atari OS Rev B ROM | 63973d5e86b1ae5b6fca5b119a7f7589e817e19acc3ca54e54462c9dfb619e73 | db1031585968cfc6ec2ecda5c9a5a52f61444a3b | 4177f386a3bac989a981d3fe3388cb6c | 0E86D61D |
 | Decompilation steps.txt | 1afa7d69b5463a2379aeb1197dc66e918346a7b56a22a2fc6f09c421bfae2090 | 7053b0c33aca8bc3dfad2e06b98f6d2a140ee78c | 461d30bd2b67e5d9c4207d44534afd84 | F79F37E4 |
 | reference-AtariAge-thread-291065.htm | 3130f4de3c5108d2911b7eb0587ada55737219df840b0b0713881ab8f3741ddc | 5787af48ea675cb80a5f174c6834569e13ebcaa5 | be7726a57378ac0edb72b4e4cbd5a4a8 | 566A5944 |
 
