@@ -119,5 +119,50 @@ class Colours(unittest.TestCase):
         self.assertEqual(at(0xACA2, 22), hx("A62BB530C9069008C90AB004A0DAD002A04484A0A000"))      # ItemColor: $DA on levels 6-9, else $44
 
 
+class ListMeaning(unittest.TestCase):
+    """What the blocker-list elements mean (tools/describe_sight_lists.py): wall positions of the maze, with exactly three data discrepancies."""
+
+    def test_elements_lie_between_neighbouring_junctions(self):
+        import describe_sight_lists as L
+        XS, YS = M.XS, M.YS
+        # x lists: every element lies strictly between two neighbouring junction columns
+        for l in L.ROW_LISTS:
+            for e in l:
+                self.assertTrue(any(XS[i] < e < XS[i + 1] for i in range(9)), hex(e))
+        # y lists: strictly between two neighbouring junction rows, or equal to the row coordinate of a lattice point that does not exist in that column ($64, $84)
+        for c, l in enumerate(L.COL_LISTS):
+            for e in l:
+                between = any(YS[i] < e < YS[i + 1] for i in range(9))
+                missing = [YS[r] for r in range(10) if not L.J[r][c]]
+                self.assertTrue(between or e in missing, (c, hex(e)))
+
+    def test_exact_wall_map_apart_from_three_places(self):
+        import describe_sight_lists as L
+        self.assertEqual(L.agreement(L.ROW_LISTS, L.COL_LISTS), ((366, 373), (324, 364)))      # as shipped (the ordered counts 732/746 and 648/728 above, halved)
+        rows, cols = L.corrected()
+        self.assertEqual(L.agreement(rows, cols), ((373, 373), (364, 364)))                    # with the three corrections: every pair agrees
+        # each correction accounts for its own part
+        r7 = [list(x) for x in L.ROW_LISTS]
+        r7[7] = L.CORRECTED_ROW[7]
+        self.assertEqual(L.agreement(r7, L.COL_LISTS), ((373, 373), (324, 364)))
+        c27 = [list(x) for x in L.COL_LISTS]
+        c27[2] = c27[7] = L.CORRECTED_COL[2]
+        self.assertEqual(L.agreement(L.ROW_LISTS, c27)[1], (356, 364))
+        c09 = [list(x) for x in L.COL_LISTS]
+        c09[0] = c09[9] = L.CORRECTED_COL[0]
+        self.assertEqual(L.agreement(L.ROW_LISTS, c09)[1], (332, 364))
+
+    def test_the_three_places(self):
+        import describe_sight_lists as L
+        self.assertEqual(L.ROW_LISTS[7], [0x3C, 0xAC])               # the maze's closed gaps on row 7 are at x = 76 and 172 ($4C, $AC)
+        self.assertEqual(L.closed_gaps_row(7), [76, 172])
+        self.assertEqual((L.COL_LISTS[2], L.COL_LISTS[7]), ([0x3C], [0x3C]))
+        self.assertEqual((L.closed_gaps_col(2), L.closed_gaps_col(7)), ([188], [188]))       # closed between rows 8 and 9 ($BC)
+        self.assertEqual((L.COL_LISTS[0], L.COL_LISTS[9]), ([0x64, 0x84], [0x64, 0x84]))
+        self.assertIn(172, L.closed_gaps_col(0))                      # column 0 is also closed between rows 7 and 8 ($AC): the list has no element for it
+        # left-right symmetry of the maze (x -> 248 - x): the row lists of mirrored rows and the column lists of mirrored columns are the same lists
+        self.assertEqual(L.closed_gaps_row(7), [248 - g for g in reversed(L.closed_gaps_row(7))])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
