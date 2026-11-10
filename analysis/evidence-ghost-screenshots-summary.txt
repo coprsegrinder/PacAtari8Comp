@@ -1,0 +1,37 @@
+pictures with a log and a capture: 14   captures: 42
+calibration points used: 32 of 32
+calibration: x_px = 5.4680 * colour clock + 12.05;  y_px = 3.1711 * scanline + -46.68 (max residual of the points used: 1.28 px)
+ghost views                                                    168
+not compared: overlaps another ghost (their colours merge)     9
+on screen == bitmap: Down                                      24
+on screen == bitmap: Eyes                                      6
+on screen == bitmap: Frightened                                51
+on screen == bitmap: Frightened (clipped at the tunnel edge)   6
+on screen == bitmap: Left                                      18
+on screen == bitmap: Right                                     12
+on screen == bitmap: Up                                        42
+target ghost: player memory == the ROM shape + feet being drawn 42
+pictures confirmed on the screen (of 11): 11   (plus tunnel-clipped variants: ['Frightened/feet54&F8', 'Frightened/feetAA&FC'])
+  Up/feet54          24
+  Up/feetAA          18
+  Down/feet54        9
+  Down/feetAA        15
+  Left/feet54        9
+  Left/feetAA        9
+  Right/feet54       6
+  Right/feetAA       6
+  Frightened/feet54  15
+  Frightened/feetAA  36
+  Eyes               6
+column found on the screen minus EntityX (0 = the ghost is where the game says): {0: 159}
+row found on the screen minus the player-memory row (0 = drawn where the memory says): {0: 159}
+sub-cell pixel offset needed (scale-fit error), (x, y) in window pixels: {(0, -1): 30, (0, 0): 117, (0, 1): 12}
+status-text colour (colour register $0C): (205, 198, 210)
+(colour register $02C0+g at the freeze, screen RGB) per kind:
+  Down        {'$44 (144, 24, 41)': 6, '$D8 (49, 156, 13)': 6, '$28 (170, 126, 0)': 9, '$4A (254, 135, 155)': 3}
+  Left        {'$4A (254, 135, 155)': 12, '$44 (144, 24, 41)': 6}
+  Up          {'$D8 (49, 156, 13)': 12, '$28 (170, 126, 0)': 15, '$4A (254, 135, 155)': 9, '$44 (144, 24, 41)': 6}
+  Eyes        {'$44 (144, 24, 41)': 3, '$44 (205, 198, 210)': 3}
+  Frightened  {'$0C (205, 198, 210)': 42, '$84 (18, 62, 178)': 15}
+  Right       {'$44 (144, 24, 41)': 6, '$D8 (49, 156, 13)': 6}
+deviations: 0

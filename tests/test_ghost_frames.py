@@ -85,5 +85,23 @@ class Bitmaps(unittest.TestCase):
         self.assertEqual(0x54 ^ 0xAA, 0xFE)                                    # complementary patterns: the legs wiggle
 
 
+class ScreenshotChecker(unittest.TestCase):
+    """The pixel check itself needs captures of the running emulator (local, not committed; results in analysis/evidence-ghost-screenshots-summary.txt);
+    these tests cover the parts that come from the ROM."""
+
+    def test_eleven_pictures(self):
+        import check_ghost_screenshots as K
+        self.assertEqual(len(K.PICS), 11)
+        self.assertEqual(len({tuple(v) for v in K.PICS.values()}), 11)
+        self.assertEqual(K.PICS["Eyes"][10], 0)                                  # no feet row
+        self.assertEqual({v[10] for k, v in K.PICS.items() if k != "Eyes"}, {0x54, 0xAA})
+
+    def test_tunnel_clip_seen_in_player_memory(self):
+        import check_ghost_screenshots as K
+        # a ghost at the right edge of the tunnel was found in its player memory as the frightened picture ANDed with $F8 (feet $54 -> $50)
+        self.assertEqual([r & 0xF8 for r in K.PICS["Frightened/feet54"]], [0x38, 0x78, 0xF8, 0xD0, 0xD0, 0xD0, 0xF8, 0xD0, 0xA8, 0xF8, 0x50])
+        self.assertIn(0xF8, K.CLIPS)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -22,4 +22,4 @@ AltirraOS remains available for later cross-checking against the Rev B ROM.
   `r a` from a breakpoint has no effect; debugger arguments are split at spaces; the log file is flushed in 4 KB chunks and fully only on a clean exit.
 - Fast unattended runs use a private settings copy, never your normal settings: copy `F:\Ports\Pac-Man-tools\Altirra\Altirra.ini` to `Altirra_fast.ini` in the same folder and set `"Speed: Frame rate modifier" = 800`
   (about 7 to 10 times real time). The command files start the game themselves (self-clearing breakpoint at `$A504` jumping to the start-game code at `$A537`), so no key press or window focus is needed.
-- Screenshots of the whole screen can capture other windows (a browser was captured once by accident and deleted); the unattended runs do not use screenshots.
+- Screenshots of the whole screen can capture other windows (a browser was captured once by accident and deleted); the unattended runs do not use screenshots. The exception is `tools/run_ghost_shots.ps1`, which uses `PrintWindow` on Altirra's own window (it never reads other windows) after stopping the emulator; its captures stay local (game images are not committed).

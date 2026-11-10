@@ -1,7 +1,7 @@
 # 16 – The Ghost Frames
 
 Written 2026-11-10 (step C11). **The meaning of every ghost frame is now understood and verified**: which bitmap the game draws for a ghost, why, and how the picture animates.
-Evidence: the frame-selection code (`tests/test_ghost_frames.py`, 7 tests), the bitmaps, and a live trace of **47,510 ghost draws with 0 deviations from the rule**
+Evidence: the frame-selection code (`tests/test_ghost_frames.py`), the bitmaps, and a live trace of **47,510 ghost draws with 0 deviations from the rule**
 (`analysis/evidence-ghost-frames-summary.txt`).
 
 ## The six shapes
@@ -43,6 +43,23 @@ the eyes of an eaten ghost are `$0C`: the routine at `$B09D` finds the player wh
 - The test aids used (emulated machine only): the game is started from its own start-game code, ghosts do not kill Pac-Man, Pac-Man is moved around and onto power pellets and ghosts so that every ghost state occurs
   (`tools/altirra_ghostframes.cmd`, `tools/analyze_ghost_frames_log.py`).
 
+## Screenshot check: the pixels on the screen equal the bitmaps
+Added 2026-11-10. The bitmaps and colours above were first checked as data; this check compares **what Altirra actually renders** with them.
+- **Method** (`tools/run_ghost_shots.ps1`, `tools/altirra_ghostshots.cmd`, `tools/check_ghost_screenshots.py`): for each of the 11 pictures (plus frightened in both colours, plus eyes in white) the game is run unattended until the picture is drawn,
+  then two whole frames with no ghost draw are waited for and the emulated machine is stopped (a debugger break; test aid in emulated RAM/PC only, ROM untouched). The RAM (player memory `$2400-$27FF`, entity tables, colours) is logged and the window of Altirra itself is captured
+  (`PrintWindow`, which reads only that window). With fewer quiet frames the screen still showed the previous picture; that timing error is why the freeze waits for two.
+- **What is compared:** for every ghost on every capture, its player memory must be exactly one of the 11 pictures built from the ROM, and the screen must show it: in each of the 8 x 11 cells the cell centre has one colour where the bit is set and a different one where it is clear.
+  The window scale is fitted from the normal ghosts (about 5.47 pixels per colour clock and 3.17 per scanline, residual <= 1.3 px; a sub-cell offset of at most 1 pixel was needed).
+- **Result** (`analysis/evidence-ghost-screenshots-summary.txt`; 14 stopped states x 3 captures = 42 captures, 168 ghost views): **0 deviations**. 159 views were compared pixel for pixel, 9 were skipped because two ghosts overlap
+  (their colours merge, so cells cannot be told apart). **All 11 pictures were seen on the screen** (up x2 feet rows, down x2, left x2, right x2, frightened x2, eyes). Every ghost was found exactly where the game says
+  (column = `EntityX`, row = player-memory row; offset 0 in all views). The ghost the picture was waited for held exactly the ROM shape and feet row that were being drawn in all 42 views.
+- **Colours on the screen:** normal ghosts (144,24,41) / (254,135,155) / (49,156,13) / (170,126,0) for `$44 / $4A / $D8 / $28`; frightened **blue (18,62,178)** for `$84` and **white (205,198,210)** for `$0C`; the eyes are the same white (205,198,210) as the status text (`$0C`).
+  One capture of the eyes shows them in the ghost's own colour: the ghost had just reached the house, which restores its colour before the picture is redrawn (the register already held `$44`); the eyes drawn with `$0C` were white on the screen.
+- **Where things are** (needed for the comparison): `EntityX` is `$8A+ghost` (it is written to `HPOSP0+ghost`), `EntityY` is `$85+ghost`; the 16 rows copied by `$B991` start at player-memory offset `EntityY`, the first two are blank, so shape row *r* is at `EntityY + 2 + r`.
+- **New observation - the tunnel edge:** a frightened ghost at `EntityX` = 195 (the right tunnel mouth) had its player memory equal to the frightened picture **ANDed with `$F8`** (and with `$FC` in another capture): the game cuts the picture at the screen edge, and the screen shows the cut ghost.
+  The routine that applies the mask has not been analysed (see below).
+
 ## Not covered
 - Pac-Man's own frames (documented in `12-data-formats.md`: `PacMouthOffsets`, shapes) and the ghosts during the death sequence (they are hidden by setting their horizontal positions to 0, not by a different frame).
-- A pixel-by-pixel screenshot comparison of each of the 11 pictures (the bitmaps were checked as data and the colours as register values; a capture of the game was used earlier only to name the colours).
+- The code that clips ghosts at the tunnel edges (masks `$F8`, `$FC` seen; the left side and the other masks were not captured), and ghosts inside the tunnel.
+- Overlapping ghosts (merged colours) were not compared pixel by pixel.
