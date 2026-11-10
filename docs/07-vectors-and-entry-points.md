@@ -12,9 +12,12 @@ Written in Step B7 (2026-11-10). Covers checklist stages 19–20 (entry points, 
 | $BFFE–$BFFF | `B4 A6` | INIT vector = **$A6B4** (called by the OS during start-up, before RUN) |
 
 Entry-point reading above follows the standard Atari cartridge header layout (from memory, to be
-cross-checked). Note: INIT at $A6B4 is reached first and it appears to set the display-list pointer
-($D402/$D403 at $A6B8/$A6C0) and the display-list interrupt vector VDSLST ($0200/$0201 at $A6C3/$A6C8).
-That is a heuristic observation from the byte scan, to be confirmed in the disassembly.
+cross-checked).
+
+**Correction (step C9, 2026-11-10):** the first version of this document said INIT ($A6B4) sets the
+display list and VDSLST. That was wrong; it came from the heuristic byte scan. The disassembly shows that
+`$A6B4` is a single `RTS` (INIT does nothing). The display-list/VDSLST code is a separate routine that
+starts at `$A6B5` (named `SetDisplayList`), called from `$A49B` and `$A621`.
 
 ## Rev B OS vectors [ROM, OS file maps $D800–$FFFF]
 | Vector | Address | Points to |

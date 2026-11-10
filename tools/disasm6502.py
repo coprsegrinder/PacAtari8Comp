@@ -165,10 +165,12 @@ def trace(data, base, entries):
 def listing(data, base, code, targets, names=None, out=sys.stdout):
     """Print a ca65-style listing: decoded code where `code` says so, `.byte` runs elsewhere."""
     names = names or {}
-    label = lambda a: names.get(a) or ("L%04X" % a if a in targets else None)
-    a, end = base, base + len(data)
+    end0 = base + len(data)
+    # Only addresses inside the image get generated labels; outside ones stay numeric unless named.
+    label = lambda a: names.get(a) or ("L%04X" % a if a in targets and base <= a < end0 else None)
+    a, end = base, end0
     while a < end:
-        lab = names.get(a) or ("L%04X" % a if a in targets else None)
+        lab = label(a)
         if a in code:
             _, mnem, mode, op = decode(data, base, a)
             if lab:
