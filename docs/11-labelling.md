@@ -16,7 +16,7 @@ never hand-edit that file. Names are cosmetic and cannot change the bytes.
 | OS zero page: `POKMSK` $10, `RTCLOK2` $14, `ATRACT` $4D, `DRKMSK` $4E, `COLRSH` $4F | 5 | Standard names; `$14` is waited on for a tick, `$10` is ORed then stored to `IRQEN`; $4D–$4F appear together |
 | Game zero page: `SrcPtrL/H` $3C/$3D, `DstPtrL/H` $3E/$3F | 4 | Used as `(zp),Y` read/write pointers by the copy/expand helpers and by `Start` |
 | Other zero page | rest | generic `zp_xx` (meaning not yet established) |
-| Subroutines (JSR targets) | 66 | `Sub_xxxx`; 15 have real names (below) |
+| Subroutines (JSR targets) | 66 | `Sub_xxxx` for the 53 still unnamed; the other 13 have real names (below) |
 | Data labels | 43 | `D_xxxx` at every ROM address the code reads as data |
 | Display lists | 2 | Decoded ANTIC instructions with comments; `DisplayList1` ($BFA3, 29 instructions, jumps to itself), `DisplayList2` ($BF81, 26 instructions) |
 | Text | 3 runs | Atari screen codes decoded in comments; strings seen on the title screen: HIGH SCORE, CHANGE DIFFICULTY, PRESS, PLAYER, GAME, [select], [option], TO, PLAY |
@@ -44,7 +44,7 @@ to $200F, clears zero page, and decodes streams from `$A1E1` into $0800.. and fr
 through `ExpandData`. So much of the "data" in ROM is compressed source for RAM tables (stage D will decode it).
 
 ## Not done yet (and why)
-- Most of the 50 other subroutines and all zero-page game variables: meaning not yet established; names need
+- The 53 unnamed subroutines and all zero-page game variables: meaning not yet established; names need
   traced behaviour (Stage D/E). `analysis/routine-catalog.txt` lists each with size, call count, hardware touched
   and callees, to prioritise. Sizes in it are approximate (nearest preceding label).
 - Data blocks `$A000–$A385` (902 bytes) and the table/graphics areas around `$BAC0–$BF80` are labelled only
