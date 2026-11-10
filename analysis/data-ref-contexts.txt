@@ -1,0 +1,516 @@
+=== D_BB38  (1 refs)
+           sta (DstPtrL),y
+           rts
+   LAF2C:
+           ldy #$0C
+           ldx #$09
+   LAF30:
+>>         lda D_BB38,x
+           sta (DstPtrL),y
+           dey
+           dex
+           bpl LAF30
+=== D_BB55  (1 refs)
+           ldx z:zp_AB
+           bne LB2DB
+           inc z:zp_AB
+           bne LB2CE
+   LB2DB:
+           dex
+>>         lda D_BB55,x
+           cpx #$02
+           bne LB2E7
+           ldx #$FF
+           stx z:zp_AB
+=== D_BB57  (1 refs)
+           beq LAF3A
+           tax
+           dex
+           lda $0600,x
+           tay
+           dey
+>>         lda D_BB57,x
+           sta (DstPtrL),y
+           rts
+   LAF2C:
+           ldy #$0C
+=== D_BB65  (2 refs)
+           ldx #$FF
+           stx z:zp_AB
+   LB2E7:
+           inc z:zp_AB
+   LB2E9:
+           tax
+>>         lda D_BB65,y
+           sta z:SrcPtrL
+           iny
+           lda D_BB65,y
+           sta z:SrcPtrH
+=== D_BB6F  (1 refs)
+           lda $07AE,y
+           sta z:zp_B5,x
+           dex
+           bpl LADD6
+           ldx #$13
+   LADE0:
+>>         lda D_BB6F,x
+           sta z:zp_80,x
+           dex
+           bpl LADE0
+           ldy #$00
+=== D_BB83  (2 refs)
+           lda z:zp_8A,x
+           sta z:zp_A5
+           lda z:zp_85,x
+           stx z:zp_2A
+           ldx #$09
+   LB498:
+>>         cmp D_BB83,x
+           beq LB4AC
+           dex
+           bpl LB498
+           lda z:zp_A5
+=== D_BB8D  (3 refs)
+           beq LB4AC
+           dex
+           bpl LB498
+           lda z:zp_A5
+           ldy #$09
+   LB4A4:
+>>         cmp D_BB8D,y
+           beq LB4BD
+           dey
+           bpl LB4A4
+   LB4AC:
+=== D_BB97  (2 refs)
+           clc
+           bcc LB4D3
+   LB4C2:
+           txa
+           asl a
+           tax
+>>         lda D_BB97,x
+           sta z:SrcPtrL
+           inx
+           lda D_BB97,x
+           sta z:SrcPtrH
+=== D_BBB8  (2 refs)
+           cmp z:zp_8E
+           bcs LBA52
+           lda z:zp_8F,x
+           cmp #$08
+           bne LBA32
+   LBA3F:
+>>         lda D_BBB8,y
+           cmp #$FF
+           beq LBAAF
+           cmp z:zp_8A,x
+           bcs LBA4D
+=== D_BBD8  (2 refs)
+           cmp z:zp_89
+           bcc LBA97
+           lda z:zp_8F,x
+           cmp #$01
+           bne LBA77
+   LBA84:
+>>         lda D_BBD8,y
+           cmp #$FF
+           beq LBAAF
+           cmp z:zp_89
+           bcs LBA92
+=== D_BBE2  (3 refs)
+           cmp z:zp_FC
+           bne LAFB2
+           ldx #$03
+   LAF7D:
+           lda z:zp_CE,x
+           bpl LAF87
+>>         lda D_BBE2,x
+           sta PCOLR0,x
+   LAF87:
+           dex
+           bpl LAF7D
+=== D_BBEA  (1 refs)
+           bpl LA614
+           ldx #$81
+           ldy #$CE
+           jsr SetDisplayList
+           ldy #$03
+   LA626:
+>>         lda D_BBEA,y
+           sta COLOR0,y
+           dey
+           bpl LA626
+           jmp LB985
+=== D_BBEE  (1 refs)
+   LA4B6:
+           lda #$02
+           sta z:zp_1C
+   LA4BA:
+           ldx #$03
+   LA4BC:
+>>         lda D_BBEE,x
+           eor z:COLRSH
+           and z:DRKMSK
+           sta z:zp_5E,x
+           dex
+=== D_BBF2  (1 refs)
+           cpy #$03
+           bcc LAE31
+           ldy #$03
+   LAE31:
+           ldx #$02
+   LAE33:
+>>         lda D_BBF2,y
+           sta z:zp_CB,x
+           iny
+           dex
+           bpl LAE33
+=== D_BBF8  (1 refs)
+           sta z:zp_FC
+           lda #$FF
+           sta z:zp_E9
+           ldx z:zp_2B
+           lda z:zp_30,x
+           tax
+>>         lda D_BBF8,x
+           sta z:zp_FD
+           ldx #$03
+   LB401:
+           lda z:zp_CE,x
+=== D_BC07  (1 refs)
+           bpl LAF30
+           rts
+   LAF3A:
+           ldy #$0F
+           ldx #$0F
+   LAF3E:
+>>         lda D_BC07,x
+           sta (DstPtrL),y
+           dey
+           dex
+           bpl LAF3E
+=== D_BC13  (1 refs)
+           lda D_BCD0,y
+           sta z:SrcPtrH
+           ldy #$0F
+   LA8E0:
+           lda (SrcPtrL),y
+           sta (zp_38),y
+>>         lda D_BC13,y
+           sta (zp_3A),y
+           dey
+           bpl LA8E0
+           lda #$00
+=== D_BC50  (1 refs)
+           lda z:RTCLOK2
+           and #$03
+           bne LA7C7
+           ldx z:zp_A3
+           cpx #$40
+           beq LA7FE
+>>         lda D_BC50,x
+           sta AUDF1
+           lda D_BC90,x
+           sta AUDF2
+           lda #$A8
+=== D_BC90  (1 refs)
+           bne LA7C7
+           ldx z:zp_A3
+           cpx #$40
+           beq LA7FE
+           lda D_BC50,x
+           sta AUDF1
+>>         lda D_BC90,x
+           sta AUDF2
+           lda #$A8
+           sta AUDC1
+           lda #$A4
+=== D_BCD0  (2 refs)
+           adc z:zp_39
+           adc #$01
+           sta z:zp_3B
+           lda z:zp_E9
+           asl a
+           tay
+>>         lda D_BCD0,y
+           sta z:SrcPtrL
+           iny
+           lda D_BCD0,y
+           sta z:SrcPtrH
+=== D_BCD8  (1 refs)
+           sta z:zp_F4
+           sta z:zp_F5
+           beq LB0E2
+   LB0CE:
+           lda z:zp_F6
+           bne LB0D8
+>>         lda D_BCD8,x
+           jmp LB0DB
+   LB0D8:
+           lda D_BCDF,x
+   LB0DB:
+=== D_BCDF  (1 refs)
+   LB0CE:
+           lda z:zp_F6
+           bne LB0D8
+           lda D_BCD8,x
+           jmp LB0DB
+   LB0D8:
+>>         lda D_BCDF,x
+   LB0DB:
+           inc z:zp_F5
+           sta AUDF1
+           lda #$A4
+=== D_BCE6  (2 refs)
+           clc
+           inc z:zp_D2,x
+   LB82F:
+           txa
+           asl a
+           tay
+>>         lda D_BCE6,y
+           sta z:SrcPtrL
+           iny
+           lda D_BCE6,y
+           sta z:SrcPtrH
+=== D_BCEE  (2 refs)
+           sta z:zp_BE,x
+           lda RANDOM
+           and #$0F
+           sta z:zp_BA,x
+           asl a
+           tay
+>>         lda D_BCEE,y
+           sta z:zp_C2,x
+           iny
+           lda D_BCEE,y
+           sta z:zp_C6,x
+=== D_BD0E  (2 refs)
+   LB8C5:
+           lda #$20
+           sta z:zp_CE,x
+           txa
+           asl a
+           tay
+>>         lda D_BD0E,y
+           sta z:zp_C2,x
+           iny
+           lda D_BD0E,y
+           sta z:zp_C6,x
+=== D_BD16  (2 refs)
+           bcc LB8A6
+           clc
+           inc z:zp_BE,x
+   LB8A6:
+           lda z:zp_BA,x
+           tay
+>>         lda D_BD16,y
+           adc z:zp_BE,x
+           tay
+           lda $06AE,y
+           bne LB8C0
+=== D_BD26  (2 refs)
+           lda #$92
+           sta z:DstPtrL
+           lda #$0F
+           sta z:DstPtrH
+           ldx #$00
+   LACC8:
+>>         lda D_BD26,x
+           sta (DstPtrL),y
+           inc z:DstPtrL
+           clc
+           adc #$01
+=== D_BD45  (1 refs)
+   LA947:
+           tax
+           lda D_BD6D,x
+           tax
+           ldy #$00
+   LA94E:
+>>         lda D_BD45,x
+           sta $0DF1,y
+           inx
+           iny
+           cpy #$05
+=== D_BD6D  (1 refs)
+           lda z:zp_30,x
+           cmp #$0C
+           bcc LA947
+           lda #$0C
+   LA947:
+           tax
+>>         lda D_BD6D,x
+           tax
+           ldy #$00
+   LA94E:
+           lda D_BD45,x
+=== D_BD7A  (2 refs)
+           ldy #$00
+           lda (SrcPtrL),y
+           and #$C0
+           bne LA67F
+           lda (SrcPtrL),y
+           tax
+>>         lda D_BD7A,x
+           jsr WriteDstByte
+   LA679:
+           jsr AdvanceSrcPtr
+           jmp ExpandData
+=== D_BDB9  (2 refs)
+           lda z:zp_30,x
+           cmp #$06
+           bcc LADC6
+           lda #$06
+   LADC6:
+           tay
+>>         lda D_BDB9,y
+           tax
+           lda $07AE,x
+           sta z:zp_B9
+           lda D_BDC0,y
+=== D_BDC0  (2 refs)
+   LADC6:
+           tay
+           lda D_BDB9,y
+           tax
+           lda $07AE,x
+           sta z:zp_B9
+>>         lda D_BDC0,y
+           tay
+           ldx #$03
+   LADD6:
+           lda $07AE,y
+=== D_BDC7  (1 refs)
+           .byte $C8,$1D,$14,$00,$00,$13,$0F,$A1
+           .byte $01,$0D,$14,$00,$00,$12,$1D,$A1
+           .byte $0C,$1F,$21,$A8,$00,$FF
+   Start:
+           ldx #$09
+   LA388:
+>>         lda D_BDC7,x
+           sta $200F,x
+           dex
+           bpl LA388
+           lda #$00
+=== D_BDD1  (1 refs)
+           sta WSYNC
+           stx CHBASE
+           sta COLPF2
+           sty COLPF1
+           jmp LA5F5
+   LA5EC:
+>>         lda D_BDD1,x
+           sta WSYNC
+           sta CHBASE
+   LA5F5:
+           inc z:zp_18
+=== D_BDD6  (1 refs)
+           sta $1CC6
+           clc
+           adc #$01
+           sta $1CC7
+           ldx #$10
+   LA777:
+>>         lda D_BDD6,x
+           sta $1D05,x
+           dex
+           bpl LA777
+           ldx #$08
+=== D_BDE7  (1 refs)
+           ldx #$0F
+   LA752:
+           lda D_BFD1,x
+           sta $1C7A,x
+           lda D_BFE1,x
+           sta $1CF2,x
+>>         lda D_BDE7,x
+           sta $1D56,x
+           dex
+           bpl LA752
+           ldx z:zp_1B
+=== D_BDF7  (1 refs)
+           sta $0F00,x
+           dex
+           bne LA6DD
+           sta COLOR1
+           ldx #$0D
+   LA6EE:
+>>         lda D_BDF7,x
+           sta $1D57,x
+           dex
+           bpl LA6EE
+           inx
+=== D_BE05  (1 refs)
+           sta $1CF2,x
+           lda D_BDE7,x
+           sta $1D56,x
+           dex
+           bpl LA752
+           ldx z:zp_1B
+>>         lda D_BE05,x
+           sta $1CC6
+           clc
+           adc #$01
+           sta $1CC7
+=== D_BE75  (1 refs)
+           sta z:DstPtrL
+           lda #$18
+           sta z:DstPtrH
+           jsr ExpandData
+           ldx #$1F
+   LA443:
+>>         lda D_BE75,x
+           sta $18A8,x
+           dex
+           bpl LA443
+           sei
+=== D_BFC6  (1 refs)
+   LA738:
+           lda #$11
+   LA73A:
+           sta $1C90
+           ldx #$0A
+   LA73F:
+>>         lda D_BFC6,x
+           sta $1C92,x
+           ora #$40
+           sta $1C56,x
+           dex
+=== D_BFD1  (1 refs)
+           sta $1C56,x
+           dex
+           bpl LA73F
+           jsr InitDisplay2
+           ldx #$0F
+   LA752:
+>>         lda D_BFD1,x
+           sta $1C7A,x
+           lda D_BFE1,x
+           sta $1CF2,x
+           lda D_BDE7,x
+=== D_BFE1  (1 refs)
+           bpl LA73F
+           jsr InitDisplay2
+           ldx #$0F
+   LA752:
+           lda D_BFD1,x
+           sta $1C7A,x
+>>         lda D_BFE1,x
+           sta $1CF2,x
+           lda D_BDE7,x
+           sta $1D56,x
+           dex
+=== D_BFF1  (1 refs)
+           lda D_BDD6,x
+           sta $1D05,x
+           dex
+           bpl LA777
+           ldx #$08
+   LA782:
+>>         lda D_BFF1,x
+           sta $1D6D,x
+           dex
+           bpl LA782
+           rts

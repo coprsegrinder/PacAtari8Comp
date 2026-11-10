@@ -20,7 +20,7 @@ Legend: DONE, NEXT, TODO, N/A (not applicable, with reason).
 | C8 | Disassembler built and validated | 21–22 | DONE (approved 2026-11-10) |
 | C9 | Full disassembly | 23–25 | DONE (approved 2026-11-10) |
 | C10 | Byte-exact rebuild (formal) | 26–28 | DONE (approved 2026-11-10) |
-| C11 | Data labelling and routine naming (first pass) | 29–30 | DONE (first pass) – awaiting approval |
+| C11 | Data labelling and routine naming (first pass) | 29–30 | DONE – awaiting approval (data formats added 2026-11-10) |
 | D12–D16 | Control flow, variables, subsystem analysis | 31–50 | NEXT |
 | E17–E18 | Emulator traces, correlation | 51–60 | TODO |
 | F19 | Resource extraction/decoding | 69–70 | TODO |

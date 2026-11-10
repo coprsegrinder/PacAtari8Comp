@@ -118,20 +118,51 @@ for dl_start in (0xBF81, 0xBFA3):
             chunks[a] = (n, text)
         i = j
 
-# text runs: split at spaces (code $00) so each word is one commented line
-for lo, hi in ((0xBDC7, 0xBDD1), (0xBDD6, 0xBDF7), (0xBFC6, 0xBFFA)):
-    a = lo
-    while a < hi:
-        j = a
-        while j < hi and data[j - BASE] != 0 and (j == a or j not in names):
-            j += 1
-        if j < hi and data[j - BASE] == 0 and j not in names:
-            j += 1  # include the space ($00) with the word
-        j = min(j, hi)
-        chunk = data[a - BASE:j - BASE]
-        chunks[a] = (len(chunk), "        .byte %-40s ; %04X  \"%s\"" % (
-            ",".join("$%02X" % b for b in chunk), a, screen_text(chunk).rstrip()))
-        a = j
+# ---- data regions from tools/labels.py (formats and evidence: docs/12-data-formats.md) ----------
+for first, last, kind, name, comment in LB.DATA:
+    names[first] = name
+    if any(a in code for a in range(first, last + 1)):
+        sys.exit("data region %s overlaps code" % name)
+
+
+def bitmap(b):
+    return "".join("#" if b & (0x80 >> k) else "." for k in range(8))
+
+
+def region_rows(first, last, kind, name, comment):
+    """Yield (addr, length, text) rows for one data region; rows never swallow a label."""
+    a, rows, head = first, [], ("        ; %s\n" % comment) if comment else ""
+    step = {"stream": 16, "bytes": 8, "shape": 1, "words": 2, "text": last - first + 1}[kind]
+    while a <= last:
+        n = min(step, last + 1 - a)
+        for k in range(1, n):  # split at labels inside the row
+            if (a + k) in names:
+                n = k
+                break
+        if kind == "bytes" and name == "ThresholdLists":
+            for k in range(n):
+                if data[a - BASE + k] == 0xFF:
+                    n = k + 1
+                    break
+        chunk = data[a - BASE:a - BASE + n]
+        if kind == "words" and n == 2:
+            v = chunk[0] | chunk[1] << 8
+            body = "        .word %-30s ; %04X" % (names.get(v, "$%04X" % v), a)
+        elif kind == "shape":
+            body = "        .byte $%02X                      ; %04X  %s" % (chunk[0], a, bitmap(chunk[0]))
+        elif kind == "text":
+            body = "        .byte %-40s ; %04X  \"%s\"" % (",".join("$%02X" % b for b in chunk), a, screen_text(chunk).rstrip())
+        else:
+            body = "        .byte %-40s ; %04X" % (",".join("$%02X" % b for b in chunk), a)
+        rows.append((a, n, head + body))
+        head = ""
+        a += n
+    return rows
+
+
+for region in LB.DATA:
+    for a, n, text in region_rows(*region):
+        chunks[a] = (n, text)
 
 # cartridge header $BFFA-$BFFF
 chunks[0xBFFA] = (2, "        .word Start                      ; BFFA  RUN vector")
@@ -160,6 +191,10 @@ def sym_abs(a, mnem):
         used_abs[a] = n
     return n
 
+
+uncovered = [a for a in range(BASE, BASE + SIZE) if a not in inside and a not in code
+             and not any(c <= a < c + n for c, (n, _) in chunks.items())]
+print("data bytes not covered by any region: %d %s" % (len(uncovered), " ".join("%04X" % a for a in uncovered[:16])))
 
 body = io.StringIO()
 D.listing(data, BASE, code, targets, names=names, out=body, sym_zp=sym_zp, sym_abs=sym_abs, chunks=chunks)
