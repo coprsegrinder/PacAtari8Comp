@@ -1,0 +1,24 @@
+Live play trace, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K (tools/trace_altirra.ps1 + tools/altirra_trace.cmd), 2026-11-10.
+Session: boot, Start, move, 2 power pellets, 1 ghost eaten, 1 death. Full log kept locally (F:\Ports\play-trace.txt, 1085 lines).
+
+Tracepoint hit counts: ADD_TO_SCORE=85, CHOMP_OFFSET_READ=740, CONTROL_READ_A003=2, DEATH_ANIM_START=1, DEATH_PLOT_READ=112, GHOST_EATEN=1, GHOST_SCORE_PTR_READ=1, POWER_PELLET_EATEN=2, READ_A000_A002=3, STAR_SHAPE_READ=128
+
+$A000-$A002 reads (all three at boot, none in play; pc in the OS RAM-size test):
+  READ_A000_A002 addr=$A000 value=$4A pc=$F263
+  READ_A000_A002 addr=$A000 value=$4A pc=$F263
+  READ_A000_A002 addr=$A000 value=$4A pc=$F265
+
+Key events in log order:
+  line  209  POWER_PELLET_EATEN E9_before=$00
+  line  210  ADD_TO_SCORE digits=$00$00$00$00$05$00   (digits $94..$99)
+  line  620  POWER_PELLET_EATEN E9_before=$FF
+  line  621  ADD_TO_SCORE digits=$00$00$00$00$05$00   (digits $94..$99)
+  line  670  GHOST_EATEN E9_before_inc=$FF
+  line  671  GHOST_SCORE_PTR_READ index*2=Y=$00
+  line  672  ADD_TO_SCORE digits=$00$00$00$02$00$00   (digits $94..$99)
+  line  792  DEATH_ANIM_START
+  ADD_TO_SCORE with digits 000010 (dots): 82 times
+
+Chomp table reads at $B2DC: 740, ChompPhase values in order: 01 02 03 01 02 03 01 02 03 01 02 03 ...
+Death plot reads at $AF26: 112 = 14 frames x 8 redraws; (frame,X) order: 01/00 02/01 03/02 04/03 05/04 06/05 07/06 08/07 09/08 0A/09 0B/0A 0C/0B 0D/0C 0E/0D
+StarShape row reads at $AF3E: 128 = 16 rows x 8 redraws, all in frame $0F

@@ -75,7 +75,7 @@ Checked in `tests/test_ghost_score.py` (6 tests, all from ROM bytes), nothing as
    So the amounts are exactly **200, 400, 800, 1600**.
 5. Drawn side by side (record = 8 px of missiles, then the shared zeros = 8 px of the player; positions set at `$A893–$A8A3`) the four shapes
    read **200**, **400**, **800** and **1600** (ASCII renders in the test).
-Not yet verified in the running game; the owner can confirm by eating the first ghost after a power pellet (the pop-up should say 200) in Altirra.
+**Live check (Altirra, 2026-11-10, `analysis/evidence-play-trace-summary.txt`):** after a power pellet (`GhostsEaten` was `$FF`), eating a ghost logged `INC` then pop-up index 0 (`GhostScorePtrs` read with Y = 0), and `AddToScore` received digits `000200`. Power pellets added `000050` and dots `000010`. Only one ghost was eaten in that session, so 400, 800 and 1600 rest on the code and the shape renders, not on a live run.
 
 ## Confirmed: `$BB55–$BB64` (was "SmallTable_BB56")
 It was two different things that share bytes with their neighbours:
@@ -92,6 +92,8 @@ It was two different things that share bytes with their neighbours:
   that is **not** frightened (`$A923`) sets `DeathState` = 1; `DeathSequence` (`$AE3D`) reaches state 2 and does `INC DeathAnimActive` (`$AE76`); `$A82F`
   runs `DeathSequence` then `DeathAnimation` while `DeathState` is non-zero. Simulating the 15 frames from the ROM bytes shows the shape losing its top rows
   and shrinking, then the starburst (`tests/test_bb56_a000.py`).
+  **Live check:** `ChompPhase` at `$B2DC` cycled 1, 2, 3, 1, 2, 3 … for 740 reads (phase 0 never reads the table, as predicted); the death animation read `DeathPlotBytes[0..13]`
+  in order, each for exactly 8 redraws (112 reads = 14 × 8), then `StarShape` for 128 row reads (16 rows × 8 redraws) in frame 15.
 
 ## Confirmed: `$A000–$A002` are unused padding
 Three bytes `4A 4A 48` (also the ASCII letters "JJH"; no evidence that this means anything). Verified three independent ways:
@@ -108,7 +110,7 @@ Three bytes `4A 4A 48` (also the ASCII letters "JJH"; no evidence that this mean
    `$3000` CRC, so the check can see differences (`analysis/evidence-boot-crc.txt`, `tools/boot_crc_check.ps1`). The same run shows that the Python
    decoder reproduces Altirra's RAM exactly (charset CRC-32 `$5E84E650`).
 What they are for is not recoverable from the ROM (most likely a leftover from the build); they must be kept as they are for a byte-exact rebuild.
-Not yet covered by a running trace: reads during real play (static audit covers it); `tools/trace_altirra.ps1` is ready to record it.
+4. **Live play trace** (boot, Start, moving, 2 power pellets, 1 ghost eaten, 1 death; `analysis/evidence-play-trace-summary.txt`): `$A000` was read 3 times, all at boot by the OS RAM-size test (`pc=$F263/$F265`); `$A001`/`$A002` were never read, and nothing read any of the three during play.
 
 ## Findings worth knowing
 - The "text" on the title screen is not zero-terminated: `$00` is the **space** character, and every line has a fixed length given by the
