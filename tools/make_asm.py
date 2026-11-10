@@ -205,7 +205,7 @@ def sym_zp(a):
 
 def sym_abs(a, mnem):
     n = LB.hw_name(a, mnem)
-    if n:
+    if n and a not in LB.RAM_TABLES:
         used_abs[a] = n
     return n
 
@@ -228,6 +228,9 @@ with open(os.path.join(ROOT, "src", "asm", "pacman.s"), "w", newline="\n") as fh
     fh.write("\n; OS entry points\n")
     for a in sorted(used_os_entry):
         fh.write("%-8s = $%04X\n" % (LB.OS_ENTRY[a], a))
+    fh.write("\n; RAM tables built at start-up from the nibble map ($BE95); read-only data for the game\n")
+    for a, n in sorted(LB.RAM_TABLES.items()):
+        fh.write("%-16s = $%04X\n" % (n, a))
     fh.write("\n; Hardware registers and OS variables used (standard Atari 400/800 names)\n")
     for a in sorted(used_abs):
         fh.write("%-8s = $%04X\n" % (used_abs[a], a))

@@ -1,0 +1,16 @@
+Nibble-map live evidence, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K, level 1 (tools/trace_altirra.ps1 + tools/altirra_trace.cmd).
+Sessions: play-trace3.txt (positions, FC counts, start routes; its accumulator-based fields were invalid, see below) and play-trace4.txt (corrected, 14,425 lines).
+Full logs kept locally in F:\Ports. Note: Altirra expressions have no accumulator variable; "a" is the number $A. Fields read through "a" in session 3 are discarded.
+
+JunctionExits : 631 lookups by Pac-Man and all 4 ghosts; 0 inconsistent (row/col from position, mask == table[row][col]).
+               session 3: 307 more lookups, row/col from position all consistent.
+ReverseDir    : power pellet reversed 4 ghosts, [('4', '8'), ('4', '8'), ('4', '8'), ('4', '8')]; new == reverse(old) in all.
+NoReverseMask : 3789 filtered masks; the reverse direction bit survived in 0.
+MoveDelay     : 5451 reloads for entities 0-4; 0 differ from table. Level 1: Pac-Man cycle 2,2,2,3; ghosts 3,3,3,3.
+FrightenFrames: pellet set FrightenCountdown = $FF (table[0] = $FF).
+FrightenEndPhase: end test read table value [11] while FrightenPhase counted 1..11, 24 frames per step, then frightened mode ended.
+StartRoutes   : 864 reads, 0 differ from table; session 3: ghosts 0,1,2 passed junctions (3,4)(3,3)(4,3)(4,2)(3,2)(2,2)(1,2)... exactly as route LLDLUUU(RRRRR) / RRDDDRD.
+PatrolRoutes  : 248 reads, 0 differ from table; 19 of 20 steps ended at the neighbouring junction in the scripted direction, the 20th was interrupted by a power-pellet reversal.
+BonusScore   : the bonus item on level 1 added digits 000100 (1 event), table entry 0 = (0,1).
+DeathPlotRows : see evidence-play-trace-summary.txt (frames 1-14 read rows 0..13 in order).
+Not covered live: patrol routes other than 2 and 7, levels above 1, FrightenEndPhase beyond entry 0, BonusScore beyond entry 0, MoveDelay beyond level 1 (verified from the code and tables only).

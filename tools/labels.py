@@ -43,10 +43,17 @@ OS_ZP = {0x10: "POKMSK", 0x14: "RTCLOK2", 0x4D: "ATRACT", 0x4E: "DRKMSK", 0x4F: 
 OS_ENTRY = {0xE456: "CIOV", 0xE459: "SIOV", 0xE45C: "SETVBV", 0xE45F: "SYSVBV", 0xE462: "XITVBV"}
 
 
+# RAM tables built by Start from the nibble map (docs/12-data-formats.md). Only exact base addresses are named.
+RAM_TABLES = {0x0600: "DeathPlotRows", 0x060E: "JunctionExits", 0x0672: "FrightenEndPhase", 0x0686: "StartRoutes",
+              0x06AE: "PatrolRoutes", 0x0794: "BonusScore", 0x07AE: "MoveDelay", 0x07C6: "NoReverseMask", 0x07CF: "ReverseDir"}
+
+
 def hw_name(addr, mnem):
     """Name for an absolute operand, or None (stores use the write name, everything else the read name)."""
     if addr in OS_ABS:
         return OS_ABS[addr]
+    if addr in RAM_TABLES:
+        return RAM_TABLES[addr]
     chip = {0xD0: (GTIA_W, GTIA_R), 0xD2: (POKEY_W, POKEY_R), 0xD4: (ANTIC_W, ANTIC_R)}.get(addr >> 8)
     if chip is None:
         return None
@@ -63,6 +70,9 @@ GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 
            0xE9: "GhostsEaten", 0x2B: "CurrentPlayer",
            # Pac-Man movement / animation (docs/12-data-formats.md, section on SmallTable_BB56)
            0x89: "PacY", 0x8E: "PacX", 0x93: "PacDirection", 0xAB: "ChompPhase",
+           0x85: "EntityY", 0x8A: "EntityX", 0x8F: "EntityDir", 0xB0: "MoveDelayCycle", 0xB5: "MoveDelayCount",
+           0xBA: "PatrolRoute", 0xBE: "PatrolStep", 0xD2: "StartRouteStep", 0xCE: "GhostState",
+           0xFB: "FrightenFlashTimer", 0xFC: "FrightenPhase", 0xFD: "FrightenCountdown",
            0xED: "DeathState", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
 
 
@@ -121,9 +131,9 @@ DATA = [
      "14 bytes, one plotted per step of the death animation (DeathAnimation $AF26): row = nibble map $0600+X minus 1, in missile memory at Pac-Man's Y"),
     (0xBB65, 0xBB6E, "words", "PacShapePtrs", "pointers to the first frame of each Pac-Man direction (full, right, left, up, down)"),
     (0xBB6F, 0xBB82, "bytes", "ZeroPageInit80", "20 bytes copied to zero page $80-$93 (X=$13..0) by the routine at $ADE0"),
-    (0xBB83, 0xBB8C, "bytes", "SearchList_BB83", "10 ascending values searched linearly with CMP (X=9..0)"),
-    (0xBB8D, 0xBB96, "bytes", "SearchList_BB8D", "10 ascending values searched linearly with CMP (Y=9..0)"),
-    (0xBB97, 0xBBAA, "words", "RecordPtrs_BB97", "10 pointers into RAM $060E-$0668, 10 bytes apart (indexed by 2*X)"),
+    (0xBB83, 0xBB8C, "bytes", "JunctionYList", "y coordinates (= 8*row+36) of the 10 junction rows of the maze lattice, rows 1,4,6,8,10,12,14,16,18,20; searched with CMP by Sub_B48E"),
+    (0xBB8D, 0xBB96, "bytes", "JunctionXList", "x coordinates (= 4*col+46) of the 10 junction columns, columns 3,6,9,13,18,21,26,30,33,36 (mirror-symmetric)"),
+    (0xBB97, 0xBBAA, "words", "JunctionRowPtrs", "pointers to the 10 rows of JunctionExits in RAM ($060E + 10*row), indexed by 2*row"),
     (0xBBAB, 0xBBD7, "bytes", "ThresholdLists",
      "lists of ascending values ended by $FF; read with CMP and BEQ on $FF (D_BBB8,Y); start offsets are chosen by the caller"),
     (0xBBD8, 0xBBE1, "bytes", "ProfileList_BBD8", "10 values rising to $11 and falling back to 0; read with CMP/BEQ $FF test (D_BBD8,Y)"),
@@ -131,7 +141,7 @@ DATA = [
     (0xBBEA, 0xBBED, "bytes", "ColorsTitle", "4 colours loaded into COLOR0-3 by InitDisplay2"),
     (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to zp_5E-zp_61 for the DLIs"),
     (0xBBF2, 0xBBF7, "bytes", "Window3Table", "read as 3-byte windows at offsets 0-3 into zp_CB-zp_CD (90 60 30 / 60 30 04 / 30 04 00 / 04 00 00)"),
-    (0xBBF8, 0xBC06, "bytes", "ByteTable_BBF8", "15 entries indexed by a level-dependent value; result goes to zp_FD"),
+    (0xBBF8, 0xBC06, "bytes", "FrightenFrames", "15 entries by Level: initial FrightenCountdown (frames of solid frightened colour); level 1 = $FF"),
     (0xBC07, 0xBC12, "shape", "StarShape", "12 rows; drawn as the last (15th) frame of the death animation (AF3A); the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),
     (0xBC13, 0xBC1E, "shape", "GhostScoreZeros", "the two '0' digits shared by all four ghost-eaten pop-ups; drawn by the eaten ghost's player"),
     (0xBC1F, 0xBC2A, "shape", "GhostScore200Digits", "pop-up '200': the '2' (drawn with the four missiles), index 0 of GhostScorePtrs"),
@@ -144,16 +154,16 @@ DATA = [
     (0xBCD0, 0xBCD7, "words", "GhostScorePtrs", "pointers to the four ghost-eaten pop-up shapes, indexed by 2*GhostsEaten (confirmed, see docs/12-data-formats.md)"),
     (0xBCD8, 0xBCDE, "bytes", "AudfSweepDown", "AUDF1 values, descending, ended by 0; chosen when zp_F6 = 0"),
     (0xBCDF, 0xBCE5, "bytes", "AudfSweepUp", "AUDF1 values, ascending, ended by 0; chosen when zp_F6 <> 0"),
-    (0xBCE6, 0xBCED, "words", "RecordPtrs_BCE6", "4 pointers into RAM $0686-$06A3 (indexed by 2*X)"),
-    (0xBCEE, 0xBD0D, "bytes", "RandomPositions", "16 pairs (x,y) selected by RANDOM AND $0F; stored to zp_C2,X and zp_C6,X"),
+    (0xBCE6, 0xBCED, "words", "StartRoutePtrs", "pointers to the four ghost start routes in RAM ($0686 $0693 $069B $06A3), indexed by 2*ghost"),
+    (0xBCEE, 0xBD0D, "bytes", "PatrolStartPositions", "16 (x,y) pairs, one per patrol route (same index); each is the junction where its route starts and ends (16 of 16 routes close into loops from here); chosen with RANDOM AND $0F"),
     (0xBD0E, 0xBD15, "bytes", "CornerPositions", "4 pairs (x,y) = ($BE,$2C) ($3A,$2C) ($BE,$C4) ($3A,$C4), the four corners; stored to zp_C2,X and zp_C6,X"),
-    (0xBD16, 0xBD25, "bytes", "RowOffsets", "16 ascending offsets added to a column index to read the grid at $06AE,Y"),
+    (0xBD16, 0xBD25, "bytes", "PatrolRouteOffsets", "16 ascending offsets of the patrol routes inside PatrolRoutes ($06AE + offset + step)"),
     (0xBD26, 0xBD44, "bytes", "CharCodeProfile", "31 character codes rising $3A to $4C and falling back; written to screen RAM from $0F92 as code and code+1"),
     (0xBD45, 0xBD6C, "bytes", "LevelGlyphRecords", "8 records of 5 character codes, copied to $0DF1; record chosen through LevelRecordOffsets"),
     (0xBD6D, 0xBD79, "bytes", "LevelRecordOffsets", "13 offsets (multiples of 5) indexed by zp_30 (level), clamped to 12"),
     (0xBD7A, 0xBDB8, "bytes", "PixelPatternTable", "63 pattern bytes used by ExpandData; index 63 is never used"),
-    (0xBDB9, 0xBDBF, "bytes", "LevelIndexTable1", "7 entries indexed by zp_30 (level) clamped to 6; result indexes $07AE,X"),
-    (0xBDC0, 0xBDC6, "bytes", "LevelIndexTable2", "7 entries indexed like LevelIndexTable1"),
+    (0xBDB9, 0xBDBF, "bytes", "PacMoveDelayBase", "7 offsets into MoveDelay for Pac-Man by Level (clamped to 6): 8,8,8,12,16,20,20"),
+    (0xBDC0, 0xBDC6, "bytes", "GhostMoveDelayBase", "7 offsets into MoveDelay for the ghosts by Level (clamped to 6): 0,4,8,8,12,16,16"),
     (0xBDC7, 0xBDD0, "text", "TextHighScore", None),
     (0xBDD1, 0xBDD5, "bytes", "DliChbaseTable", "CHBASE value for each DLI of DisplayList2 (zp_18 = 1..4: $E0, $30, $E0, $30); entry 0 = $18 matches DliHandler2"),
     (0xBDD6, 0xBDE6, "text6", "TextChangeDifficulty", "ANTIC mode 6 screen codes: low 6 bits = glyph of the OS font ($E000 band), top 2 bits = colour register; copied to $1D05"),
@@ -164,8 +174,19 @@ DATA = [
      "14 entries indexed by StartLevel ($1B, 0..13): the icon shown in the middle of the menu; entry N is the first of two glyphs (codes N and N+1 at $1CC6/$1CC7, row 11, charset $30). OPTION steps StartLevel through 0,1,2,4,6,8,10,12, so only those entries are reachable (confirmed on screen)"),
     (0xBE13, 0xBE74, "stream", "TitleCharsetStream", "type B stream -> RAM $1808, 160 bytes = 20 glyphs of the title character set (CHBASE=$18)"),
     (0xBE75, 0xBE94, "bytes", "TitleCharsetTail", "32 bytes copied to $18A8-$18C7 (4 more title glyphs)"),
-    (0xBE95, 0xBF80, "bytes", "NibbleMapSource",
-     "236 bytes; Start splits 256 bytes into 512 nibbles at RAM $0600-$07FF (hyp: maze/grid data); the last 20 bytes read belong to DisplayList2"),
+    # Nibble map: Start splits 256 source bytes ($BE95-$BF94) into 512 nibbles at RAM $0600-$07FF; the meaningful part is
+    # the first 236 bytes ($BE95-$BF80 -> RAM $0600-$07D7); RAM $07D8-$07FF is just the first 20 bytes of DisplayList2 split into nibbles.
+    (0xBE95, 0xBE9B, "bytes", "NibblesDeathPlotRows", "RAM $0600-$060D (14 nibbles): DeathPlotRows, the row plotted at each death-animation frame (read at $AF21)"),
+    (0xBE9C, 0xBECD, "bytes", "NibblesJunctionExits",
+     "RAM $060E-$0671: JunctionExits, 10x10 direction masks (1 up, 2 down, 4 left, 8 right) for the lattice points of the maze; rows = JunctionYList, columns = JunctionXList; equals the maze's open-neighbour mask at every non-zero entry"),
+    (0xBECE, 0xBED7, "bytes", "NibblesFrightenEnd", "RAM $0672-$0685: FrightenEndPhase, 20 entries by Level: the FrightenPhase value at which frightened mode ends (read at $AF74)"),
+    (0xBED8, 0xBEEB, "bytes", "NibblesStartRoutes",
+     "RAM $0686-$06AD: StartRoutes, one direction-per-junction route for each ghost (13, 8, 8, 11 nibbles, each ended by $F), pointers in StartRoutePtrs"),
+    (0xBEEC, 0xBF5E, "bytes", "NibblesPatrolRoutes",
+     "RAM $06AE-$0793: PatrolRoutes, 16 zero-terminated direction-per-junction routes (closed loops), row starts in PatrolRouteOffsets, start junctions in PatrolStartPositions"),
+    (0xBF5F, 0xBF6B, "bytes", "NibblesBonusScore", "RAM $0794-$07AD: BonusScore, 13 (thousands, hundreds) digit pairs by Level (clamped to 12): 100 300 500 500 700 700 1000 1000 2000 2000 3000 3000 5000"),
+    (0xBF6C, 0xBF77, "bytes", "NibblesMoveDelay", "RAM $07AE-$07C5: MoveDelay, frames per step in four-step cycles, selected through PacMoveDelayBase / GhostMoveDelayBase by Level"),
+    (0xBF78, 0xBF80, "bytes", "NibblesDirectionTables", "RAM $07C6-$07CE NoReverseMask[dir] then $07CF-$07D7 ReverseDir[dir], indexed by direction code 1,2,4,8"),
     (0xBFC6, 0xBFD0, "text6", "TextPlayerGame", "mode 6; copied to $1C92 (2 PLAYER GAME) and, with colour bits changed ($40 added), to $1C56 (1 PLAYER GAME)"),
     (0xBFD1, 0xBFE0, "text6", "TextPressSelectFor", "mode 6; copied to $1C7A"),
     (0xBFE1, 0xBFF0, "text6", "TextPressOptionTo", "mode 6; copied to $1CF2"),

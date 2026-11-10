@@ -30,25 +30,25 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BB55–$BB64` | PacMouthOffsets (`$BB55–$BB57` = `00 0A 00`), PacMouthFrame2Offset (`$BB56`), DeathPlotBytes (`$BB57–$BB64`) | chomp-animation offsets and the death-animation plot bytes | section below |
 | `$BB65–$BB6E` | PacShapePtrs | 5 words: `$BAFC $BB06 $BB1A $BB2E $BB42` | verified by test |
 | `$BB6F–$BB82` | ZeroPageInit80 | 20 bytes → zero page `$80–$93` | copy loop at `$ADE0` |
-| `$BB83–$BB96` | SearchList_BB83/BB8D | two ascending 10-value lists | linear `CMP` search loops |
-| `$BB97–$BBAA` | RecordPtrs_BB97 | 10 pointers `$060E…$0668` (10 bytes apart) | indexed `2*X` then used as SrcPtr |
+| `$BB83–$BB96` | JunctionYList, JunctionXList | the y (= 8·row+36) and x (= 4·col+46) coordinates of the 10 junction rows and 10 junction columns of the maze lattice | **confirmed**, nibble-map section |
+| `$BB97–$BBAA` | JunctionRowPtrs | pointers to the 10 rows of `JunctionExits` in RAM (`$060E + 10·row`) | **confirmed** (631 live lookups) |
 | `$BBAB–$BBE1` | ThresholdLists / ProfileList_BBD8 | `$FF`-terminated lists | `CMP #$FF / BEQ` loops |
 | `$BBE2–$BBED` | ColorsGame, ColorsTitle | 8 + 4 colour bytes → `PCOLR0..COLOR3` / `COLOR0..3` | `LoadShadowColors`, `InitDisplay2` |
 | `$BBEE–$BBF1` | ColorsDli | 4 colours for the DLIs, masked by `COLRSH`/`DRKMSK` | code at `$A4BC` |
 | `$BBF2–$BBF7` | Window3Table | overlapping 3-byte windows | copy of 3 bytes at offset 0–3 |
-| `$BBF8–$BC06` | ByteTable_BBF8 | 15 entries by level index | result to `zp_FD` |
+| `$BBF8–$BC06` | FrightenFrames | 15 entries by `Level`: initial `FrightenCountdown` (frames of solid frightened colour); level 1 = `$FF` | **confirmed** live (`$FF` logged) |
 | `$BC07–$BC4F` | StarShape, GhostScoreZeros, GhostScore200/400/800/1600Digits | 12-row shapes copied as 16 rows (4 pad bytes from the next table) | **ghost-eaten pop-ups: confirmed** (section below); StarShape's meaning is unknown |
 | `$BC50–$BCCF` | TuneAudf1, TuneAudf2 | 2 × 64 sound values → `AUDF1`/`AUDF2`, one step per 4 jiffies | `$A7DF`; index stops at `$40` (**hyp**: start-up tune) |
 | `$BCD0–$BCD7` | GhostScorePtrs | `$BC1F $BC2B $BC37 $BC43` | indexed `2*GhostsEaten` at `$A8CF` |
 | `$BCD8–$BCE5` | AudfSweepDown/Up | two 7-byte pitch sweeps, 0-terminated | chosen by `zp_F6` |
-| `$BCE6–$BCED` | RecordPtrs_BCE6 | 4 pointers into `$0686…$06A3` | indexed `2*X` |
-| `$BCEE–$BD0D` | RandomPositions | 16 (x, y) pairs | indexed by `RANDOM AND $0F` |
+| `$BCE6–$BCED` | StartRoutePtrs | pointers to the four ghost start routes in RAM | **confirmed** (864 live route reads) |
+| `$BCEE–$BD0D` | PatrolStartPositions | 16 (x, y) junctions, one per patrol route; each route is a closed loop from its start | **confirmed** (16/16 loops) |
 | `$BD0E–$BD15` | CornerPositions | (`$BE,$2C`) (`$3A,$2C`) (`$BE,$C4`) (`$3A,$C4`): the four corners | indexed by ghost number; same stores as RandomPositions |
-| `$BD16–$BD25` | RowOffsets | 16 offsets | added to a column to index `$06AE,Y` |
+| `$BD16–$BD25` | PatrolRouteOffsets | 16 start offsets of the patrol routes inside `PatrolRoutes` | **confirmed** (each route ends where the next begins) |
 | `$BD26–$BD44` | CharCodeProfile | 31 codes up and down | written to `$0F92…` as code and code+1 |
 | `$BD45–$BD79` | LevelGlyphRecords, LevelRecordOffsets | 8 records × 5 codes, 13 offsets | indexed by level (`zp_30`, clamped to 12) |
 | `$BD7A–$BDB8` | PixelPatternTable | 63 pattern bytes | used by type B; index 63 never occurs (test) |
-| `$BDB9–$BDC6` | LevelIndexTable1/2 | 7 + 7 entries | level clamped to 6 |
+| `$BDB9–$BDC6` | PacMoveDelayBase, GhostMoveDelayBase | 7 + 7 offsets into `MoveDelay` by `Level` (clamped to 6) | **confirmed** (5,451 live reloads) |
 | `$BDC7–$BDD0` | TextHighScore | "HIGH SCORE" (10) | copy loop X=9..0 → `$200F`; shown on screen |
 | `$BDD1–$BDD5` | DliChbaseTable | `$18 $E0 $30 $E0 $30` | `CHBASE` per DLI in DliHandler2 (**correction**: an earlier note had read this as text) |
 | `$BDD6–$BDF6` | TextChangeDifficulty, TextPressStartTo | "CHANGE DIFFICULTY" (17), "PRESS START TO " (16), mode 6 screen codes | fixed-length copy loops to `$1D05`, `$1D56` |
@@ -56,7 +56,7 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BE05–$BE12` | LevelIconCodes | 14 entries by `StartLevel`: first glyph code of the icon shown in the middle of the menu | **confirmed on screen**, section below |
 | `$BE13–$BE74` | TitleCharsetStream | type B → RAM `$1808`, 160 bytes = 20 glyphs | DliHandler2 sets `CHBASE=$18` |
 | `$BE75–$BE94` | TitleCharsetTail | 32 bytes → `$18A8–$18C7` | copy loop at `$A443` |
-| `$BE95–$BF80` | NibbleMapSource | 236 meaningful bytes → nibbles at RAM `$0600–$07FF` | Start copies **256** bytes; the extra 20 are the start of DisplayList2 (harmless junk in RAM) |
+| `$BE95–$BF80` | Nibbles… (8 regions) | the nibble map: 472 nibbles of constant tables, split by `Start` into RAM `$0600–$07D7` | **confirmed**, section below |
 | `$BF81–$BFC5` | DisplayList2, DisplayList1 | ANTIC display lists | decoded; JVB targets point to themselves |
 | `$BFC6–$BFF9` | TextPlayerGame, TextPressSelectFor, TextPressOptionTo, TextPlayGame | title-screen lines of 11, 16, 16, 9 bytes | fixed-length copy loops, lengths from the loop counts |
 | `$BFFA–$BFFF` | cartridge header | RUN, flags, INIT | standard layout |
@@ -130,8 +130,31 @@ Checked from the code (`tests/test_title_text.py`, 7 tests) and on screen (Altir
   (not inverse video, which an earlier version of this document wrongly assumed). The glyphs come from the OS ROM font (`CHBASE=$E0`, see `DliChbaseTable`);
   only the PAC-MAN logo uses the game's own title charset (`CHBASE=$18`) and the icon row uses the maze charset (`CHBASE=$30`).
 - The maze is stored as a 23 × 40 character map in a run-length format and held in RAM three or four times (`$0800`, `$0C00`, `$1000`, `$1400`).
-- Nothing in the ROM is a "maze graph" in plain form; the grid at RAM `$06AE…` is built from the nibble stream (**hyp**: movement data).
+- The nibble map is not compressed graphics: it holds nine constant tables (below) that the game reads from RAM; nothing ever writes to `$0600–$07FF` after `Start`.
+
+## Confirmed: the nibble map (ROM `$BE95`, RAM `$0600–$07D7`)
+`Start` splits 256 source bytes into 512 nibbles at RAM `$0600–$07FF`. Only the first 236 bytes ($BE95–$BF80, 472 nibbles) are data; RAM `$07D8–$07FF` is the first
+20 bytes of `DisplayList2` that the copy loop reads past the end (checked in `tests/test_nibble_map.py`). The 472 nibbles partition exactly into nine tables, and the code
+never writes to them:
+
+| RAM | Nibbles | Name | What it is | How it was checked |
+|---|---|---|---|---|
+| `$0600` | 14 | DeathPlotRows | row written by each death-animation frame | live: frames 1–14 read X = 0..13 |
+| `$060E` | 100 | JunctionExits | 10×10 direction masks (1 up, 2 down, 4 left, 8 right) at the lattice points of the maze | all 90 non-zero entries equal the maze's open-neighbour mask; every maze corner/crossing is in it (56/56); left-right mirror-symmetric; 631 live lookups (Pac-Man and 4 ghosts) used the cell of the entity's position and the table value |
+| `$0672` | 20 | FrightenEndPhase | by `Level`: the `FrightenPhase` value at which frightened mode ends | live: the end test read 11 while the phase counted 1 to 11 (24 frames per step), then frightened mode ended |
+| `$0686` | 40 | StartRoutes | four ghost start routes (13, 8, 8, 11 nibbles, each ended by `$F`): the direction to take at each successive junction | valid walks over `JunctionExits`; live: 864 reads match, and ghosts 0–2 passed exactly the predicted junctions |
+| `$06AE` | 230 | PatrolRoutes | 16 zero-terminated routes, again one direction per junction | started at `PatrolStartPositions[i]`, **all 16 are valid walks and all 16 return to their start**; live: 248 reads match, 19 of 20 steps ended at the neighbouring junction (the 20th was interrupted by a power-pellet reversal) |
+| `$0794` | 26 | BonusScore | 13 (thousands, hundreds) pairs by `Level`: 100 300 500 500 700 700 1000 1000 2000 2000 3000 3000 5000 | the bonus routine adds the pair to the score; live: the level-1 bonus item added `000100` |
+| `$07AE` | 24 | MoveDelay | frames per movement step, as four-step cycles selected by `PacMoveDelayBase` / `GhostMoveDelayBase` | live: 5,451 reloads, none differs; level 1 Pac-Man 2,2,2,3, ghosts 3,3,3,3 |
+| `$07C6` | 9 | NoReverseMask | indexed by direction 1,2,4,8: all exits except the reverse (`D E 7 B`) | live: 3,789 filtered masks, the reverse bit never survived |
+| `$07CF` | 9 | ReverseDir | direction → opposite direction (`2 1 8 4`) | live: the power pellet reversed all four ghosts, `4 → 8` |
+
+How the game uses them: an entity's position is looked up in `JunctionYList` / `JunctionXList` (`Sub_B48E`); if it stands on a lattice point the `JunctionExits` mask
+gives the allowed exits, filtered by `NoReverseMask`; ghosts follow `StartRoutes` when leaving the house and `PatrolRoutes` later, and a pellet flips their direction with `ReverseDir`.
+Movement speed comes from the `MoveDelay` cycles. Evidence is in `analysis/evidence-nibble-map-summary.txt`.
+Not covered by a live run: patrol routes other than 2 and 7, levels above 1 (the table entries for them are verified by code and values only).
 
 ## Still unknown
-Purpose of `UnreadHeader_A000`, `SmallTable_BB56`, the three `ByteTable`/`ThresholdLists`/`SearchList` families (what they index, in
-game terms), and the meaning of each ghost frame. These need tracing in Stage D/E.
+Purpose of the remaining small tables (`ThresholdLists`, `ProfileList_BBD8`, `Window3Table`, `ByteTable`-style lookups in `$BBAB–$BBF7`), of `StarShape`'s artwork
+beyond its use as the last death frame, the meaning of each ghost frame, and which game events switch ghosts between the start route, patrol route and chase behaviour
+(`GhostState`, zero-page `$CE`). These need tracing in Stage D/E.
