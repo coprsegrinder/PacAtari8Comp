@@ -18,8 +18,9 @@ Legend: DONE, NEXT, TODO, N/A (not applicable, with reason).
 | A5 | Boot ROM in emulator (needs owner screenshot) | 51, 52 | DONE (approved 2026-11-10) |
 | B6–B7 | Hardware/memory-map documentation, vectors | 11–20 | DONE (approved 2026-11-10) |
 | C8 | Disassembler built and validated | 21–22 | DONE (approved 2026-11-10) |
-| C9 | Full disassembly | 23–25 | DONE – awaiting approval |
-| C10–C11 | Byte-exact rebuild (formal), data labelling | 26–30 | NEXT |
+| C9 | Full disassembly | 23–25 | DONE (approved 2026-11-10) |
+| C10 | Byte-exact rebuild (formal) | 26–28 | DONE – awaiting approval |
+| C11 | Data labelling and routine naming | 29–30 | NEXT |
 | D12–D16 | Control flow, variables, subsystem analysis | 31–50 | TODO |
 | E17–E18 | Emulator traces, correlation | 51–60 | TODO |
 | F19 | Resource extraction/decoding | 69–70 | TODO |
