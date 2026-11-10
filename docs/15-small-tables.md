@@ -75,6 +75,6 @@ Why those registers colour those things: in the maze charset the wall glyphs use
 On the title screen `DliHandler2` writes `COLPF1` = `$44` (the red "1 PLAYER GAME") and `COLPF2` = `$3A`.
 
 ## Not covered
-- The colours of the frightened and flashing ghosts (`$84`, `$0C` written by the frightened-mode code, not from these tables) and of the eaten ghosts' eyes.
+- The colours of the frightened and eaten ghosts are written by code, not from these tables; they were observed in `16-ghost-frames.md`.
 - Colour of the bottom-row items other than by the rule above (identified from the code and the scanline log; no pixel-by-pixel check of every item).
 - The sight test while a ghost is frightened or eaten (it is only called from the patrol states).

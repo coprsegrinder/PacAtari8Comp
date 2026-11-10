@@ -1,0 +1,13 @@
+Ghost frames, live evidence, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K, 800 % speed (tools/altirra_ghostframes.cmd, 120 s of wall time).
+Test aids (emulated machine only): the game is started by jumping to its start-game code; ghosts do not kill Pac-Man; Pac-Man is moved around the junction lattice;
+every 2048 frames the pellet flags are refilled and Pac-Man is moved onto a power pellet and, later, onto a ghost so that the game's own code eats it (53 pellet/eaten events in the run).
+
+49789 lines, 47510 ghost draws; frame/feet differ from the rule on 0 draws
+draws by (kind, shape drawn): eyes/Eyes: 3314, frightened/Frightened: 5546, normal/Down: 5809, normal/Left: 13451, normal/Right: 14214, normal/Up: 5176
+player colour register while drawing normal ghosts: $28 x9579, $44 x9766, $4A x9740, $D8 x9565
+player colour register while drawing frightened ghosts: $0C x1372, $84 x4174
+player colour register while drawing eyes ghosts: $0C x3314
+zp_AF toggles: 2215, all at RTCLOK2 mod 16 == 0: True; frame gaps between toggles: {16: 2189, 48: 23, 256: 1, 272: 1}
+
+Bitmap analysis (tools/analyze via tests/test_ghost_frames.py): the four direction shapes are identical except for their eye holes (3 pixels each); the eye holes sit at rows 2-4 (up), rows 6-8 (down),
+columns 1 and 3 (left), columns 3 and 5 (right) of a body centred at column 3; the frightened shape has a different face (eyes rows 3-5, zigzag mouth rows 7-8); the eyes shape is two vertical bars (rows 3-5, columns 2 and 4).

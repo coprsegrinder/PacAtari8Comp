@@ -24,8 +24,8 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$A000–$A002` | UnreadHeader_A000 | 3 bytes `4A 4A 48` that **nothing uses** | section below: never read by the game; the OS reads `$A000` only in its RAM-size test, where the value is irrelevant; boot CRCs identical for five different contents |
 | `$A003–$A1E0` | CharsetStream | type B → RAM `$3000`, 808 bytes = **101 glyphs** | DliHandler1 sets `CHBASE=$30`; 808 = 101 × 8 |
 | `$A1E1–$A385` | MazeMapStream | type A → RAM `$0800`, 920 bytes = **23 × 40** | DisplayList1 has exactly 23 mode-4 rows of 40; Start copies it to `$0C00/$1000/$1400` |
-| `$BAC0–$BAF1` | GhostShape0–4 | five ghost frames, 10 rows × 8 px | rendered bitmaps (see listing comments) |
-| `$BAF2` | GhostEyesShape | eyes only | bitmap |
+| `$BAC0–$BAF1` | GhostShapeUp/Down/Left/Right/Frightened | five ghost frames, 10 rows × 8 px (offsets `$00 $0A $14 $1E $28`) | **confirmed live** (47,510 draws), `16-ghost-frames.md` |
+| `$BAF2` | GhostEyesShape | eyes only (offset `$32`), eaten ghost | **confirmed live**, `16-ghost-frames.md` |
 | `$BAFC–$BB55` | PacShape* | nine Pac-Man frames (full; open right ×2, left ×2, up ×2, down ×2) | bitmaps; pointer table `PacShapePtrs` at `$BB65` points to the first frame of each direction |
 | `$BB55–$BB64` | PacMouthOffsets (`$BB55–$BB57` = `00 0A 00`), PacMouthFrame2Offset (`$BB56`), DeathPlotBytes (`$BB57–$BB64`) | chomp-animation offsets and the death-animation plot bytes | section below |
 | `$BB65–$BB6E` | PacShapePtrs | 5 words: `$BAFC $BB06 $BB1A $BB2E $BB42` | verified by test |
@@ -155,5 +155,5 @@ Movement speed comes from the `MoveDelay` cycles. Evidence is in `analysis/evide
 Patrol routes: **all 16 verified live** (`13-ghost-patrols.md`). Level-indexed tables: **every entry read live** on levels 0–50 and beyond (`14-levels.md`, `analysis/evidence-level-table-coverage.txt`).
 
 ## Still unknown
-`StarShape`'s artwork beyond its use as the last death frame, the meaning of each ghost frame, the colours of frightened and eaten ghosts, and the frightened and eaten-ghost behaviour (states `$00`, `$40`–`$44`, bit 7).
+`StarShape`'s artwork beyond its use as the last death frame, the frightened and eaten-ghost behaviour (states `$00`, `$40`–`$44`, bit 7).
 These need tracing in Stage D/E. (The small tables around `$BBAB–$BBF7` are now explained in `15-small-tables.md`.)

@@ -74,7 +74,7 @@ GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 
            0xBA: "PatrolRoute", 0xBE: "PatrolStep", 0xD2: "StartRouteStep", 0xCE: "GhostState",
            0xFB: "FrightenFlashTimer", 0xFC: "FrightenPhase", 0xFD: "FrightenCountdown",
            0xAD: "ChaseTimer", 0xC2: "TargetX", 0xC6: "TargetY", 0xCA: "GhostTimer", 0xD6: "WantVert", 0xDA: "WantHoriz",
-           0xED: "DeathState", 0x5E: "DliColors", 0xA0: "ItemColor", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
+           0xED: "DeathState", 0xAF: "LegPhase", 0x5E: "DliColors", 0xA0: "ItemColor", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
 
 
 def zp_name(addr):
@@ -120,6 +120,7 @@ ROM_NAMES = {
     0xAC93: "DrawLevelIndicator",  # bonus items of the last levels along the bottom row ($0F86-$0F93)
     0xB62E: "BonusItemUpdate",     # shows the bonus item when the dot counter hits $50 / $A0, clears its score pop-up later
     0xAC75: "AdvanceLevel",        # level-complete finish: board setup, then INC Level
+    0xAC05: "ToggleLegPhase",      # every 16th jiffy toggles LegPhase (zp_AF) 0 <-> 1: the ghosts' feet row alternates $54 / $AA
     0xB423: "AddToScore",          # decimal-mode add of ScoreAdd digits to the score at $202A-$202F (player 1) / $2047-$204C (player 2)
     0xA886: "GhostEaten",          # frightened ghost touched: pop-up, score 200/400/800/1600
     0xB3DE: "PowerPelletEaten",    # adds 50, sets GhostsEaten=$FF, frightens the ghosts
@@ -136,9 +137,9 @@ DATA = [
     (0xA1E1, 0xA385, "stream", "MazeMapStream",
      "type A stream (inline RLE in Start) -> RAM $0800, 920 bytes = 23 rows x 40 columns, the mode-4 rows of DisplayList1; copied to $0C00/$1000/$1400"),
     # sprite shapes: 10 rows of 8 pixels (player/missile graphics)
-    (0xBAC0, 0xBAC9, "shape", "GhostShape0", None), (0xBACA, 0xBAD3, "shape", "GhostShape1", None),
-    (0xBAD4, 0xBADD, "shape", "GhostShape2", None), (0xBADE, 0xBAE7, "shape", "GhostShape3", None),
-    (0xBAE8, 0xBAF1, "shape", "GhostShape4", None), (0xBAF2, 0xBAFB, "shape", "GhostEyesShape", None),
+    (0xBAC0, 0xBAC9, "shape", "GhostShapeUp", "ghost looking up (EntityDir 1): eye holes in rows 2-4; frame offset $00; drawn with a feet row $54/$AA below"), (0xBACA, 0xBAD3, "shape", "GhostShapeDown", "ghost looking down (EntityDir 2): eye holes in rows 6-8; offset $0A"),
+    (0xBAD4, 0xBADD, "shape", "GhostShapeLeft", "ghost looking left (EntityDir 4): eye holes shifted left; offset $14"), (0xBADE, 0xBAE7, "shape", "GhostShapeRight", "ghost looking right (EntityDir 8): eye holes shifted right; offset $1E"),
+    (0xBAE8, 0xBAF1, "shape", "GhostShapeFrightened", "frightened ghost (state bit 7): same body, face with eyes and a zigzag mouth; offset $28; coloured $84 / $0C alternately"), (0xBAF2, 0xBAFB, "shape", "GhostEyesShape", "eaten ghost (state bit 6): two eye bars only, no feet row; offset $32; coloured $0C"),
     (0xBAFC, 0xBB05, "shape", "PacShapeFull", None), (0xBB06, 0xBB0F, "shape", "PacShapeRight1", None),
     (0xBB10, 0xBB19, "shape", "PacShapeRight2", None), (0xBB1A, 0xBB23, "shape", "PacShapeLeft1", None),
     (0xBB24, 0xBB2D, "shape", "PacShapeLeft2", None), (0xBB2E, 0xBB37, "shape", "PacShapeUp1", None),
