@@ -74,7 +74,7 @@ GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 
            0xBA: "PatrolRoute", 0xBE: "PatrolStep", 0xD2: "StartRouteStep", 0xCE: "GhostState",
            0xFB: "FrightenFlashTimer", 0xFC: "FrightenPhase", 0xFD: "FrightenCountdown",
            0xAD: "ChaseTimer", 0xC2: "TargetX", 0xC6: "TargetY", 0xCA: "GhostTimer", 0xD6: "WantVert", 0xDA: "WantHoriz",
-           0xED: "DeathState", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
+           0xED: "DeathState", 0x5E: "DliColors", 0xA0: "ItemColor", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
 
 
 def zp_name(addr):
@@ -153,12 +153,19 @@ DATA = [
     (0xBB83, 0xBB8C, "bytes", "JunctionYList", "y coordinates (= 8*row+36) of the 10 junction rows of the maze lattice, rows 1,4,6,8,10,12,14,16,18,20; searched with CMP by Sub_B48E"),
     (0xBB8D, 0xBB96, "bytes", "JunctionXList", "x coordinates (= 4*col+46) of the 10 junction columns, columns 3,6,9,13,18,21,26,30,33,36 (mirror-symmetric)"),
     (0xBB97, 0xBBAA, "words", "JunctionRowPtrs", "pointers to the 10 rows of JunctionExits in RAM ($060E + 10*row), indexed by 2*row"),
-    (0xBBAB, 0xBBD7, "bytes", "ThresholdLists",
-     "lists of ascending values ended by $FF; read with CMP and BEQ on $FF (D_BBB8,Y); start offsets are chosen by the caller"),
-    (0xBBD8, 0xBBE1, "bytes", "ProfileList_BBD8", "10 values rising to $11 and falling back to 0; read with CMP/BEQ $FF test (D_BBD8,Y)"),
-    (0xBBE2, 0xBBE9, "bytes", "ColorsGame", "8 colours: PCOLR0-3 then COLOR0-3 (LoadShadowColors); $BBE2-$BBE5 also reloaded alone at $AF7D"),
-    (0xBBEA, 0xBBED, "bytes", "ColorsTitle", "4 colours loaded into COLOR0-3 by InitDisplay2"),
-    (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to zp_5E-zp_61 for the DLIs"),
+    # Sight (line-of-sight) data used by GhostSeesPacMan ($BA19): per junction row / column a FF-terminated list of blocker coordinates, reached through
+    # an offset table. The CODE indexes the offset tables directly (see docs/15-small-tables.md): it never applies the offsets.
+    (0xBBAB, 0xBBB7, "bytes", "SightListsX",
+     "5 FF-terminated lists of x blocker coordinates: [7C] [58 7C 9E] [58 9E] [3C AC] []; their starts are the distinct values of SightOffsetsX (0, 2, 6, 9, 12)"),
+    (0xBBB8, 0xBBC1, "bytes", "SightOffsetsX",
+     "10 offsets (one per junction row) into SightListsX; the code reads this table as if it were the list (D_BBB8,Y), so it only ever skips these bytes"),
+    (0xBBC2, 0xBBD7, "bytes", "SightListsY",
+     "5 FF-terminated lists of y blocker coordinates: [64 84] [38 4C 64 84 9C BC] [3C] [38 5C 9C BC] [4C 74 8C AC]; starts = distinct values of SightOffsetsY (0, 3, 10, 12, 17)"),
+    (0xBBD8, 0xBBE1, "bytes", "SightOffsetsY",
+     "10 offsets (one per junction column, mirror-symmetric) into SightListsY; the code scans from here (ProfileList_BBD8,Y) straight into the colour tables that follow"),
+    (0xBBE2, 0xBBE9, "bytes", "ColorsGame", "8 colours: PCOLR0-3 = ghosts 0-3 (dark red $44, pink $4A, green $D8, dark gold $28), then COLOR0-3 = walls blue $86 (COLPF0), light $0C (COLPF1, status text), black $00 (COLPF2), gold $2A (COLPF3, Pac-Man); LoadShadowColors; $BBE2-$BBE5 also restore the ghost colours at $AF7D"),
+    (0xBBEA, 0xBBED, "bytes", "ColorsTitle", "4 colours loaded into COLOR0-3 by InitDisplay2 for the title screen: green $DA (text), light $0C, black $00, gold $2A (logo and highlighted words)"),
+    (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to zp_5E-zp_61 = DliColors: peach $3A (COLPF2 of the maze body), red $44 (COLPF1 at scanline 208), gold $2A (COLPF3) and light green $DA (COLPF0) for the bottom band at scanline 216"),
     (0xBBF2, 0xBBF7, "bytes", "HouseReleaseTimers", "ghost-house release timers (4 frames per tick): 3-byte windows picked by board (90 60 30 / 60 30 04 / 30 04 00 / 04 00 00 -> GhostTimer of ghosts 3,2,1); see docs/14-levels.md"),
     (0xBBF8, 0xBC06, "bytes", "FrightenFrames", "15 entries by Level: initial FrightenCountdown (frames of solid frightened colour); level 1 = $FF"),
     (0xBC07, 0xBC12, "shape", "StarShape", "12 rows; drawn as the last (15th) frame of the death animation (AF3A); the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),

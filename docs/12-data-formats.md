@@ -32,9 +32,9 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BB6F–$BB82` | ZeroPageInit80 | 20 bytes → zero page `$80–$93` | copy loop at `$ADE0` |
 | `$BB83–$BB96` | JunctionYList, JunctionXList | the y (= 8·row+36) and x (= 4·col+46) coordinates of the 10 junction rows and 10 junction columns of the maze lattice | **confirmed**, nibble-map section |
 | `$BB97–$BBAA` | JunctionRowPtrs | pointers to the 10 rows of `JunctionExits` in RAM (`$060E + 10·row`) | **confirmed** (631 live lookups) |
-| `$BBAB–$BBE1` | ThresholdLists / ProfileList_BBD8 | `$FF`-terminated lists | `CMP #$FF / BEQ` loops |
-| `$BBE2–$BBED` | ColorsGame, ColorsTitle | 8 + 4 colour bytes → `PCOLR0..COLOR3` / `COLOR0..3` | `LoadShadowColors`, `InitDisplay2` |
-| `$BBEE–$BBF1` | ColorsDli | 4 colours for the DLIs, masked by `COLRSH`/`DRKMSK` | code at `$A4BC` |
+| `$BBAB–$BBE1` | SightListsX, SightOffsetsX, SightListsY, SightOffsetsY | the ghosts' sight data: offset tables and `$FF`-terminated blocker lists; the code reads the offset tables directly | **confirmed live** (6,069 tests), `15-small-tables.md` |
+| `$BBE2–$BBED` | ColorsGame, ColorsTitle | ghost and maze colours (8), title colours (4) | **confirmed live**, `15-small-tables.md` |
+| `$BBEE–$BBF1` | ColorsDli | the four display-list-interrupt colours (peach, red, gold, light green) | **confirmed live** (scanline log), `15-small-tables.md` |
 | `$BBF2–$BBF7` | HouseReleaseTimers | `90 60 30 04 00 00`: ghost-house release timers, 3-byte windows chosen by the board | **confirmed live** (`14-levels.md`) |
 | `$BBF8–$BC06` | FrightenFrames | 15 entries by `Level`: initial `FrightenCountdown` (frames of solid frightened colour); level 1 = `$FF` | **confirmed** live (`$FF` logged) |
 | `$BC07–$BC4F` | StarShape, GhostScoreZeros, GhostScore200/400/800/1600Digits | 12-row shapes copied as 16 rows (4 pad bytes from the next table) | **ghost-eaten pop-ups: confirmed** (section below); StarShape's meaning is unknown |
@@ -155,6 +155,5 @@ Movement speed comes from the `MoveDelay` cycles. Evidence is in `analysis/evide
 Patrol routes: **all 16 verified live** (`13-ghost-patrols.md`). Level-indexed tables: **every entry read live** on levels 0–50 and beyond (`14-levels.md`, `analysis/evidence-level-table-coverage.txt`).
 
 ## Still unknown
-Purpose of the remaining small tables (`ThresholdLists`, `ProfileList_BBD8`, `ByteTable`-style lookups in `$BBAB–$BBF7`), of `StarShape`'s artwork
-beyond its use as the last death frame, the meaning of each ghost frame, and which game events switch ghosts between the start route, patrol route and chase behaviour
-(`GhostState`, zero-page `$CE`). These need tracing in Stage D/E.
+`StarShape`'s artwork beyond its use as the last death frame, the meaning of each ghost frame, the colours of frightened and eaten ghosts, and the frightened and eaten-ghost behaviour (states `$00`, `$40`–`$44`, bit 7).
+These need tracing in Stage D/E. (The small tables around `$BBAB–$BBF7` are now explained in `15-small-tables.md`.)

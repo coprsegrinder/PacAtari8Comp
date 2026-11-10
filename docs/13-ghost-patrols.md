@@ -32,9 +32,9 @@ entry for the chosen route and `GhostTimer` was `$96` every time.
 **20 seconds at 60 Hz, including the walk to the start junction** (computed from the code, not measured against a wall clock).
 
 **Sight (`GhostSeesPacMan`, `$BA19`):** a ghost on the same row or column as Pac-Man, facing him, with no blocking entry in the
-`$FF`-terminated lists between them (`ThresholdLists` for rows, `ProfileList_BBD8` for columns) switches to `$02` and sets
+`$FF`-terminated lists between them (`SightListsX` for rows, `SightListsY` for columns, see `15-small-tables.md`) switches to `$02` and sets
 `ChaseTimer` := `$A0`. Live (run 1): 8→02 63 times and 10→02 17 times; with the aid that disables it (run 2) it never happened.
-The lists' contents are not decoded yet (see the end).
+**Update:** the lists are decoded and verified in `15-small-tables.md`: because the shipped code reads the offset tables instead of the lists, the sight test is far more permissive than its data intends (zones only, independent of the maze walls), and ghost 2 reacts only when `RTCLOK2` bit 7 is clear.
 
 ## The 16 routes
 Verified (static) as valid walks over `JunctionExits` that return to their start (`tests/test_nibble_map.py`), and (live) every route
@@ -81,6 +81,5 @@ be forced. Run 1 covered about 30 minutes of game time (200 selections), run 2 a
 - Levels above 1: **covered in `14-levels.md`**: the ghost state machine, routes and timers contain no read of the level counter, so they are identical on every board (verified over levels 0–50 and beyond); only speed, frightened time, bonus items and the house release timers change.
 - Frightened-mode steering, the eaten-ghost return and the house-release timing (states `$00`, `$40`–`$44`, frightened variants)
   are read from the code only.
-- The contents of the sight blocker lists (`ThresholdLists`, `ProfileList_BBD8`): their role is established (sighting is verified
-  live), their per-row and per-column meaning is not decoded.
+- (The sight lists are now decoded: `15-small-tables.md`.)
 - The wall-clock length of the 20-second patrol budget.

@@ -28,3 +28,5 @@ bt ad0d "INDICATOR level=%d row=$%02X $%02X $%02X $%02X $%02X $%02X $%02X $%02X 
 bt ae3c "RELEASE_TIMERS level=%d t1=$%02X t2=$%02X t3=$%02X frame=%d" db($30) db($cb) db($cc) db($cd) @frame
 bt adaf "LEVEL_SETUP level=%d frame=%d" db($30) @frame
 bt b758 "RELEASE ghost=%d state=$%02X frame=%d" x db($ce+x) @frame
+# colour used by the fruit glyphs (COLPF1 in the first maze band): zp_A0, set by DrawLevelIndicator
+bt ad0d "ITEM_COLOR level=%d zpA0=$%02X" db($30) db($a0)

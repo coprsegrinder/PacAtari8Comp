@@ -155,7 +155,7 @@ def region_rows(first, last, kind, name, comment):
             if (a + k) in names:
                 n = k
                 break
-        if kind == "bytes" and name == "ThresholdLists":
+        if kind == "bytes" and name in ("SightListsX", "SightListsY"):
             for k in range(n):
                 if data[a - BASE + k] == 0xFF:
                     n = k + 1
