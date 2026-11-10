@@ -53,7 +53,7 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BDD1–$BDD5` | DliChbaseTable | `$18 $E0 $30 $E0 $30` | `CHBASE` per DLI in DliHandler2 (**correction**: an earlier note had read this as text) |
 | `$BDD6–$BDF6` | TextChangeDifficulty, TextPressStartTo | "CHANGE DIFFICULTY" (17), "PRESS [start] TO " (16) | fixed-length copy loops to `$1D05`, `$1D56` |
 | `$BDF7–$BE04` | TextCopyright | 14 custom-glyph codes, reads like "(c) atari 1982" | **hyp** |
-| `$BE05–$BE12` | TitleAnimCodes | 14 codes written as N and N+1 | `$A764` loop (**hyp**) |
+| `$BE05–$BE12` | TitleAnimCodes | 14 codes written as N and N+1 | read at `$A769` (**hyp**) |
 | `$BE13–$BE74` | TitleCharsetStream | type B → RAM `$1808`, 160 bytes = 20 glyphs | DliHandler2 sets `CHBASE=$18` |
 | `$BE75–$BE94` | TitleCharsetTail | 32 bytes → `$18A8–$18C7` | copy loop at `$A443` |
 | `$BE95–$BF80` | NibbleMapSource | 236 meaningful bytes → nibbles at RAM `$0600–$07FF` | Start copies **256** bytes; the extra 20 are the start of DisplayList2 (harmless junk in RAM) |

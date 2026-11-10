@@ -47,7 +47,5 @@ through `ExpandData`. So much of the "data" in ROM is compressed source for RAM 
 - The 53 unnamed subroutines and all zero-page game variables: meaning not yet established; names need
   traced behaviour (Stage D/E). `analysis/routine-catalog.txt` lists each with size, call count, hardware touched
   and callees, to prioritise. Sizes in it are approximate (nearest preceding label).
-- Data blocks `$A000–$A385` (902 bytes) and the table/graphics areas around `$BAC0–$BF80` are labelled only
-  where code reads them; their formats are unknown. The two blocks of "player-like" shapes at `$BAC0` are not yet identified.
-- The second text area at `$BDD1` ($18 $E0 $30 $E0 $30) and custom-glyph bytes (`$C8 $E3 $C9`) are left as data.
+- Data: **now fully labelled** (every non-code byte); see `12-data-formats.md` for formats, evidence and what is still unknown.
 - Screen codes `$00–$3F` = ASCII $20–$5F (verified on the title screen); codes with bit 7 are inverse video.
