@@ -1,0 +1,42 @@
+# 18 – Frightened Steering, the Eaten-Ghost Return and the Ghost House
+
+Written 2026-11-10 (step C11). State changes are in `17-ghost-transitions.md`, patrols in `13-ghost-patrols.md`, release timer values in `14-levels.md`. Everything here was read from the code **and** checked against a live log
+(`analysis/evidence-frightened-house-summary.txt`, `analysis/evidence-ghost-speed-summary.txt`; tests `tests/test_frightened_house.py`; harness `tools/altirra_steering.cmd`, `tools/altirra_speed.cmd`, analyzers `tools/analyze_steering_log.py`, `tools/analyze_speed_log.py`).
+Test aids as before (emulated machine only; the game's own logic decides everything else); see "A test-aid artefact" below.
+
+## 1. Frightened ghosts
+**A power pellet** (`PowerPelletEaten`, `$B3DE`) adds bit 7 to every ghost that is not eaten and **reverses the ghost's direction** with `ReverseDir[dir]` (RAM `$07CF`: up<->down, left<->right) unless the ghost's state has bit 2 set (`$04`; the test is made after bit 7 has been added, so a waiting ghost `$00` is reversed too). Live: all 180 reversals before the artefact below were exactly `1->2, 2->1, 4->8, 8->4` (22, 25, 67, 66).
+
+**Steering** is the ordinary `SteerToTarget` (`$B999`) with the two wants **mirrored** when bit 7 is set. A frightened ghost keeps the Pac-Man chase target (`GhostBehaviour` runs the chase handler for every frightened ghost that is not in a house state), so it flees:
+- vertical want: same row -> none; ghost below the target -> up (normal) / **down** (frightened); ghost above the target -> down / **up**;
+- horizontal want: same column -> none; ghost right of the target -> left / **right**; ghost left of the target -> right / **left**;
+- an axis where ghost and target are equal wants nothing (the ghost does not flee along that axis);
+- the choice at a junction (mask = the exits after the no-reverse filter): if the vertical want is open and the horizontal want is open too, `RANDOM` bit 7 picks one; if only one is open, that one; if neither is open, a random exit (lowest set bit of `RANDOM AND mask`, or of the mask if that is 0); mask 0 gives right.
+- **Squares beside the door** (x = `$76` or `$82`, y = `$64`): a normal ghost loses its *up* exit; a **frightened ghost is given *up* as its only exit** (`$B4E6-$B502`).
+
+Live (9,581 decisions): the wants equal the rule in **all** of them (frightened 1,125, normal 7,895, eaten 561); the chosen direction was always one the rule allows (forced single candidate 7,564, random between vertical and horizontal 1,281, random exit 736); the target of every frightened decision was Pac-Man's position (1,125 of 1,125; 4,778 of 4,778 for plain chase); the door-side squares followed the rule in all 465 decisions there (31 frightened, 377 normal, 57 eaten).
+As a result frightened ghosts move away from Pac-Man along their axes more often than toward him (744 to 312 choices; random picks and walls account for the rest).
+
+**Speed.** `$AA04-$AA26`: a ghost acts when its move-delay counter runs out (`MoveDelayTick`); a **frightened ghost, and any ghost in the tunnel row** (y = `$74`, x < `$52` or x >= `$A7`), acts only on **every second** run-out (`zp_5A` toggles) - **half speed**; frightened in the tunnel is not slower again. Live (119,651 `GhostBehaviour` calls, boards 1-6): the spacing between a ghost's actions is **exactly twice** the normal spacing for frightened, tunnel and frightened-in-tunnel ghosts on every level (ratio 2.00 in all 15 cases; for example level counter 0: normal 3 frames, frightened and tunnel 6; level counter 3: 2,3 alternating against 4,5 alternating). Eaten ghosts are skipped by this loop (below).
+
+## 2. The eaten ghost
+- **Eaten** (`GhostEaten`, `$A886`): state `$42`; the score pop-up is drawn; the ghost's first step comes **34 frames later** (33 once; 59 observations) while the pop-up shows.
+- **Return** (`Sub_B69E`, called once per frame): the target is the **door square (124, 100)** (`$7C,$64`), steering is the normal (not mirrored) `SteerToTarget`, and the ghost moves **every frame** with no move-delay at all (one pixel sideways or two pixels vertically per frame): the eyes return much faster than any ghost walks. Live: 561 steering decisions, all with target (124,100); the journeys took 36-369 frames from being eaten to the door.
+- **At the door square**: state `$44` (and `StartRouteStep := $FF`); if the ghost arrives moving up it is turned left once first (`$B6C0-$B6C8`). Live: 55 of 55 ghosts reached (124,100) before the state became `$44`.
+- **Inside** (`Sub_B781`, every frame): down the door column to y = 116 (8 steps, 8 frames); ghosts 2 and 3 then go sideways to their own x (112 and 136: 12 steps, 12 frames), ghosts 0 and 1 stay at x = 124; at the home position the state becomes `state AND $0F` = `$04` and the ghost's colour register is restored (`$B760-$B769`). Live: positions at that moment (124,116) x31 (ghosts 0 and 1), (112,116) x11, (136,116) x13; door to inside took 8 frames (ghosts 0 and 1) and 20 frames (ghosts 2 and 3) in every journey.
+- **Leaving again**: state `$04` is walked by the same slow routine as a ghost waiting to leave (next section): ghosts 2 and 3 back to x = 124 (12 steps), then up (8 steps), one step per 4 frames, i.e. 80 frames (ghosts 0 and 1: 32 frames); at y = 100 the state becomes **`$02` (chase)** and the ghost heads left.
+
+## 3. The ghost house and the release
+- **Waiting** (state `$00`, ghosts 1-3): `Sub_B7A5` runs **every 4th jiffy** (`RTCLOK2 AND 3 = 0`); each run decrements `GhostTimer` once and the ghost **bobs** one step between y = `$70` and `$78` (112 and 120). Live: 500 bob steps; y range 112-120 for all three ghosts; the timer fell by exactly 1 between consecutive bob steps, 4 frames apart (489 comparable pairs, all the same).
+- **Leaving** (timer = 0): ghost 1 (already in the door column) goes up; ghosts 2 and 3 first walk sideways to x = `$7C` (12 pixels), then up; again one step per 4 frames. At y = `$64` (the door row) `Sub_B738` sets state `$01` (start route) and the direction to left. Live (18 releases = 6 boards x 3 ghosts): ghost 1: **8 steps = 32 frames**; ghosts 2 and 3: **20 steps = 80 frames**, every time.
+- **Correction to `14-levels.md`**: the constant of 48 frames in `release(k) = release(1) + 4 x (timer_k - timer_1) + 48` **is** a walking time (12 sideways steps x 4 frames = 48; 80 - 32 = 48), not "an observation that is not a walking time" as written there (now corrected in that file). It does not change with the level because house movement is paced by `RTCLOK2`, not by the move-delay table that makes ghosts faster on higher boards.
+
+## A test-aid artefact (and what it does not affect)
+The aid that moves Pac-Man by writing his coordinates leaves the game's *incremental* maze pointer (`zp_80/81`, advanced as Pac-Man moves) out of step, so a later "eat dot" store (`STA (zp_80),Y`, `$B384`) can write a 0 into the wrong place. In the long run this happened five times (pointers `$07E8`, `$07D1`, `$07C4`, `$07C2`, `$07C1`, traced with `tools/altirra_reversedir.cmd`); the store through `$07D1` (frame 79,380) zeroed `ReverseDir[2]`, and a second one at frame 79,387 zeroed `ReverseDir[1]` (`$07D0`).
+From then on a ghost moving up or down when a pellet was eaten got direction 0, and four ghosts that were eaten afterwards stayed in state `$42` for ever (no direction and not at a junction). **That is a consequence of the aid, not behaviour of the game**; all 55 eaten journeys listed above finished before it. The reversal counts, the steering rule checks, the speed ratios and the house results are checks on each event and are not affected.
+
+## Not covered
+- A frightened ghost still **inside the house** (`$80`): the code treats it like a waiting ghost (`AND $7F`) and `$AF9A` turns it back to `$00` when the time ends, but it never occurred in the run.
+- Frightened ghosts in the start route (`$81`): one case seen, behaving like the others.
+- The frightened time and the flashing are in `14-levels.md`; the siren and sound are not covered.
+- The eaten ghost when Pac-Man moves onto the door square, and two ghosts eaten in one frame, were not provoked separately.

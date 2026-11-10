@@ -79,6 +79,6 @@ be forced. Run 1 covered about 30 minutes of game time (200 selections), run 2 a
 
 ## Not covered
 - Levels above 1: **covered in `14-levels.md`**: the ghost state machine, routes and timers contain no read of the level counter, so they are identical on every board (verified over levels 0–50 and beyond); only speed, frightened time, bonus items and the house release timers change.
-- Every write to the state, including frightened and eaten ghosts and the house release, is now logged and checked: **`17-ghost-transitions.md`**. Only the frightened-mode *steering inversion* itself is still read from the code.
+- Every write to the state, including frightened and eaten ghosts and the house release, is now logged and checked: **`17-ghost-transitions.md`**. The frightened-mode steering, the eaten-ghost return and the house release are traced in **`18-frightened-eaten-house.md`**.
 - (The sight lists are now decoded: `15-small-tables.md`.)
 - The wall-clock length of the 20-second patrol budget.

@@ -1,0 +1,91 @@
+steering decisions logged: 9581  house/eaten steps: 563806  state writes: 23332
+  chase target != Pac-Man                                    0
+  chase target == Pac-Man                                    4778
+  eaten                                                      561
+  eaten at the door-side squares                             57
+  eaten choice allowed                                       561
+  eaten choice forced (one candidate), equal                 455
+  eaten random choice (V or H)                               85
+  eaten random choice (random exit)                          21
+  eaten target != door square                                0
+  eaten target == door square (124,100)                      561
+  eaten wants == rule                                        561
+  frightened                                                 1125
+  frightened at the door-side squares                        31
+  frightened choice allowed                                  1125
+  frightened choice forced (one candidate), equal            896
+  frightened random choice (V or H)                          156
+  frightened random choice (random exit)                     73
+  frightened target != Pac-Man                               0
+  frightened target == Pac-Man                               1125
+  frightened wants == rule                                   1125
+  normal                                                     7895
+  normal at the door-side squares                            377
+  normal choice allowed                                      7895
+  normal choice forced (one candidate), equal                6213
+  normal random choice (V or H)                              1040
+  normal random choice (random exit)                         642
+  normal wants == rule                                       7895
+steering decisions that break the rule: 0    door-side special squares that break it: 0
+frightened ghosts: choices that increase the distance along their axis: 744  decrease it: 312
+
+steps inside the house / eaten steps by kind and state:
+   ('bob', '$00') 500
+   ('eaten', '$42') 561562
+   ('walk', '$00') 288
+   ('walk', '$04') 728
+   ('walk', '$44') 728
+
+eaten ghosts: frames from being eaten to the door square ($B6D0) and to the inside of the house ($B764):
+   ghost 1 eaten at (149, 68) frame 2433: door +77, inside +85 (x,y inside (124, 116))
+   ghost 0 eaten at (82, 72) frame 2688: door +94, inside +102 (x,y inside (124, 116))
+   ghost 2 eaten at (171, 180) frame 4481: door +159, inside +179 (x,y inside (112, 116))
+   ghost 3 eaten at (154, 196) frame 6529: door +276, inside +296 (x,y inside (136, 116))
+   ghost 0 eaten at (112, 132) frame 8577: door +90, inside +98 (x,y inside (124, 116))
+   ghost 1 eaten at (143, 44) frame 10625: door +133, inside +141 (x,y inside (124, 116))
+   ghost 2 eaten at (118, 186) frame 12673: door +215, inside +235 (x,y inside (112, 116))
+   ghost 3 eaten at (186, 196) frame 14721: door +244, inside +264 (x,y inside (136, 116))
+   ghost 0 eaten at (60, 180) frame 16769: door +290, inside +298 (x,y inside (124, 116))
+   ghost 1 eaten at (148, 132) frame 18817: door +78, inside +86 (x,y inside (124, 116))
+   ghost 2 eaten at (161, 148) frame 20865: door +369, inside +389 (x,y inside (112, 116))
+   ghost 0 eaten at (130, 88) frame 24961: door +338, inside +346 (x,y inside (124, 116))
+   ghosts eaten: 59   reached the door: 55   (the others were eaten after frame 79,380, when a test-aid artefact had zeroed ReverseDir[1] and [2] in RAM -- see docs/18-frightened-eaten-house.md)
+   journeys: 55   inside positions: {(1, (124, 116)): 18, (0, (124, 116)): 13, (2, (112, 116)): 11, (3, (136, 116)): 13}
+   walking steps by (ghost, state, x, y, dir) for states $44 / $04, first 30 by count:
+       (1, 68, 124, 100, 2) 18
+       (1, 68, 124, 102, 2) 18
+       (1, 68, 124, 104, 2) 18
+       (1, 68, 124, 106, 2) 18
+       (1, 68, 124, 108, 2) 18
+       (1, 68, 124, 110, 2) 18
+       (1, 68, 124, 112, 2) 18
+       (1, 68, 124, 114, 2) 18
+       (1, 4, 124, 116, 1) 18
+       (1, 4, 124, 114, 1) 18
+       (1, 4, 124, 112, 1) 18
+       (1, 4, 124, 110, 1) 18
+       (1, 4, 124, 108, 1) 18
+       (1, 4, 124, 106, 1) 18
+       (1, 4, 124, 104, 1) 18
+       (1, 4, 124, 102, 1) 18
+       (0, 68, 124, 100, 2) 13
+       (0, 68, 124, 102, 2) 13
+       (0, 68, 124, 104, 2) 13
+       (0, 68, 124, 106, 2) 13
+       (0, 68, 124, 108, 2) 13
+       (0, 68, 124, 110, 2) 13
+       (0, 68, 124, 112, 2) 13
+       (0, 68, 124, 114, 2) 13
+       (0, 4, 124, 116, 1) 13
+       (0, 4, 124, 114, 1) 13
+       (0, 4, 124, 112, 1) 13
+       (0, 4, 124, 110, 1) 13
+       (0, 4, 124, 108, 1) 13
+       (0, 4, 124, 106, 1) 13
+
+release walks (state 0, timer 0): steps and frames from the first walking step to the move into state 1 ($B756):
+   ghost 1: 6 releases; frames walking [32]; steps [8]; from [(124, 116)] to [(124, 102)]
+   ghost 2: 6 releases; frames walking [80]; steps [20]; from [(112, 116)] to [(124, 102)]
+   ghost 3: 6 releases; frames walking [80]; steps [20]; from [(136, 116)] to [(124, 102)]
+bobbing steps: 500  y range per ghost: {1: (112, 120), 2: (112, 120), 3: (112, 120)}
+bobbing: (timer decrease between consecutive bob steps, frames between them): {(1, 4): 489}

@@ -110,7 +110,7 @@ Ghosts 1–3 wait in the house with a timer in `GhostTimer` (`zp_CA+ghost`); `Su
 | 4 and up | `00 00 04` | ghosts 1 and 2 leave at once, ghost 3 after 16 frames |
 
 Verified live on all 30 board starts of the release run (every observed set was one the table allows). Release time of ghost *k* (frame when it passes the door, state 1):
-`release(k) = release(1) + 4 × (timer_k − timer_1) + 48` for *k* = 2 and 3; the constant 48 frames is an observation (it was the same on every level although the ghosts' speed changes, so it is not a walking time); this held for **58 of 58** checked releases
+`release(k) = release(1) + 4 × (timer_k − timer_1) + 48` for *k* = 2 and 3; the constant 48 frames is the sideways walk of ghosts 2 and 3 to the door column (12 steps x 4 frames; house movement is paced by `RTCLOK2`, which is why it does not change with the level) - corrected in `18-frightened-eaten-house.md`, where the walk was traced step by step; this held for **58 of 58** checked releases
 (for example board 1: timers 04/30/60 → releases at frames 354, 578, 770). The first board of a game also has about 240 frames of introduction before the first release.
 
 ## Every entry of every level-indexed table, read live
