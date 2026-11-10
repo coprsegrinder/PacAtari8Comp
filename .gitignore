@@ -1,0 +1,28 @@
+﻿# ---- Copyrighted / third-party material: NEVER commit ----
+/original/
+*.rom
+*.bin
+*.car
+*.atr
+*.xex
+*.a8
+*.5200
+# Atari OS / BASIC ROM images (copyrighted)
+*.os
+ATARIXL*.ROM
+ATARIBAS*.ROM
+
+# ---- Generated / local files ----
+/build/
+/resources/
+*.obj
+*.o
+*.exe
+*.lst
+*.lab
+__pycache__/
+*.pyc
+.vs/
+*.log
+Thumbs.db
+desktop.ini
