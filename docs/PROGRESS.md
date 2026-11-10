@@ -19,9 +19,9 @@ Legend: DONE, NEXT, TODO, N/A (not applicable, with reason).
 | B6–B7 | Hardware/memory-map documentation, vectors | 11–20 | DONE (approved 2026-11-10) |
 | C8 | Disassembler built and validated | 21–22 | DONE (approved 2026-11-10) |
 | C9 | Full disassembly | 23–25 | DONE (approved 2026-11-10) |
-| C10 | Byte-exact rebuild (formal) | 26–28 | DONE – awaiting approval |
-| C11 | Data labelling and routine naming | 29–30 | NEXT |
-| D12–D16 | Control flow, variables, subsystem analysis | 31–50 | TODO |
+| C10 | Byte-exact rebuild (formal) | 26–28 | DONE (approved 2026-11-10) |
+| C11 | Data labelling and routine naming (first pass) | 29–30 | DONE (first pass) – awaiting approval |
+| D12–D16 | Control flow, variables, subsystem analysis | 31–50 | NEXT |
 | E17–E18 | Emulator traces, correlation | 51–60 | TODO |
 | F19 | Resource extraction/decoding | 69–70 | TODO |
 | G20–G22 | Architecture, C re-implementation, hardware layer | 71–80 | TODO |

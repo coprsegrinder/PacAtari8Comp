@@ -88,31 +88,38 @@ def decode(data, base, addr):
     return n, mnem, mode, op
 
 
-def operand_text(mode, op, label=None, mnem=None):
-    """ca65 operand text. `label(addr)` may return a symbol name for a code address or None."""
+def operand_text(mode, op, label=None, mnem=None, sym_zp=None, sym_abs=None):
+    """ca65 operand text.
+
+    `label(addr)` may return a symbol for an address inside the image (code or data label).
+    `sym_zp(addr)` names a zero-page operand; `sym_abs(addr, mnem)` names an absolute operand
+    (hardware registers, OS variables). All hooks may return None to leave the number as it is.
+    """
     sym = (lambda a: (label(a) if label else None) or "$%04X" % a)
-    if mode in ("imp",):
+    zname = lambda a: (sym_zp(a) if sym_zp else None) or "$%02X" % a
+    if mode == "imp":
         return ""
     if mode == "acc":
         return "a"
     if mode == "imm":
         return "#$%02X" % op
     if mode == "zp":
-        return "z:$%02X" % op
+        return "z:" + zname(op)
     if mode == "zpx":
-        return "z:$%02X,x" % op
+        return "z:" + zname(op) + ",x"
     if mode == "zpy":
-        return "z:$%02X,y" % op
+        return "z:" + zname(op) + ",y"
     if mode == "izx":
-        return "($%02X,x)" % op
+        return "(" + zname(op) + ",x)"
     if mode == "izy":
-        return "($%02X),y" % op
+        return "(" + zname(op) + "),y"
     if mode == "rel":
         return sym(op)
-    # Absolute forms: force 16-bit encoding when the address is below $0100 (ca65 would pick zp).
+    # Absolute forms: force the 16-bit encoding when the address is below $0100 (ca65 would pick zp).
     # JMP/JSR have no zero-page form, so they never need the prefix.
     pre = "a:" if op < 0x100 and mnem not in ("jmp", "jsr") else ""
-    text = sym(op) if (mode == "abs" and op >= 0x100) else pre + "$%04X" % op
+    name = (sym_abs(op, mnem) if sym_abs else None) or (label(op) if label else None)
+    text = pre + (name or "$%04X" % op)
     if mode == "abx":
         return text + ",x"
     if mode == "aby":
@@ -122,8 +129,8 @@ def operand_text(mode, op, label=None, mnem=None):
     return text
 
 
-def instr_text(mnem, mode, op, label=None):
-    t = operand_text(mode, op, label, mnem)
+def instr_text(mnem, mode, op, label=None, sym_zp=None, sym_abs=None):
+    t = operand_text(mode, op, label, mnem, sym_zp, sym_abs)
     return mnem + (" " + t if t else "")
 
 
@@ -162,27 +169,35 @@ def trace(data, base, entries):
     return code, targets
 
 
-def listing(data, base, code, targets, names=None, out=sys.stdout):
-    """Print a ca65-style listing: decoded code where `code` says so, `.byte` runs elsewhere."""
-    names = names or {}
-    end0 = base + len(data)
-    # Only addresses inside the image get generated labels; outside ones stay numeric unless named.
-    label = lambda a: names.get(a) or ("L%04X" % a if a in targets and base <= a < end0 else None)
-    a, end = base, end0
+def listing(data, base, code, targets, names=None, out=sys.stdout, sym_zp=None, sym_abs=None, chunks=None):
+    """Print a ca65-style listing: decoded code where `code` says so, `.byte` runs elsewhere.
+
+    `chunks` = {addr: (length, text)}: pre-rendered data lines (strings, display lists ...) printed
+    verbatim for `length` bytes starting at addr; no label may fall strictly inside a chunk.
+    """
+    names, chunks = names or {}, chunks or {}
+    end = base + len(data)
+    label = lambda a: names.get(a) or ("L%04X" % a if a in targets and base <= a < end else None)
+    a = base
     while a < end:
         lab = label(a)
+        if lab:
+            print("%s:" % lab, file=out)
         if a in code:
             _, mnem, mode, op = decode(data, base, a)
-            if lab:
-                print("%s:" % lab, file=out)
             raw = " ".join("%02X" % data[a - base + k] for k in range(code[a]))
-            print("        %-22s ; %04X  %s" % (instr_text(mnem, mode, op, label), a, raw), file=out)
+            print("        %-26s ; %04X  %s" % (instr_text(mnem, mode, op, label, sym_zp, sym_abs), a, raw), file=out)
             a += code[a]
+        elif a in chunks:
+            n, text = chunks[a]
+            for k in range(1, n):
+                if label(a + k):
+                    raise ValueError("label %s inside data chunk at $%04X" % (label(a + k), a))
+            print(text, file=out)
+            a += n
         else:
-            if lab:
-                print("%s:" % lab, file=out)
             run = []
-            while a < end and a not in code and (not run or label(a) is None):
+            while a < end and a not in code and a not in chunks and (not run or label(a) is None):
                 run.append(data[a - base])
                 a += 1
                 if len(run) == 8:
