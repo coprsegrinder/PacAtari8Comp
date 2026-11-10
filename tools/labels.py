@@ -73,6 +73,7 @@ GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 
            0x85: "EntityY", 0x8A: "EntityX", 0x8F: "EntityDir", 0xB0: "MoveDelayCycle", 0xB5: "MoveDelayCount",
            0xBA: "PatrolRoute", 0xBE: "PatrolStep", 0xD2: "StartRouteStep", 0xCE: "GhostState",
            0xFB: "FrightenFlashTimer", 0xFC: "FrightenPhase", 0xFD: "FrightenCountdown",
+           0xAD: "ChaseTimer", 0xC2: "TargetX", 0xC6: "TargetY", 0xCA: "GhostTimer", 0xD6: "WantVert", 0xDA: "WantHoriz",
            0xED: "DeathState", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
 
 
@@ -101,6 +102,19 @@ ROM_NAMES = {
     0xAE3D: "DeathSequence",       # state machine on DeathState (zp_ED), run while it is non-zero
     0xAEF7: "DeathAnimation",      # plots Pac-Man's death frames while DeathAnimActive (zp_EA) is non-zero
     0xB179: "MovePacMan",          # reads STICK0, moves PacX/PacY, picks and draws the Pac-Man shape
+    # Ghost behaviour (docs/13-ghost-patrols.md): dispatcher on GhostState and its state handlers
+    0xB7F5: "GhostBehaviour",      # per-ghost step: dispatches on GhostState (1 start route, 2 chase, 8 travel, $10 patrol, $20 corner)
+    0xB827: "GhostStartRoute",     # state 1: follow StartRoutes[ghost]
+    0xB851: "GhostSelectPatrol",   # picks RANDOM AND $0F as the patrol route, target = its start junction, GhostTimer = $96, state 8
+    0xB878: "GhostPatrolTravel",   # state 8: steer to the route's start junction (timeout -> corner)
+    0xB89A: "GhostPatrol",         # state $10: one PatrolRoutes direction per junction, wraps at the 0 terminator (timeout -> corner)
+    0xB8C5: "GhostGoToCorner",     # state $20: target = CornerPositions[ghost]; on arrival GhostSelectPatrol
+    0xB8EF: "GhostChase",          # state 2 (and frightened flee): target = Pac-Man
+    0xB48E: "JunctionLookup",      # entity position -> lattice cell; returns exits mask (carry set at a lattice point)
+    0xB999: "SteerToTarget",       # chooses the next direction toward (TargetX, TargetY); inverted when frightened
+    0xBA19: "GhostSeesPacMan",     # same row/column, facing him, no blocking list entry -> state 2, ChaseTimer = $A0
+    0xB590: "MoveDelayTick",       # per-entity movement pacing from MoveDelay
+    0xB902: "StepAndDrawEntity",   # moves the entity one step in EntityDir and redraws its sprite
     0xB423: "AddToScore",          # decimal-mode add of ScoreAdd digits to the score at $202A-$202F (player 1) / $2047-$204C (player 2)
     0xA886: "GhostEaten",          # frightened ghost touched: pop-up, score 200/400/800/1600
     0xB3DE: "PowerPelletEaten",    # adds 50, sets GhostsEaten=$FF, frightens the ghosts

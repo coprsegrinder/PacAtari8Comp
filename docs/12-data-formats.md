@@ -143,7 +143,7 @@ never writes to them:
 | `$060E` | 100 | JunctionExits | 10×10 direction masks (1 up, 2 down, 4 left, 8 right) at the lattice points of the maze | all 90 non-zero entries equal the maze's open-neighbour mask; every maze corner/crossing is in it (56/56); left-right mirror-symmetric; 631 live lookups (Pac-Man and 4 ghosts) used the cell of the entity's position and the table value |
 | `$0672` | 20 | FrightenEndPhase | by `Level`: the `FrightenPhase` value at which frightened mode ends | live: the end test read 11 while the phase counted 1 to 11 (24 frames per step), then frightened mode ended |
 | `$0686` | 40 | StartRoutes | four ghost start routes (13, 8, 8, 11 nibbles, each ended by `$F`): the direction to take at each successive junction | valid walks over `JunctionExits`; live: 864 reads match, and ghosts 0–2 passed exactly the predicted junctions |
-| `$06AE` | 230 | PatrolRoutes | 16 zero-terminated routes, again one direction per junction | started at `PatrolStartPositions[i]`, **all 16 are valid walks and all 16 return to their start**; live: 248 reads match, 19 of 20 steps ended at the neighbouring junction (the 20th was interrupted by a power-pellet reversal) |
+| `$06AE` | 230 | PatrolRoutes | 16 zero-terminated routes, again one direction per junction | started at `PatrolStartPositions[i]`, **all 16 are valid walks and all 16 return to their start**; live: all 16 selected, 75,452 reads match, 6,097 scripted steps followed with no exception, every wrap landed on the start junction (`13-ghost-patrols.md`) |
 | `$0794` | 26 | BonusScore | 13 (thousands, hundreds) pairs by `Level`: 100 300 500 500 700 700 1000 1000 2000 2000 3000 3000 5000 | the bonus routine adds the pair to the score; live: the level-1 bonus item added `000100` |
 | `$07AE` | 24 | MoveDelay | frames per movement step, as four-step cycles selected by `PacMoveDelayBase` / `GhostMoveDelayBase` | live: 5,451 reloads, none differs; level 1 Pac-Man 2,2,2,3, ghosts 3,3,3,3 |
 | `$07C6` | 9 | NoReverseMask | indexed by direction 1,2,4,8: all exits except the reverse (`D E 7 B`) | live: 3,789 filtered masks, the reverse bit never survived |
@@ -152,7 +152,7 @@ never writes to them:
 How the game uses them: an entity's position is looked up in `JunctionYList` / `JunctionXList` (`Sub_B48E`); if it stands on a lattice point the `JunctionExits` mask
 gives the allowed exits, filtered by `NoReverseMask`; ghosts follow `StartRoutes` when leaving the house and `PatrolRoutes` later, and a pellet flips their direction with `ReverseDir`.
 Movement speed comes from the `MoveDelay` cycles. Evidence is in `analysis/evidence-nibble-map-summary.txt`.
-Not covered by a live run: patrol routes other than 2 and 7, levels above 1 (the table entries for them are verified by code and values only).
+Patrol routes: **all 16 verified live** (`13-ghost-patrols.md`). Not covered by a live run: levels above 1 (the table entries for them are verified by code and values only).
 
 ## Still unknown
 Purpose of the remaining small tables (`ThresholdLists`, `ProfileList_BBD8`, `Window3Table`, `ByteTable`-style lookups in `$BBAB–$BBF7`), of `StarShape`'s artwork

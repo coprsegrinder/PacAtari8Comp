@@ -1,0 +1,66 @@
+Patrol-route live evidence, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K, game speed 800% via a private settings copy (tools/run_patrol_trace.ps1).
+Test aids (emulated PC only): a ghost touching Pac-Man does not kill him; in run 2 (-Complete) a ghost that sees Pac-Man does not switch to chase and the patrol timer of routes 3, 12, 15 is refilled once when their patrol starts.
+Route choice is always the game's own (RANDOM AND $0F). Full logs (12.8 MB and 16.8 MB) stay in F:\Ports.
+
+=== RUN 1 (about 30 min of game time, no extra aids besides the no-kill aid) ===
+244846 lines, 200 route selections
+selections per route: 0:6 1:14 2:11 3:12 4:5 5:9 6:11 7:15 8:8 9:18 10:14 11:19 12:17 13:13 14:21 15:7
+routes never selected: none
+selections whose target junction == PatrolStartPositions[route]: 200 of 200
+PATROL_ROUTE reads: 24995 (including 149 terminator reads at wrap time), differing from the table: 0
+scripted steps followed by the next junction being the neighbour in that direction: 2029, other (frightened reversal, route end, etc.): 0
+live loop closure (junction reached at the wrap == the route's start junction): 0:4/4 1:3/3 2:11/11 4:1/1 5:19/19 6:23/23 7:53/53 8:3/3 9:1/1 10:10/10 11:9/9 13:2/2 14:9/9
+route: length, furthest step reached, wraps seen
+   0: 10 steps  DLDLULURRR                     reached step 10  wraps 4
+   1: 10 steps  URRRDDLLLU                     reached step 10  wraps 3
+   2: 10 steps  LLDDRRRUUL                     reached step 10  wraps 12
+   3: 10 steps  RULULDDDRU                     reached step  5  wraps 0
+   4:  6 steps  RDLLUR                         reached step  6  wraps 1
+   5:  6 steps  RDDLUU                         reached step  6  wraps 19
+   6:  6 steps  LDRRUL                         reached step  6  wraps 23
+   7:  6 steps  LDDRUU                         reached step  6  wraps 53
+   8: 10 steps  URDDDLULUR                     reached step 10  wraps 3
+   9: 12 steps  URDRDLLLLURR                   reached step 12  wraps 1
+  10: 12 steps  ULLULDLDRRRR                   reached step 12  wraps 10
+  11: 18 steps  URRDLDLDLLDLUUURRR             reached step 18  wraps 9
+  12: 24 steps  ULLDRDLDRRRRULURULUULDDD       reached step  4  wraps 0
+  13: 28 steps  URULLDDRRDLLLLURULURUURDDDDR   reached step 28  wraps 2
+  14: 18 steps  RDLDRDDLLLUURULURR             reached step 18  wraps 9
+  15: 28 steps  DLLURRURRDRURRRRDLLLDLDLULUL   reached step 17  wraps 0
+
+
+=== RUN 2 (-Complete: sight-chase off, long timers for routes 3, 12, 15) ===
+300261 lines, 261 route selections
+selections per route: 0:19 1:12 2:18 3:12 4:26 5:13 6:11 7:22 8:17 9:15 10:13 11:13 12:11 13:22 14:19 15:18
+routes never selected: none
+selections whose target junction == PatrolStartPositions[route]: 261 of 261
+PATROL_ROUTE reads: 75452 (including 423 terminator reads at wrap time), differing from the table: 0
+scripted steps followed by the next junction being the neighbour in that direction: 6097, other (frightened reversal, route end, etc.): 0
+live loop closure (junction reached at the wrap == the route's start junction): 0:23/23 1:13/13 2:24/24 3:60/60 4:54/54 5:50/50 6:23/23 7:80/80 8:5/5 9:21/21 10:12/12 11:6/6 12:22/22 13:5/5 14:7/7 15:18/18
+route: length, furthest step reached, wraps seen
+   0: 10 steps  DLDLULURRR                     reached step 10  wraps 23
+   1: 10 steps  URRRDDLLLU                     reached step 10  wraps 13
+   2: 10 steps  LLDDRRRUUL                     reached step 10  wraps 24
+   3: 10 steps  RULULDDDRU                     reached step 10  wraps 60
+   4:  6 steps  RDLLUR                         reached step  6  wraps 54
+   5:  6 steps  RDDLUU                         reached step  6  wraps 50
+   6:  6 steps  LDRRUL                         reached step  6  wraps 23
+   7:  6 steps  LDDRUU                         reached step  6  wraps 80
+   8: 10 steps  URDDDLULUR                     reached step 10  wraps 5
+   9: 12 steps  URDRDLLLLURR                   reached step 12  wraps 21
+  10: 12 steps  ULLULDLDRRRR                   reached step 12  wraps 12
+  11: 18 steps  URRDLDLDLLDLUUURRR             reached step 18  wraps 6
+  12: 24 steps  ULLDRDLDRRRRULURULUULDDD       reached step 24  wraps 22
+  13: 28 steps  URULLDDRRDLLLLURULURUURDDDDR   reached step 28  wraps 5
+  14: 18 steps  RDLDRDDLLLUURULURR             reached step 18  wraps 7
+  15: 28 steps  DLLURRURRDRURRRRDLLLDLDLULUL   reached step 28  wraps 18
+
+GhostTimer value at every route selection (run 2): {'96': 261}
+State changes seen in run 2 (previous -> new : why : count), corner = CORNER_REACHED event:
+   corner -> 08  (to_patrol_travel): 258
+   08 -> 10  (target_reached_patrol_starts): 231
+   10 -> 20  (head_for_corner): 230
+   08 -> 20  (head_for_corner): 30
+   None -> 08  (to_patrol_travel): 3
+   None -> 02  (chase_or_B8ED): 1
+   02 -> 20  (head_for_corner): 1
