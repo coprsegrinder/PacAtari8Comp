@@ -26,3 +26,6 @@ __pycache__/
 *.log
 Thumbs.db
 desktop.ini
+
+# Emulator screenshots (game imagery, local evidence only)
+/analysis/*.jpg
