@@ -1,0 +1,10 @@
+release timers: 5 level starts checked, 0 outside the table-derived options
+release-frame model release(ghost k) = release(ghost 1) + 4*(timer_k - timer_1) + 48: holds for 10 of 10 checked releases (ghost 2/3; board starts with all three ghosts leaving normally)
+49769 lines. Levels seen (zero-based): 15-20
+events: BONUS_APPEARS=10, BONUS_GLYPHS=4, BONUS_SCORE=4, FRIGHT_END_CHECK=988, FRIGHT_TIME=20, INDICATOR=6, LEVEL_ADVANCE=5, MOVE_DELAY=35350, RELEASE=21, RELEASE_TIMERS=12
+mismatches against the tables: none
+power-pellet frightened time seen on levels: 15-19
+frightened-end table value read on levels: 15-19
+bonus item shown on levels: 15-19
+frightened state ended exactly when the phase equalled the table value on 5 levels: 15-19
+levels where the phase was still running at the end of the cycle (table value 0: the phase has to wrap through 256 first): none

@@ -156,4 +156,4 @@ at cycles 30, 40 and 50 the counter is jumped to 99, 199 and 250 at the moment o
 ## Not covered
 - (Player 2's counter and the two-player alternation: now covered in `19-two-players.md`.)
 - (Levels 51–98, 110–198 and 210–249 were first covered by the formulas only; they have now all been played live, see Levels 42–249 above. Every one of the 256 values of the counter has been read live.)
-- Real play to boards 16 and beyond by a human; the sweep reached those boards with the test aids above. A ready-made session for this exists: `tools/play_level_test.ps1 -StartLevel 15` (normal speed, Pac-Man invulnerable, no other aids, same evidence lines); check the log with `tools/analyze_levels_log.py`.
+- ~~Real play to boards 16 and beyond by a human~~ **done 2026-11-11**: a person played boards 16-20 at normal speed (levels 15-20 zero-based, 5 level advances by the game's own code, Pac-Man invulnerable, no other aids; `tools/play_level_test.ps1`). 49,769 log lines, 35,350 movement reloads, 988 frightened-end checks, 10 bonus appearances, 21 ghost releases (10 of 10 on the release model): 0 mismatches against the tables (`analysis/evidence-human-play-summary.txt`).
