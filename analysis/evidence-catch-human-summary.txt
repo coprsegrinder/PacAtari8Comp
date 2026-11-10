@@ -1,0 +1,12 @@
+    ... by a ghost eaten after the last power pellet and already home again                  84
+  catch events (one per frame of contact)                                                    84
+  catch events while the frightened phase was running (FC > 0)                               84
+  ghosts eaten                                                                               5
+  power pellets                                                                              4
+first catch events during the phase (frame, ghost, states g0-g3, FC, last pellet, eaten, home again, bit7 of the four ghosts):
+   (1193, 2, [129, 129, 32, 129], 29, 446, 742, 914, [1, 1, 0, 1])
+   (3032, 0, [8, 129, 130, 129], 33, 2178, 2359, 2489, [0, 1, 1, 1])
+   (4918, 1, [2, 2, 2, 129], 108, 2178, 4573, 4874, [0, 0, 0, 1])
+   (5719, 3, [2, 2, 2, 2], 140, 2178, 5278, 5543, [0, 0, 0, 0])
+   (5760, 2, [2, 2, 2, 2], 142, 2178, 3912, 4205, [0, 0, 0, 0])
+catches not explained by 'eaten after the last pellet and home again': 0
