@@ -51,9 +51,9 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BDB9–$BDC6` | LevelIndexTable1/2 | 7 + 7 entries | level clamped to 6 |
 | `$BDC7–$BDD0` | TextHighScore | "HIGH SCORE" (10) | copy loop X=9..0 → `$200F`; shown on screen |
 | `$BDD1–$BDD5` | DliChbaseTable | `$18 $E0 $30 $E0 $30` | `CHBASE` per DLI in DliHandler2 (**correction**: an earlier note had read this as text) |
-| `$BDD6–$BDF6` | TextChangeDifficulty, TextPressStartTo | "CHANGE DIFFICULTY" (17), "PRESS [start] TO " (16) | fixed-length copy loops to `$1D05`, `$1D56` |
-| `$BDF7–$BE04` | TextCopyright | 14 custom-glyph codes, reads like "(c) atari 1982" | **hyp** |
-| `$BE05–$BE12` | TitleAnimCodes | 14 codes written as N and N+1 | read at `$A769` (**hyp**) |
+| `$BDD6–$BDF6` | TextChangeDifficulty, TextPressStartTo | "CHANGE DIFFICULTY" (17), "PRESS START TO " (16), mode 6 screen codes | fixed-length copy loops to `$1D05`, `$1D56` |
+| `$BDF7–$BE04` | TextCopyright | "(C) ATARI 1982" (14 bytes, ANTIC mode 6 screen codes, colour 3) | **confirmed on screen**, section below |
+| `$BE05–$BE12` | LevelIconCodes | 14 entries by `StartLevel`: first glyph code of the icon shown in the middle of the menu | **confirmed on screen**, section below |
 | `$BE13–$BE74` | TitleCharsetStream | type B → RAM `$1808`, 160 bytes = 20 glyphs | DliHandler2 sets `CHBASE=$18` |
 | `$BE75–$BE94` | TitleCharsetTail | 32 bytes → `$18A8–$18C7` | copy loop at `$A443` |
 | `$BE95–$BF80` | NibbleMapSource | 236 meaningful bytes → nibbles at RAM `$0600–$07FF` | Start copies **256** bytes; the extra 20 are the start of DisplayList2 (harmless junk in RAM) |
@@ -112,9 +112,23 @@ Three bytes `4A 4A 48` (also the ASCII letters "JJH"; no evidence that this mean
 What they are for is not recoverable from the ROM (most likely a leftover from the build); they must be kept as they are for a byte-exact rebuild.
 4. **Live play trace** (boot, Start, moving, 2 power pellets, 1 ghost eaten, 1 death; `analysis/evidence-play-trace-summary.txt`): `$A000` was read 3 times, all at boot by the OS RAM-size test (`pc=$F263/$F265`); `$A001`/`$A002` were never read, and nothing read any of the three during play.
 
+## Confirmed: the title-screen codes (`$BDF7–$BE04`, `$BE05–$BE12`)
+Checked from the code (`tests/test_title_text.py`, 7 tests) and on screen (Altirra screenshots, kept locally in `analysis/evidence-*.png`; images are not committed):
+- **`TextCopyright`** is copied to `$1D57` by the start-up state of the title routine (`Sub_A6CC`, `zp_19` = 1) and shown on the **first title screen** (logo plus one line,
+  for about four seconds, until `zp_1D` meets the jiffy clock); the menu text later overwrites it. Screen row 18 is ANTIC mode 6; decoding the 14 codes as mode 6
+  gives **"(C) ATARI 1982"**, all colour register 3, and the screenshot shows exactly that line.
+- **`LevelIconCodes` is not an animation.** `StartLevel` (`zp_1B`) is the starting level: pressing OPTION on the menu (`CONSOL` = `$03`, handler `LA559`) steps it
+  `0 → 1 → 2 → 4 → 6 → 8 → 10 → 12 → 0`, and `Sub_ADF1` copies it into the level counters `Level` (`$30`/`$31`) when the game starts. Every frame the menu code
+  writes glyph code `LevelIconCodes[StartLevel]` and the next code to `$1CC6/$1CC7` (row 11, ANTIC mode 4, game charset `$30`), which is the small icon in the middle of the screen.
+  Forcing `StartLevel` to each value in the emulator showed: 0 = cherries, 1 = strawberry, 2 and 3 = the same orange-coloured round fruit, 4 = apple, 6 = green melon,
+  8 = three green bars, 10 = bell-like icon, 12 and 13 = key. Values 2/3 and 12/13 look identical, as the table's duplicated entries predict; the odd entries 3, 5, 7, 9, 11, 13 other than
+  the duplicates are unreachable with OPTION. I name icons only by appearance.
+
 ## Findings worth knowing
-- The "text" on the title screen is not zero-terminated: `$00` is the **space** character, and every line has a fixed length given by the
-  loop that copies it. The lines are drawn in the title charset, so some codes (`$C8 $E3 $C9`, `$D1…`) are custom glyphs.
+- The title text is not zero-terminated: `$00` is the **space** character, and every line has a fixed length given by the loop that copies it.
+  The lines are ANTIC **mode 6** screen codes: the low 6 bits select the glyph (code + `$20` = ASCII), the top 2 bits select one of four colour registers
+  (not inverse video, which an earlier version of this document wrongly assumed). The glyphs come from the OS ROM font (`CHBASE=$E0`, see `DliChbaseTable`);
+  only the PAC-MAN logo uses the game's own title charset (`CHBASE=$18`) and the icon row uses the maze charset (`CHBASE=$30`).
 - The maze is stored as a 23 × 40 character map in a run-length format and held in RAM three or four times (`$0800`, `$0C00`, `$1000`, `$1400`).
 - Nothing in the ROM is a "maze graph" in plain form; the grid at RAM `$06AE…` is built from the nibble stream (**hyp**: movement data).
 

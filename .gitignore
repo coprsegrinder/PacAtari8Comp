@@ -29,3 +29,6 @@ desktop.ini
 
 # Emulator screenshots (game imagery, local evidence only)
 /analysis/*.jpg
+
+# Emulator screenshots (game imagery, local evidence only)
+/analysis/*.png

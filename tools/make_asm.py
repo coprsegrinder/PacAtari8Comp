@@ -71,6 +71,22 @@ def screen_text(bs):
     return out + ("]" if inv else "")
 
 
+def screen_text6(bs):
+    """ANTIC mode 6 screen codes: low 6 bits = glyph (code + $20 as ASCII), top 2 bits = colour register.
+    Runs of one colour are shown as cN"text"; spaces stay with the current run."""
+    out, cur, color = [], "", None
+    for b in bs:
+        ch, c = chr((b & 0x3F) + 0x20), b >> 6
+        if ch != " " and c != color:
+            if cur.strip():
+                out.append('c%d"%s"' % (color, cur))
+            cur, color = "", c
+        cur += ch
+    if cur.strip():
+        out.append('c%d"%s"' % (color, cur))
+    return " ".join(out)
+
+
 def antic_dl(start):
     """Render a display list from `start` up to and including its JVB: list of (addr, length, text)."""
     rows, a = [], start
@@ -132,7 +148,7 @@ def bitmap(b):
 def region_rows(first, last, kind, name, comment):
     """Yield (addr, length, text) rows for one data region; rows never swallow a label."""
     a, rows, head = first, [], ("        ; %s\n" % comment) if comment else ""
-    step = {"stream": 16, "bytes": 8, "shape": 1, "words": 2, "text": last - first + 1}[kind]
+    step = {"stream": 16, "bytes": 8, "shape": 1, "words": 2, "text": last - first + 1, "text6": last - first + 1}[kind]
     while a <= last:
         n = min(step, last + 1 - a)
         for k in range(1, n):  # split at labels inside the row
@@ -150,6 +166,8 @@ def region_rows(first, last, kind, name, comment):
             body = "        .word %-30s ; %04X" % (names.get(v, "$%04X" % v), a)
         elif kind == "shape":
             body = "        .byte $%02X                      ; %04X  %s" % (chunk[0], a, bitmap(chunk[0]))
+        elif kind == "text6":
+            body = "        .byte %-40s ; %04X  %s" % (",".join("$%02X" % b for b in chunk), a, screen_text6(chunk))
         elif kind == "text":
             body = "        .byte %-40s ; %04X  \"%s\"" % (",".join("$%02X" % b for b in chunk), a, screen_text(chunk).rstrip())
         else:

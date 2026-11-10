@@ -56,7 +56,7 @@ def hw_name(addr, mnem):
 
 
 # Game zero-page variables named so far (evidence: used as (zp),y pointers by the helpers and by Start).
-GAME_ZP = {0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 0x3E: "DstPtrL", 0x3F: "DstPtrH",
+GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 0x3E: "DstPtrL", 0x3F: "DstPtrH",
            # Sub_B423 adds these six BCD digits to the score; zp_E9 and zp_2B proven in docs/12-data-formats.md
            0x94: "ScoreAdd100000", 0x95: "ScoreAdd10000", 0x96: "ScoreAdd1000",
            0x97: "ScoreAdd100", 0x98: "ScoreAdd10", 0x99: "ScoreAdd1",
@@ -156,16 +156,18 @@ DATA = [
     (0xBDC0, 0xBDC6, "bytes", "LevelIndexTable2", "7 entries indexed like LevelIndexTable1"),
     (0xBDC7, 0xBDD0, "text", "TextHighScore", None),
     (0xBDD1, 0xBDD5, "bytes", "DliChbaseTable", "CHBASE value for each DLI of DisplayList2 (zp_18 = 1..4: $E0, $30, $E0, $30); entry 0 = $18 matches DliHandler2"),
-    (0xBDD6, 0xBDE6, "text", "TextChangeDifficulty", None),
-    (0xBDE7, 0xBDF6, "text", "TextPressStartTo", None),
-    (0xBDF7, 0xBE04, "text", "TextCopyright", "custom-glyph codes from the title charset; reads like (c) atari 1982 (hyp)"),
-    (0xBE05, 0xBE12, "bytes", "TitleAnimCodes", "14 character codes; entry N is written to $1CC6 and N+1 to $1CC7 (title screen animation, hyp)"),
+    (0xBDD6, 0xBDE6, "text6", "TextChangeDifficulty", "ANTIC mode 6 screen codes: low 6 bits = glyph of the OS font ($E000 band), top 2 bits = colour register; copied to $1D05"),
+    (0xBDE7, 0xBDF6, "text6", "TextPressStartTo", "mode 6; copied to $1D56 (row 18)"),
+    (0xBDF7, 0xBE04, "text6", "TextCopyright",
+     "mode 6; copied to $1D57 (row 18, col 3) while the first title screen is shown; reads (C) ATARI 1982, all colour 3 (confirmed on screen)"),
+    (0xBE05, 0xBE12, "bytes", "LevelIconCodes",
+     "14 entries indexed by StartLevel ($1B, 0..13): the icon shown in the middle of the menu; entry N is the first of two glyphs (codes N and N+1 at $1CC6/$1CC7, row 11, charset $30). OPTION steps StartLevel through 0,1,2,4,6,8,10,12, so only those entries are reachable (confirmed on screen)"),
     (0xBE13, 0xBE74, "stream", "TitleCharsetStream", "type B stream -> RAM $1808, 160 bytes = 20 glyphs of the title character set (CHBASE=$18)"),
     (0xBE75, 0xBE94, "bytes", "TitleCharsetTail", "32 bytes copied to $18A8-$18C7 (4 more title glyphs)"),
     (0xBE95, 0xBF80, "bytes", "NibbleMapSource",
      "236 bytes; Start splits 256 bytes into 512 nibbles at RAM $0600-$07FF (hyp: maze/grid data); the last 20 bytes read belong to DisplayList2"),
-    (0xBFC6, 0xBFD0, "text", "TextPlayerGame", None),
-    (0xBFD1, 0xBFE0, "text", "TextPressSelectFor", None),
-    (0xBFE1, 0xBFF0, "text", "TextPressOptionTo", None),
-    (0xBFF1, 0xBFF9, "text", "TextPlayGame", None),
+    (0xBFC6, 0xBFD0, "text6", "TextPlayerGame", "mode 6; copied to $1C92 (2 PLAYER GAME) and, with colour bits changed ($40 added), to $1C56 (1 PLAYER GAME)"),
+    (0xBFD1, 0xBFE0, "text6", "TextPressSelectFor", "mode 6; copied to $1C7A"),
+    (0xBFE1, 0xBFF0, "text6", "TextPressOptionTo", "mode 6; copied to $1CF2"),
+    (0xBFF1, 0xBFF9, "text6", "TextPlayGame", "mode 6; copied to $1D6D"),
 ]
