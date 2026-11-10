@@ -2,6 +2,9 @@
 # TEST AID (changes the emulated PC only, never the ROM): a ghost touching Pac-Man (non-frightened) does not kill him
 # (PC skips the death branch at $A923), so the run needs no input. Route choice stays the game's own (RANDOM).
 # (Writing the A register from a breakpoint does not take effect in Altirra, so routes cannot be forced; run long instead.)
+# start the game without a key press: the first time the main loop polls CONSOL ($A504) jump to the start-game code ($A537), then
+# delete this breakpoint (it is breakpoint 0, the first command of the file) so the busy poll loop is not slowed down
+bp -n a504 "r pc $a537; bc 0"
 bp -n a923 "r pc $a936"
 # Second test aids, used by run_patrol_trace.ps1 -Complete (default off): (a) a ghost that sees Pac-Man does not switch to chase
 # (PC skips $BAB7-$BABD), (b) when the patrol phase of route 3, 12 or 15 begins its timer is refilled to $FF so a whole loop can be seen.

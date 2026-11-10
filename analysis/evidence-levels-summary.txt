@@ -1,0 +1,19 @@
+Level sweep live evidence, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K, 800 % speed (tools/run_patrol_trace.ps1 -Cmd altirra_levels.cmd).
+Test aids (emulated RAM / PC only): ghosts do not kill Pac-Man; the game is started by jumping to its start-game code; every 1,536 frames the level-complete flag is set;
+the dot counter is set to $50 (bonus item appears); Pac-Man is moved onto the bonus item and onto a power pellet; at cycles 30, 40, 50 the level counter is jumped to 99, 199, 250.
+Run A (level-sweep.txt, 16.8 MB, about 161,000 frames): the table checks below. Run B (level-release.txt, 4.8 MB): the same plus ghost-house release timers and release frames.
+Flash length measured live: the frightened-end test runs (phase-2)*24+2 frames (1 frame for phase 1; 2 for phase 2): seen for phases 1, 2, 4, 7, 8, 11, 15.
+Level 103 (end phase 0): the phase reached 39 and was still running when the cycle ended (the counter must wrap through 256).
+
+=== Run A ===
+release timers: 0 level starts checked, 0 outside the table-derived options
+release-frame model release(ghost k) = release(ghost 1) + 4*(timer_k - timer_1) + 48: holds for 0 of 0 checked releases (ghost 2/3; board starts with all three ghosts leaving normally)
+389232 lines. Levels seen (zero-based): 0-50, 99-109, 199-209, 250-255
+events: BONUS_APPEARS=105, BONUS_GLYPHS=105, BONUS_SCORE=105, FRIGHT_END_CHECK=11522, FRIGHT_TIME=106, INDICATOR=106, LEVEL_ADVANCE=105, MOVE_DELAY=377063
+mismatches against the tables: none
+power-pellet frightened time seen on levels: 0-50, 100-109, 200-209, 251-255
+frightened-end table value read on levels: 0-50, 100-109, 200-209, 251-255
+bonus item shown on levels: 0-50, 100-109, 200-209, 251-255
+highest FrightenPhase seen per level (the end test is phase == table value): L0:11/11 L1:11/11 L2:11/11 L3:11/11 L4:11/11 L5:11/11 L6:11/11 L7:11/11 L8:7/7 L9:11/11 L10:11/11 L11:7/7 L12:7/7 L13:7/7 L14:11/11 L15:7/7 L16:1/1 L17:7/7 L18:1/1 L19:1/1 L20:4/4 L21:4/4 L22:2/2 L23:4/4 L24:1/1 L25:1/1 L26:1/1 L27:8/8 L28:8/8 L29:8/8 L30:8/8 L31:8/8 L32:15/15 L33:4/4 L34:4/4 L35:2/2 L36:4/4 L37:1/1 L38:1/1 L39:1/1 L40:15/15 L41:8/8 L42:8/8 L43:2/2 L44:2/2 L45:2/2 L46:8/8 L47:2/2 L48:15/15 L49:8/8 L50:8/8 L100:2/2 L101:8/8 L102:1/1 L103:39/0 L104:8/8 L105:2/2 L106:4/4 L107:4/4 L108:1/1
+release timers: 30 level starts checked, 0 outside the table-derived options
+release-frame model release(ghost k) = release(ghost 1) + 4*(timer_k - timer_1) + 48: holds for 58 of 58 checked releases (ghost 2/3; board starts with all three ghosts leaving normally)

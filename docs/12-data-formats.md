@@ -35,7 +35,7 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BBAB–$BBE1` | ThresholdLists / ProfileList_BBD8 | `$FF`-terminated lists | `CMP #$FF / BEQ` loops |
 | `$BBE2–$BBED` | ColorsGame, ColorsTitle | 8 + 4 colour bytes → `PCOLR0..COLOR3` / `COLOR0..3` | `LoadShadowColors`, `InitDisplay2` |
 | `$BBEE–$BBF1` | ColorsDli | 4 colours for the DLIs, masked by `COLRSH`/`DRKMSK` | code at `$A4BC` |
-| `$BBF2–$BBF7` | Window3Table | overlapping 3-byte windows | copy of 3 bytes at offset 0–3 |
+| `$BBF2–$BBF7` | HouseReleaseTimers | `90 60 30 04 00 00`: ghost-house release timers, 3-byte windows chosen by the board | **confirmed live** (`14-levels.md`) |
 | `$BBF8–$BC06` | FrightenFrames | 15 entries by `Level`: initial `FrightenCountdown` (frames of solid frightened colour); level 1 = `$FF` | **confirmed** live (`$FF` logged) |
 | `$BC07–$BC4F` | StarShape, GhostScoreZeros, GhostScore200/400/800/1600Digits | 12-row shapes copied as 16 rows (4 pad bytes from the next table) | **ghost-eaten pop-ups: confirmed** (section below); StarShape's meaning is unknown |
 | `$BC50–$BCCF` | TuneAudf1, TuneAudf2 | 2 × 64 sound values → `AUDF1`/`AUDF2`, one step per 4 jiffies | `$A7DF`; index stops at `$40` (**hyp**: start-up tune) |
@@ -45,8 +45,8 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BCEE–$BD0D` | PatrolStartPositions | 16 (x, y) junctions, one per patrol route; each route is a closed loop from its start | **confirmed** (16/16 loops) |
 | `$BD0E–$BD15` | CornerPositions | (`$BE,$2C`) (`$3A,$2C`) (`$BE,$C4`) (`$3A,$C4`): the four corners | indexed by ghost number; same stores as RandomPositions |
 | `$BD16–$BD25` | PatrolRouteOffsets | 16 start offsets of the patrol routes inside `PatrolRoutes` | **confirmed** (each route ends where the next begins) |
-| `$BD26–$BD44` | CharCodeProfile | 31 codes up and down | written to `$0F92…` as code and code+1 |
-| `$BD45–$BD79` | LevelGlyphRecords, LevelRecordOffsets | 8 records × 5 codes, 13 offsets | indexed by level (`zp_30`, clamped to 12) |
+| `$BD26–$BD44` | BonusItemCodes | 31 glyph codes (first of a pair) | entries 0–12 = the bonus item of each level (maze `$0DF3`, level indicator); the falling half is read by the indicator for levels ≥ 6 (`14-levels.md`) |
+| `$BD45–$BD79` | BonusScoreGlyphs, BonusScoreGlyphOffsets | 8 records × 5 codes, 13 offsets | indexed by level (`zp_30`, clamped to 12) |
 | `$BD7A–$BDB8` | PixelPatternTable | 63 pattern bytes | used by type B; index 63 never occurs (test) |
 | `$BDB9–$BDC6` | PacMoveDelayBase, GhostMoveDelayBase | 7 + 7 offsets into `MoveDelay` by `Level` (clamped to 6) | **confirmed** (5,451 live reloads) |
 | `$BDC7–$BDD0` | TextHighScore | "HIGH SCORE" (10) | copy loop X=9..0 → `$200F`; shown on screen |
@@ -155,6 +155,6 @@ Movement speed comes from the `MoveDelay` cycles. Evidence is in `analysis/evide
 Patrol routes: **all 16 verified live** (`13-ghost-patrols.md`). Not covered by a live run: levels above 1 (the table entries for them are verified by code and values only).
 
 ## Still unknown
-Purpose of the remaining small tables (`ThresholdLists`, `ProfileList_BBD8`, `Window3Table`, `ByteTable`-style lookups in `$BBAB–$BBF7`), of `StarShape`'s artwork
+Purpose of the remaining small tables (`ThresholdLists`, `ProfileList_BBD8`, `ByteTable`-style lookups in `$BBAB–$BBF7`), of `StarShape`'s artwork
 beyond its use as the last death frame, the meaning of each ghost frame, and which game events switch ghosts between the start route, patrol route and chase behaviour
 (`GhostState`, zero-page `$CE`). These need tracing in Stage D/E.

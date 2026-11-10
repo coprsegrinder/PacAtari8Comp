@@ -15,3 +15,11 @@ Written in Step A4 (2026-11-10). Covers checklist stage 10. Tools live OUTSIDE t
 
 Notes: the new WinLibs PATH entries only apply to newly opened terminals. Altirra's built-in
 AltirraOS remains available for later cross-checking against the Rev B ROM.
+
+## Unattended runs (added with the nibble-map / patrol / level verification)
+- `tools/trace_altirra.ps1` (interactive tracing, you play), `tools/run_patrol_trace.ps1` (unattended: `-Cmd altirra_patrol.cmd` or `-Cmd altirra_levels.cmd`), `tools/boot_crc_check.ps1`, `tools/capture_altirra.ps1`.
+- Altirra treats a *quoted* token as a file name, so switches must be unquoted; debugger commands go in a `.batch` file; its expression language has **no accumulator variable** (a bare `a` is the hex number `$A`);
+  `r a` from a breakpoint has no effect; debugger arguments are split at spaces; the log file is flushed in 4 KB chunks and fully only on a clean exit.
+- Fast unattended runs use a private settings copy, never your normal settings: copy `F:\Ports\Pac-Man-tools\Altirra\Altirra.ini` to `Altirra_fast.ini` in the same folder and set `"Speed: Frame rate modifier" = 800`
+  (about 7 to 10 times real time). The command files start the game themselves (self-clearing breakpoint at `$A504` jumping to the start-game code at `$A537`), so no key press or window focus is needed.
+- Screenshots of the whole screen can capture other windows (a browser was captured once by accident and deleted); the unattended runs do not use screenshots.

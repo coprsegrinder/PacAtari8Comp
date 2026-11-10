@@ -78,7 +78,7 @@ Route selection stayed the game's own `RANDOM`; writing the A register from a br
 be forced. Run 1 covered about 30 minutes of game time (200 selections), run 2 about 37 (261 selections).
 
 ## Not covered
-- Levels above 1: the route and selection code has no level test, but timers and `ChaseTimer` values were only observed on level 1.
+- Levels above 1: **covered in `14-levels.md`**: the ghost state machine, routes and timers contain no read of the level counter, so they are identical on every board (verified over levels 0–50 and beyond); only speed, frightened time, bonus items and the house release timers change.
 - Frightened-mode steering, the eaten-ghost return and the house-release timing (states `$00`, `$40`–`$44`, frightened variants)
   are read from the code only.
 - The contents of the sight blocker lists (`ThresholdLists`, `ProfileList_BBD8`): their role is established (sighting is verified

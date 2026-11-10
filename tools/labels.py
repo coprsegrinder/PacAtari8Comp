@@ -115,6 +115,11 @@ ROM_NAMES = {
     0xBA19: "GhostSeesPacMan",     # same row/column, facing him, no blocking list entry -> state 2, ChaseTimer = $A0
     0xB590: "MoveDelayTick",       # per-entity movement pacing from MoveDelay
     0xB902: "StepAndDrawEntity",   # moves the entity one step in EntityDir and redraws its sprite
+    0xADAF: "InitBoard",           # start of a board: clears zp $80-$FF, loads colours, MoveDelay for the Level, copies ZeroPageInit80, zeroes ghost timers (Window y=0)
+    0xAE2B: "SetReleaseTimers",    # loads the 3 ghost-house release timers (GhostTimer 1..3) from HouseReleaseTimers[min(Y,3)..]
+    0xAC93: "DrawLevelIndicator",  # bonus items of the last levels along the bottom row ($0F86-$0F93)
+    0xB62E: "BonusItemUpdate",     # shows the bonus item when the dot counter hits $50 / $A0, clears its score pop-up later
+    0xAC75: "AdvanceLevel",        # level-complete finish: board setup, then INC Level
     0xB423: "AddToScore",          # decimal-mode add of ScoreAdd digits to the score at $202A-$202F (player 1) / $2047-$204C (player 2)
     0xA886: "GhostEaten",          # frightened ghost touched: pop-up, score 200/400/800/1600
     0xB3DE: "PowerPelletEaten",    # adds 50, sets GhostsEaten=$FF, frightens the ghosts
@@ -154,7 +159,7 @@ DATA = [
     (0xBBE2, 0xBBE9, "bytes", "ColorsGame", "8 colours: PCOLR0-3 then COLOR0-3 (LoadShadowColors); $BBE2-$BBE5 also reloaded alone at $AF7D"),
     (0xBBEA, 0xBBED, "bytes", "ColorsTitle", "4 colours loaded into COLOR0-3 by InitDisplay2"),
     (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to zp_5E-zp_61 for the DLIs"),
-    (0xBBF2, 0xBBF7, "bytes", "Window3Table", "read as 3-byte windows at offsets 0-3 into zp_CB-zp_CD (90 60 30 / 60 30 04 / 30 04 00 / 04 00 00)"),
+    (0xBBF2, 0xBBF7, "bytes", "HouseReleaseTimers", "ghost-house release timers (4 frames per tick): 3-byte windows picked by board (90 60 30 / 60 30 04 / 30 04 00 / 04 00 00 -> GhostTimer of ghosts 3,2,1); see docs/14-levels.md"),
     (0xBBF8, 0xBC06, "bytes", "FrightenFrames", "15 entries by Level: initial FrightenCountdown (frames of solid frightened colour); level 1 = $FF"),
     (0xBC07, 0xBC12, "shape", "StarShape", "12 rows; drawn as the last (15th) frame of the death animation (AF3A); the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),
     (0xBC13, 0xBC1E, "shape", "GhostScoreZeros", "the two '0' digits shared by all four ghost-eaten pop-ups; drawn by the eaten ghost's player"),
@@ -172,9 +177,9 @@ DATA = [
     (0xBCEE, 0xBD0D, "bytes", "PatrolStartPositions", "16 (x,y) pairs, one per patrol route (same index); each is the junction where its route starts and ends (16 of 16 routes close into loops from here); chosen with RANDOM AND $0F"),
     (0xBD0E, 0xBD15, "bytes", "CornerPositions", "4 pairs (x,y) = ($BE,$2C) ($3A,$2C) ($BE,$C4) ($3A,$C4), the four corners; stored to zp_C2,X and zp_C6,X"),
     (0xBD16, 0xBD25, "bytes", "PatrolRouteOffsets", "16 ascending offsets of the patrol routes inside PatrolRoutes ($06AE + offset + step)"),
-    (0xBD26, 0xBD44, "bytes", "CharCodeProfile", "31 character codes rising $3A to $4C and falling back; written to screen RAM from $0F92 as code and code+1"),
-    (0xBD45, 0xBD6C, "bytes", "LevelGlyphRecords", "8 records of 5 character codes, copied to $0DF1; record chosen through LevelRecordOffsets"),
-    (0xBD6D, 0xBD79, "bytes", "LevelRecordOffsets", "13 offsets (multiples of 5) indexed by zp_30 (level), clamped to 12"),
+    (0xBD26, 0xBD44, "bytes", "BonusItemCodes", "31 glyph codes (first of a pair): entries 0-12 = the bonus item of level 0-12 (clamped at 12) shown in the maze at $0DF3 and in the level indicator; the falling half is read backwards by the indicator for levels >= 6"),
+    (0xBD45, 0xBD6C, "bytes", "BonusScoreGlyphs", "8 records of 5 glyph codes that draw the bonus score (100 300 500 700 1000 2000 3000 5000), copied to $0DF1 when the bonus item is eaten"),
+    (0xBD6D, 0xBD79, "bytes", "BonusScoreGlyphOffsets", "13 offsets (multiples of 5) into BonusScoreGlyphs by Level, clamped to 12"),
     (0xBD7A, 0xBDB8, "bytes", "PixelPatternTable", "63 pattern bytes used by ExpandData; index 63 is never used"),
     (0xBDB9, 0xBDBF, "bytes", "PacMoveDelayBase", "7 offsets into MoveDelay for Pac-Man by Level (clamped to 6): 8,8,8,12,16,20,20"),
     (0xBDC0, 0xBDC6, "bytes", "GhostMoveDelayBase", "7 offsets into MoveDelay for the ghosts by Level (clamped to 6): 0,4,8,8,12,16,16"),
