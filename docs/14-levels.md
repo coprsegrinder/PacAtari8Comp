@@ -113,6 +113,30 @@ Verified live on all 30 board starts of the release run (every observed set was 
 `release(k) = release(1) + 4 × (timer_k − timer_1) + 48` for *k* = 2 and 3; the constant 48 frames is an observation (it was the same on every level although the ghosts' speed changes, so it is not a walking time); this held for **58 of 58** checked releases
 (for example board 1: timers 04/30/60 → releases at frames 354, 578, 770). The first board of a game also has about 240 frames of introduction before the first release.
 
+## Every entry of every level-indexed table, read live
+`tools/level_table_coverage.py` works out from the logs which table entries the real game actually read (`analysis/evidence-level-table-coverage.txt`). **No entry was left unread**, and every logged value equals the ROM.
+
+| Table (entries) | How it is indexed | Entries read live | Notes |
+|---|---|---|---|
+| `FrightenFrames` (15) | `Level`, unclamped | all 15 | and the bytes after the table at levels 15–50, 100–109, 200–209, 251–255 |
+| `FrightenEndPhase` (20) | `Level`, unclamped | all 20 | and the bytes after the table at levels 20–50, 100–109, 200–209, 251–255 |
+| `BonusScore` (13 pairs) | `min(Level, 12)` | all 13 | |
+| `BonusScoreGlyphOffsets` (13) → `BonusScoreGlyphs` (8 records) | `min(Level, 12)` | all 13 and all 8 | |
+| `BonusItemCodes` (31) | bonus item: `min(Level, 12)`; level indicator: `0..Level` (levels < 6) or `30 − min(Level, 18)` and the 6 after it | all 31 | entries 12–30 are reached only through the indicator |
+| `PacMoveDelayBase`, `GhostMoveDelayBase` (7 each) | `min(Level, 6)` | all 7 and all 7 | |
+| `MoveDelay` (24) | base + step 0–3 | all 24 | |
+| `HouseReleaseTimers` (6 bytes) | window `Y = min(old Level + 1, 3)` | all 6 (windows 0–3) | |
+| `LevelIconCodes` (14) | `StartLevel` (title menu) | all 14 | OPTION reaches only 0, 1, 2, 4, 6, 8, 10, 12; the other six were forced with the debugger (`tools/altirra_titleicons.cmd`, 23,524 draws, 0 differences) |
+
+### What the entries mean (understanding, not just values)
+- **The designed part of the frightened tables is the first 15–20 entries.** Solid-colour time `255 192 128 64 0 192 0 0 0 192 0 0 0 64 0` frames plus an end phase of **11, 7 or 1** gives
+  0.4 s – 8 s per pellet: the end phase sets the flash length, `(phase − 2) × 24 + 2` frames, and the colour flips every 24 frames, so 11 means five blue/white cycles, 7 three, and 1 none
+  (the colour rule is read from the code at `$AFBE`; the lengths were measured). Board 1 gives the most (473 frames ≈ 7.9 s); boards 17, 19 and 20 give none (1 frame).
+  Everything after those entries is not designed data but the neighbouring bytes (see above); it is deterministic and verified, just not meaningful.
+- **Speed grows in five steps and then stops:** the delay tables have only five different rows (Pac-Man: `2223 2222 2221 1212`, ghosts `3333 3232 2223 2222 2221`), selected by `min(Level, 6)`.
+- **Bonus items advance two boards at a time** (cherry, strawberry, then pairs of boards), saturating at board 13 where the key and 5000 points repeat forever; the indicator then shows seven keys.
+- **The ghosts' house timers shrink to almost nothing by board 4** (`00 00 04`).
+
 ## How it was verified
 `tools/run_patrol_trace.ps1 -Cmd altirra_levels.cmd` runs the real ROM in Altirra unattended, with a private settings copy at 800 % speed. Only the **emulated** machine is touched, never the ROM:
 a ghost touching Pac-Man does not kill him; the game is started by jumping to its own start-game code; every 1,536 frames the level-complete flag is set (the game's own advance code runs);
@@ -122,5 +146,5 @@ at cycles 30, 40 and 50 the counter is jumped to 99, 199 and 250 at the moment o
 
 ## Not covered
 - Player 2's counter (`$31`) and the two-player alternation (same indexing through `CurrentPlayer`, not exercised).
-- Levels 30–98, 110–198, 210–249 were not played; they follow from the formulas (and the clamped tables are constant there).
+- Levels 51–98, 110–198 and 210–249 were not played; their values follow from the same formulas, and the tables that are clamped (everything except the two frightened lookups) are constant there. The two unclamped lookups were read live at 100 of the first 256 levels (0–50, 100–109, 200–209, 251–255); the others are computed.
 - Real play to boards 16 and beyond by a human; the sweep reached those boards with the test aids above.

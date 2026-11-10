@@ -152,7 +152,7 @@ never writes to them:
 How the game uses them: an entity's position is looked up in `JunctionYList` / `JunctionXList` (`Sub_B48E`); if it stands on a lattice point the `JunctionExits` mask
 gives the allowed exits, filtered by `NoReverseMask`; ghosts follow `StartRoutes` when leaving the house and `PatrolRoutes` later, and a pellet flips their direction with `ReverseDir`.
 Movement speed comes from the `MoveDelay` cycles. Evidence is in `analysis/evidence-nibble-map-summary.txt`.
-Patrol routes: **all 16 verified live** (`13-ghost-patrols.md`). Not covered by a live run: levels above 1 (the table entries for them are verified by code and values only).
+Patrol routes: **all 16 verified live** (`13-ghost-patrols.md`). Level-indexed tables: **every entry read live** on levels 0–50 and beyond (`14-levels.md`, `analysis/evidence-level-table-coverage.txt`).
 
 ## Still unknown
 Purpose of the remaining small tables (`ThresholdLists`, `ProfileList_BBD8`, `ByteTable`-style lookups in `$BBAB–$BBF7`), of `StarShape`'s artwork

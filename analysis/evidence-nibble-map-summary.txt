@@ -13,4 +13,5 @@ StartRoutes   : 864 reads, 0 differ from table; session 3: ghosts 0,1,2 passed j
 PatrolRoutes  : 248 reads, 0 differ from table; 19 of 20 steps ended at the neighbouring junction in the scripted direction, the 20th was interrupted by a power-pellet reversal.
 BonusScore   : the bonus item on level 1 added digits 000100 (1 event), table entry 0 = (0,1).
 DeathPlotRows : see evidence-play-trace-summary.txt (frames 1-14 read rows 0..13 in order).
-Not covered live: patrol routes other than 2 and 7, levels above 1, FrightenEndPhase beyond entry 0, BonusScore beyond entry 0, MoveDelay beyond level 1 (verified from the code and tables only).
+Update 2026-11-10: patrol routes (all 16) and every entry of every level-indexed table were later covered live; see evidence-patrol-summary.txt, evidence-levels-summary.txt and evidence-level-table-coverage.txt.
+Originally not covered live (this session): patrol routes other than 2 and 7, levels above 1, FrightenEndPhase beyond entry 0, BonusScore beyond entry 0, MoveDelay beyond level 1.

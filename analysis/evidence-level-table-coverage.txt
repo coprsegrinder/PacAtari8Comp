@@ -1,0 +1,17 @@
+Entry-by-entry coverage of the level-indexed tables (entries the real game read, from the logs):
+  FrightenFrames               15 entries: read 15  never read: none
+  FrightenEndPhase             20 entries: read 20  never read: none
+  BonusScore                   13 entries: read 13  never read: none
+  BonusScoreGlyphOffsets       13 entries: read 13  never read: none
+  BonusScoreGlyphs (records)    8 entries: read  8  never read: none
+  BonusItemCodes               31 entries: read 31  never read: none
+  MoveDelay                    24 entries: read 24  never read: none
+  PacMoveDelayBase              7 entries: read  7  never read: none
+  GhostMoveDelayBase            7 entries: read  7  never read: none
+  HouseReleaseTimers (bytes)    6 entries: read  6  never read: none
+  FrightenFrames read past its 15 entries at levels: 15-50, 100-109, 200-209, 251-255
+  FrightenEndPhase read past its 20 entries at levels: 20-50, 100-109, 200-209, 251-255
+
+Title-icon list (LevelIconCodes, 14 entries, indexed by StartLevel $1B): StartLevel forced through 0..13 on the title menu (tools/altirra_titleicons.cmd);
+23,524 logged draws; for all 14 values the code wrote LevelIconCodes[StartLevel] and +1 to $1CC6/$1CC7 (0 differences on the settled lines).
+The OPTION key can only reach 0, 1, 2, 4, 6, 8, 10, 12; values 3, 5, 7, 9, 11, 13 exist in the table but only a debugger can select them.
