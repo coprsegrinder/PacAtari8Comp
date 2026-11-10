@@ -12,8 +12,8 @@ Legend: DONE, NEXT, TODO, N/A (not applicable, with reason).
 | Initial | Inspection and planning | 4–7, 11–16 (partial) | DONE (2026-11-10, approved) |
 | A1 | Scope, methodology, requirements documents | 1, 2, 3 | DONE (approved) |
 | A1b | Check assumption A1 (ROM identity) by web hash lookup / saved thread | 5, 7 (partial) | DONE – inconclusive (approved) |
-| A2 | Folder structure, .gitignore, local Git repo | 9 | DONE – awaiting approval |
-| A3 | File inventory, checksums, read-only ROM backup | 6, 7, 8 | DONE – awaiting approval |
+| A2 | Folder structure, .gitignore, local Git repo | 9 | DONE (approved 2026-11-10) |
+| A3 | File inventory, checksums, read-only ROM backup | 6, 7, 8 | DONE (approved 2026-11-10) |
 | A4 | Install analysis tools (needs owner OK) | 10 | NEXT |
 | A5 | Boot ROM in emulator (needs owner screenshot) | 51, 52 | TODO |
 | B6–B7 | Hardware/memory-map documentation, vectors | 11–20 | TODO |

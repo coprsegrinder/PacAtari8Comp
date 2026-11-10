@@ -29,7 +29,7 @@ in `original/Pac-Man.rom` (expected SHA-1 above).
 1. **Reconstructed assembly (`src/asm/`).** A full disassembly of the ROM is a derivative of
    copyrighted code. It is currently NOT ignored, so it would be committed to the (local, and later
    private) repository. The owner should decide before any push whether the repository may contain it.
-   Default recommendation: keep the repository private and never make it public without a review.
+   **Owner decision (2026-11-10): the repository stays private.** Never make it public without a new review and explicit owner approval.
 2. **Git identity.** The repository uses a generic local identity ("Pac-Man Preservation Project",
    noreply@localhost) so the owner's personal name/email do not enter the project history. It can
    be changed on request.
