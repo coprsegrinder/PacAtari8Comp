@@ -3,7 +3,8 @@
 Written 2026-11-10 (step C11, follow-up to the patrol routes). **Levels above 1 are covered and verified**: every table the game
 indexes with the level counter was recomputed from the ROM for all 256 values and compared with an unattended run of the real game
 that played **levels 0–50, 99–109, 199–209 and 250–255 and the 8-bit wrap back to 0–50** (377,063 movement reloads, 106 power
-pellets, 105 bonus items and 106 level indicators, **0 mismatches**). Names are in `tools/labels.py`; tests are `tests/test_levels.py`
+pellets, 105 bonus items and 106 level indicators, **0 mismatches**), and later **every other level as well: 42–199 and 209–255 (and the wrap again to 0–24) in two further runs** (see "Levels 42–249" below).
+**All 256 values of the counter have now been played live.** Names are in `tools/labels.py`; tests are `tests/test_levels.py`
 (10 tests); the live numbers are in `analysis/evidence-levels-summary.txt`.
 
 ## The level counter
@@ -52,10 +53,10 @@ Measured live for seven different end-phase values: the end test runs **(phase �
 - **Levels 0–14** use the designed table: solid `255 192 128 64 0 192 0 0 0 192 0 0 0 64 0`; end phase `11` (flash 218 frames) except `7` on levels 8, 11, 12, 13, 15 (122 frames) and `1` on levels 18, 19.
 - **Past the tables** the lookups simply run on into whatever bytes follow: `FrightenFrames` (15 entries) into the shape and sound data at `$BC07…`, `FrightenEndPhase` (20 entries) into the start and patrol routes in RAM.
   So from board 16 on the frightened time is effectively scrambled but fully determined: e.g. levels 15–19 have no solid phase (`0`), level 20 has `146` frames and end phase `4`, level 21 `84`/`4`, level 22 `0`/`2`, level 23 `198`/`4`.
-  All of this was observed live (levels 20–50, 99–109, 199–209, 250–255 match the formulas).
+  All of this was observed live (every level from 20 to 255 matches the formulas).
 - **No frightened time at all** (solid 0 and end phase 1 → the pellet's frightened state ends after one frame) on **29 of the 256 levels**, the first being levels 16, 18, 19, 24, 38, 39.
 - **Practically endless frightened state:** with end phase **0** the phase counter has to wrap through 256 before it equals the table value, i.e. about 6,100 frames (over 100 s) of flashing after the solid phase.
-  This occurs on levels 70, 81, 92, 103, 110, 117, 124, 131, 142, 155, 168, 187, 212 and 241; level 103 was seen live (the phase reached 39 and was still running when the cycle ended).
+  This occurs on levels 70, 81, 92, 103, 110, 117, 124, 131, 142, 155, 168, 187, 212 and 241; **all fourteen were seen live** (the phase reached 29–39 and was still running when the 1,536-frame cycle ended; on every other level the frightened state ended exactly when the phase equalled the table value).
 - The finite maximum is level 0 (board 1) at 473 frames. Computed table for the first boards:
 
 | Board | Level | Pac delays | Ghost delays | Solid (frames) | End phase | Flash (frames) | Total | Bonus | Item codes |
@@ -144,7 +145,15 @@ the dot counter is set to `$50` (the game's own test shows the bonus item); Pac-
 at cycles 30, 40 and 50 the counter is jumped to 99, 199 and 250 at the moment of the advance so that the game's own setup runs with the new value.
 `tools/analyze_levels_log.py` recomputes every value from the ROM tables and compares. (An earlier attempt to inject PC jumps and stack pushes every frame slowed the emulator too much and was dropped for plain memory pokes.)
 
+## Levels 42–249 (played live)
+`tools/altirra_levels_42_199.cmd` and `tools/altirra_levels_210_249.cmd` (the same aids as `altirra_levels.cmd`, but no level jumps: the counters start at `$29` = 41 and `$D1` = 209 and the game's own `AdvanceLevel` adds 1 per cycle; the debugger reads numbers as hex, which is why the first run started at 41, not 29).
+`analysis/evidence-levels-high-summary.txt` has the full numbers:
+- **Run 1: levels 42–199 (158 consecutive boards)**: 582,350 movement-delay reloads, 158 bonus items, 158 level indicators, 159 power pellets, 18,546 frightened-end checks, 158 release-timer sets and 316 of 316 checked ghost releases that follow `release(k) = release(1) + 4 x (timer_k - timer_1) + 48`; **0 mismatches against the tables**.
+- **Run 2: levels 209–255 and the wrap to 0–24 (71 boards)**: 256,464 reloads, 71 bonus items, 7,122 end checks, 138 of 138 releases; **0 mismatches**.
+- The frightened state ended exactly at the table value on 147 of the 159 levels of run 1 and 70 of 72 of run 2; the other 14 are the endless-frightened levels listed above, all seen with the phase still running (levels 70, 81, 92, 110, 117, 124, 131, 142, 155, 168, 187 in run 1; 212 and 241 in run 2; 103 earlier).
+- The clamped tables are constant from level 18 on (`tests/test_levels.py`, `HighLevels`): the speeds, the bonus item and its score and the indicator do not change on any of these boards; only the two unclamped frightened lookups and the release timers (which clamp at 3) vary or not.
+
 ## Not covered
 - (Player 2's counter and the two-player alternation: now covered in `19-two-players.md`.)
-- Levels 51–98, 110–198 and 210–249 were not played; their values follow from the same formulas, and the tables that are clamped (everything except the two frightened lookups) are constant there. The two unclamped lookups were read live at 100 of the first 256 levels (0–50, 100–109, 200–209, 251–255); the others are computed.
+- (Levels 51–98, 110–198 and 210–249 were first covered by the formulas only; they have now all been played live, see Levels 42–249 above. Every one of the 256 values of the counter has been read live.)
 - Real play to boards 16 and beyond by a human; the sweep reached those boards with the test aids above.

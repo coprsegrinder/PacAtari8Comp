@@ -185,8 +185,11 @@ def main(path):
     out.append("power-pellet frightened time seen on levels: " + _ranges(sorted(fright_seen)))
     out.append("frightened-end table value read on levels: " + _ranges(sorted(end_seen)))
     out.append("bonus item shown on levels: " + _ranges(sorted(bonus_seen)))
-    out.append("highest FrightenPhase seen per level (the end test is phase == table value): " +
-               " ".join("L%d:%d/%d" % (lv, last_fc[lv], expected(lv)["fright_end_phase"]) for lv in sorted(last_fc)[:60]))
+    reached = [lv for lv in sorted(last_fc) if last_fc[lv] == expected(lv)["fright_end_phase"]]
+    not_reached = [lv for lv in sorted(last_fc) if last_fc[lv] != expected(lv)["fright_end_phase"]]
+    out.append("frightened state ended exactly when the phase equalled the table value on %d levels: %s" % (len(reached), _ranges(reached)))
+    out.append("levels where the phase was still running at the end of the cycle (table value 0: the phase has to wrap through 256 first): " +
+               (" ".join("L%d:%d/%d" % (lv, last_fc[lv], expected(lv)["fright_end_phase"]) for lv in not_reached) or "none"))
     return out
 
 

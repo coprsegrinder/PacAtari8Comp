@@ -106,5 +106,36 @@ class Tables(unittest.TestCase):
         self.assertEqual(at(0xAE19, 3), hx("C8D0F7"))
 
 
+class HighLevels(unittest.TestCase):
+    """Levels 42-199 and 209-255 were played live (analysis/evidence-levels-high-summary.txt); these tests pin the values those runs were compared with."""
+
+    def test_clamped_tables_are_constant_above_their_clamp(self):
+        ref = A.expected(18)
+        for L in list(range(18, 256)):
+            e = A.expected(L)
+            for k in ("pac_delays", "ghost_delays", "bonus_glyph", "bonus_record", "bonus_score"):
+                self.assertEqual(e[k], ref[k], (L, k))               # clamps at 6 / 12 / 18: everything but the two frightened lookups is constant from level 18
+
+    def test_the_two_unclamped_lookups_read_past_their_tables(self):
+        for L in (42, 70, 98, 110, 198, 210, 249):
+            e = A.expected(L)
+            self.assertEqual(e["fright_frames"], S.rd(0xBBF8 + L))
+            self.assertEqual(e["fright_end_phase"], A.R(0x672 + L))
+
+    def test_endless_frightened_levels(self):
+        zero = [L for L in range(256) if A.expected(L)["fright_end_phase"] == 0]
+        self.assertEqual(zero, [70, 81, 92, 103, 110, 117, 124, 131, 142, 155, 168, 187, 212, 241])   # all seen live with the phase still running at the end of the cycle
+        self.assertEqual([L for L in zero if 42 <= L <= 255 and L not in (103,)], [70, 81, 92, 110, 117, 124, 131, 142, 155, 168, 187, 212, 241])
+
+    def test_sample_values(self):
+        # a few levels from each newly played range (fright_frames, fright_end_phase)
+        got = {L: (A.expected(L)["fright_frames"], A.expected(L)["fright_end_phase"]) for L in (51, 70, 98, 110, 150, 198, 210, 249)}
+        self.assertEqual(got[70], (57, 0))
+        self.assertEqual(got[98][0], 81)
+        self.assertEqual(got[150][0], 60)
+        self.assertEqual(got[249][0], 116)
+        self.assertEqual((got[51][0], got[110][0], got[198][0], got[210][0]), (0, 0, 0, 0))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -1,0 +1,26 @@
+Levels 42-199 and 209-255 (+ the wrap to 0-24), played live in Altirra 4.40 (Atari 800 NTSC, Rev B OS, 800 % speed), same test aids as the earlier sweep (tools/altirra_levels_42_199.cmd, tools/altirra_levels_210_249.cmd; analyzer tools/analyze_levels_log.py).
+The level counter was set to $29 (41) / $D1 (209) at the start of the game; every later level was reached by the game's own AdvanceLevel.
+
+=== run 1: counters set to 41, then +1 per cycle (levels 42-199) ===
+release timers: 158 level starts checked, 0 outside the table-derived options
+release-frame model release(ghost k) = release(ghost 1) + 4*(timer_k - timer_1) + 48: holds for 316 of 316 checked releases (ghost 2/3; board starts with all three ghosts leaving normally)
+602980 lines. Levels seen (zero-based): 41-199
+events: BONUS_APPEARS=158, BONUS_GLYPHS=158, BONUS_SCORE=158, FRIGHT_END_CHECK=18546, FRIGHT_TIME=159, INDICATOR=159, LEVEL_ADVANCE=158, MOVE_DELAY=582350, RELEASE=477, RELEASE_TIMERS=318
+mismatches against the tables: none
+power-pellet frightened time seen on levels: 41-199
+frightened-end table value read on levels: 41-199
+bonus item shown on levels: 42-199
+frightened state ended exactly when the phase equalled the table value on 147 levels: 41-69, 71-80, 82-91, 93-102, 104-109, 111-116, 118-123, 125-130, 132-141, 143-154, 156-167, 169-186, 188-199
+levels where the phase was still running at the end of the cycle (table value 0: the phase has to wrap through 256 first): L70:36/0 L81:32/0 L92:39/0 L103:39/0 L110:39/0 L117:35/0 L124:39/0 L131:39/0 L142:35/0 L155:29/0 L168:32/0 L187:29/0
+
+=== run 2: counters set to 209, then +1 per cycle (levels 210-255, then the 8-bit wrap to 0-24) ===
+release timers: 71 level starts checked, 0 outside the table-derived options
+release-frame model release(ghost k) = release(ghost 1) + 4*(timer_k - timer_1) + 48: holds for 138 of 138 checked releases (ghost 2/3; board starts with all three ghosts leaving normally)
+264540 lines. Levels seen (zero-based): 0-24, 209-255
+events: BONUS_APPEARS=71, BONUS_GLYPHS=71, BONUS_SCORE=71, FRIGHT_END_CHECK=7122, FRIGHT_TIME=72, INDICATOR=72, LEVEL_ADVANCE=71, MOVE_DELAY=256464, RELEASE=216, RELEASE_TIMERS=143
+mismatches against the tables: none
+power-pellet frightened time seen on levels: 0-24, 209-255
+frightened-end table value read on levels: 0-24, 209-255
+bonus item shown on levels: 0-24, 210-255
+frightened state ended exactly when the phase equalled the table value on 70 levels: 0-24, 209-211, 213-240, 242-255
+levels where the phase was still running at the end of the cycle (table value 0: the phase has to wrap through 256 first): L212:39/0 L241:39/0
