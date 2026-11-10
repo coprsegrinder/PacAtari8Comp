@@ -27,7 +27,7 @@ pellets, 105 bonus items and 106 level indicators, **0 mismatches**). Names are 
 
 **Nothing else depends on the level**: the ghost state machine, the patrol and start routes, the maze and the sight test contain no read of the counter.
 The aggression, patrol and corner logic of `13-ghost-patrols.md` is therefore the same on every board; only speed, frightened time, bonus items and the house timers change.
-(Player 2's counter `$31` is indexed the same way through `CurrentPlayer`; it was not exercised in the runs.)
+(Player 2's counter `$31` is indexed the same way through `CurrentPlayer`; verified in a real two-player game in `19-two-players.md`: levels 7-29, every table read equal to the ROM tables for the playing player's level.)
 
 ## Movement (`MoveDelay`, frames per step)
 Each entity has a countdown reloaded from a four-step cycle in `MoveDelay`; the table is picked by `PacMoveDelayBase` / `GhostMoveDelayBase` (7 entries, so the level is clamped to 6).
@@ -145,6 +145,6 @@ at cycles 30, 40 and 50 the counter is jumped to 99, 199 and 250 at the moment o
 `tools/analyze_levels_log.py` recomputes every value from the ROM tables and compares. (An earlier attempt to inject PC jumps and stack pushes every frame slowed the emulator too much and was dropped for plain memory pokes.)
 
 ## Not covered
-- Player 2's counter (`$31`) and the two-player alternation (same indexing through `CurrentPlayer`, not exercised).
+- (Player 2's counter and the two-player alternation: now covered in `19-two-players.md`.)
 - Levels 51–98, 110–198 and 210–249 were not played; their values follow from the same formulas, and the tables that are clamped (everything except the two frightened lookups) are constant there. The two unclamped lookups were read live at 100 of the first 256 levels (0–50, 100–109, 200–209, 251–255); the others are computed.
 - Real play to boards 16 and beyond by a human; the sweep reached those boards with the test aids above.

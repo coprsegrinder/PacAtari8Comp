@@ -1,0 +1,31 @@
+events: {'table': 105124, 'board': 139, 'lost': 139, 'score': 278, 'adv': 24, 'switch': 114, 'extra': 1}
+  advances that changed only the playing player's level by +1                                24
+  board starts (player 1)                                                                    60
+  board starts (player 2)                                                                    79
+  extra lives awarded to player 2                                                            1
+  extra-life flags that were set for the player who got the life (and no other)              1
+  level advances by player 1                                                                 2
+  level advances by player 2                                                                 22
+  lives lost by player 1                                                                     60
+  lives lost by player 2                                                                     79
+  score additions to player 1's digits                                                       44
+  score additions to player 2's digits                                                       234
+  setup reads made before the aid at $ADFD sets the start levels (not checked)               1
+  switches to player 1                                                                       57
+  switches to player 2                                                                       57
+  table reads logged for player 1                                                            55831
+  table reads logged for player 2                                                            49293
+  turns where the waiting player's lives, level, flags, dots, counters and score were unchanged 114
+levels (zero-based) the table reads were made with: player 1: [0, 2, 3, 4]  player 2: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+violations: none
+
+---- the same log through the one-player table checks (expected values from the ROM tables, level = the playing player's) ----
+release timers: 24 level starts checked, 0 outside the table-derived options
+release-frame model release(ghost k) = release(ghost 1) + 4*(timer_k - timer_1) + 48: holds for 48 of 48 checked releases (ghost 2/3; board starts with all three ghosts leaving normally)
+106267 lines. Levels seen (zero-based): 2-4, 7-29
+events: BONUS_APPEARS=24, BONUS_GLYPHS=2, BONUS_SCORE=2, FRIGHT_END_CHECK=776, FRIGHT_TIME=4, INDICATOR=139, LEVEL_ADVANCE=24, MOVE_DELAY=103874, RELEASE=257, RELEASE_TIMERS=164
+mismatches against the tables: none
+power-pellet frightened time seen on levels: 2-4, 8
+frightened-end table value read on levels: 2-4, 8
+bonus item shown on levels: 3-4, 8-29
+highest FrightenPhase seen per level (the end test is phase == table value): L2:11/11 L3:11/11 L4:11/11 L8:7/7

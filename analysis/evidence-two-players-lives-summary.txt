@@ -1,0 +1,22 @@
+Two players running out of lives (tools/altirra_player2_lives.cmd; player 1 starts with 1 life, player 2 with 2; Pac-Man stands still, the ghosts kill him; ZP $2C/$2D = lives, $2B = CurrentPlayer, $23 = turn-switch state).
+Each line: change of (CurrentPlayer, lives P1, lives P2, zp_23) seen on the per-frame lines, and the events at the code points $A82F (T), $A5FD (V), $AD13 LIFE_LOST, $AAE0 TURN_CONTINUES, $AAEF NO_LIVES_END_OF_TURN, $AA8B SWITCH.
+
+state cur=0 lives=0,0 z23=0 from frame 40
+NEW_GAME frame=44
+state cur=0 lives=1,2 z23=0 from frame 44
+LIFE_LOST player=0 lives=1,2 frame=210
+state cur=0 lives=0,2 z23=0 from frame 210
+NO_LIVES_END_OF_TURN player=0 lives=0,2 frame=1284
+state cur=0 lives=0,2 z23=2 from frame 1285
+SWITCH to=1 from=0 1a=1 lives=0,2 level=0,0 flags=$0F,$0F dots=10,0 eml=0,0 zp43=0,0 s1=000000111010 s2=000000001010 frame=1334
+state cur=1 lives=0,2 z23=3 from frame 1334
+TURN_CONTINUES player=1 lives=0,2 frame=1334
+LIFE_LOST player=1 lives=0,2 frame=1335
+state cur=1 lives=0,1 z23=0 from frame 1335
+TURN_CONTINUES player=1 lives=0,1 frame=2615
+LIFE_LOST player=1 lives=0,1 frame=2616
+state cur=1 lives=0,0 z23=0 from frame 2616
+TURN_CONTINUES player=1 lives=0,0 frame=3896
+NO_LIVES_END_OF_TURN player=1 lives=0,0 frame=3896
+
+After frame 3896 (both players out of lives) the state no longer changes: 100,000+ further vertical-blank lines show cur=1 lives=0,0 z23=0.
