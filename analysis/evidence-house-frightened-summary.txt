@@ -1,0 +1,33 @@
+episodes and ghosts that were waiting in the house when the countdown started (last pellet of the episode):
+    ... next write by site AFA0 replacing $80                                      3
+    ... next write by site B756 replacing $00                                      5
+    ... next write by site B756 replacing $80                                      39
+  ghosts in a house-waiting state ($00/$80) at the last pellet                     47
+  power-pellet episodes                                                            29
+
+sample (pellet frame, ghost, x, y at the pellet | next write: frame, site, replaced state, x, y, house timer):
+   (1824, 2, 112, 120, 2234, 'AFA0', 128, 120, 116, 0) frames after the pellet: 410 | stayed in the house square: True
+   (1824, 3, 136, 120, 2234, 'AFA0', 128, 136, 116, 40) frames after the pellet: 410 | stayed in the house square: True
+   (42768, 3, 136, 120, 42853, 'AFA0', 128, 124, 102, 0) frames after the pellet: 85 | stayed in the house square: False
+states seen by the end-of-frightened loop ($AF8C), all ghosts: {'$80': 84, '$82': 50, '$81': 56, '$42': 2, '$A0': 44}
+writes at $AFA0 (the end of the frightened time): 234, of which the ghost held $80 (-> $00): 84, inside the house square: 77
+
+transitions of a ghost that was waiting in the house (state AND $7F = 0) while frightened:
+     ... natural end: ghost in the exit corridor, not yet at the door row                                        3
+     ... natural end: ghost inside the house square                                                              6
+  frightened ghost reaches the door row still frightened: $80 became $82 (next write sees $82) OK                50
+  frightened time ends, ghost still $80: became $00 (next write sees $00) - aid pellet re-eaten at once: OK      75
+  frightened time ends, ghost still $80: became $00 (next write sees $00) - natural end: OK                      9
+  normal release at the door row: $00 became $01                                                                 52
+  power pellet: house-waiting $00 became $80 (next write sees $80) OK                                            134
+natural ends, $80 -> $00 (frame, ghost, x, y, house timer at the write | next write: site, frame, x, y, state it replaces):
+   (30847, 1, 124, 100, 0, 'B756', 30850, 124, 100, 0)
+   (32558, 1, 124, 100, 0, 'B756', 32558, 124, 100, 0)
+   (2234, 2, 120, 116, 0, 'B756', 2282, 124, 100, 0)
+   (30847, 2, 120, 116, 0, 'B756', 30898, 124, 100, 0)
+   (32573, 2, 124, 116, 0, 'B756', 32606, 124, 100, 0)
+   (2234, 3, 136, 116, 40, 'B756', 2474, 124, 100, 0)
+   (30847, 3, 132, 116, 0, 'B756', 30914, 124, 100, 0)
+   (32573, 3, 128, 116, 0, 'B756', 32622, 124, 100, 0)
+   (42853, 3, 124, 102, 0, 'B756', 42858, 124, 100, 0)
+after $80 -> $00 the ghost's next write is: {'B756': 9}

@@ -94,5 +94,16 @@ class CollisionRule(unittest.TestCase):
         # so a ghost that is not frightened (bit 7 clear) and not eaten kills Pac-Man even while the frightened phase runs
 
 
+class FrightenedInTheHouse(unittest.TestCase):
+    def test_house_ghost_code(self):
+        # the waiting test ignores bit 7: $00 and $80 are both "waiting" ($B7A7: LDA GhostState,X / AND #$7F / BNE other; LDA GhostTimer,X / BEQ leave)
+        self.assertEqual(at(0xB7A7, 9), hx("B5CE297FD023B5CAF0"))
+        # the leave step at the door row ($B73E): state 0 -> $01 (start route); otherwise keep bit 7 and give $02 -> a frightened ghost leaves as $82
+        self.assertEqual(at(0xB73E, 6), hx("B5CED004A901"))
+        self.assertEqual(at(0xB746, 4), hx("29800902"))
+        # end of the frightened time ($AF8C-$AFA0): state $80 exactly -> $00 ($AF9A); other frightened states: AND #$BB, then $20
+        self.assertEqual(at(0xAF8C, 22), hx("B5CE1012C980F00629BBF00AD004A900F002A92095CE"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

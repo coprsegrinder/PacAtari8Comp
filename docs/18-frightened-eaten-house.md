@@ -36,7 +36,7 @@ The aid that moves Pac-Man by writing his coordinates leaves the game's *increme
 From then on a ghost moving up or down when a pellet was eaten got direction 0, and four ghosts that were eaten afterwards stayed in state `$42` for ever (no direction and not at a junction). **That is a consequence of the aid, not behaviour of the game**; all 55 eaten journeys listed above finished before it. The reversal counts, the steering rule checks, the speed ratios and the house results are checks on each event and are not affected.
 
 ## Not covered
-- A frightened ghost still **inside the house** (`$80`): the code treats it like a waiting ghost (`AND $7F`) and `$AF9A` turns it back to `$00` when the time ends, but it never occurred in the run.
+- A frightened ghost still **inside the house** (`$80`): verified live, see "Frightened ghosts inside the house" below.
 - Frightened ghosts in the start route (`$81`): one case seen, behaving like the others.
 - The frightened time and the flashing are in `14-levels.md`; the siren and sound are not covered.
 - The eaten ghost when Pac-Man moves onto the door square, and two ghosts eaten in one frame, were not provoked separately.
@@ -47,3 +47,15 @@ Question from the board-71 human session: Pac-Man was caught while the (endless)
 - Live (`tools/altirra_catch.cmd`, level counter 70, Pac-Man invulnerable, a power pellet and then a ghost eaten every 2,048 frames; analyzer `tools/analyze_catch_log.py`, `analysis/evidence-catch-while-frightened-summary.txt`): 35 power pellets, 17 ghosts eaten, 1,453 contact-frame events of which 349 happened while the phase was running (FC > 0). **In all 349 the ghost in contact was one that had been eaten after the last power pellet and had already come home (its `$B764` store logged); 0 catches by any other ghost.** The bit 7 of the other ghosts was still set at the time in the examples (for instance frame 1,874: ghost 3 state $02 while ghosts 0-2 were $82/$90/$88).
 - The other 1,104 contact events were before the first pellet of a cycle (phase not running).
 - Limit: the eating and the contacts were produced with test aids (Pac-Man moved onto a ghost; invulnerable), not by a person.
+
+## Frightened ghosts inside the house (verified 2026-11-11)
+A ghost that is waiting in the house when a power pellet is eaten: `$00` becomes `$80` (`$B40A`: bit 7 is OR-ed in; the house ghost is not eaten-state, so it is included). What the code does with `$80` (`test_frightened_house.py`, `FrightenedInTheHouse`):
+- **Waiting** (`$B7A7`): the house test is `state AND $7F = 0`, so `$00` and `$80` are the same - the house timer (`GhostTimer`) keeps counting and the ghost keeps bobbing; being frightened does not hold a ghost in the house.
+- **Leaving while frightened** (`$B738`, door row y = `$64`): state 0 gives `$01` (start route); any other state keeps bit 7 and gets `$02`, so a frightened house ghost leaves as **`$82`** (frightened, chasing/fleeing).
+- **The frightened time ends** (`$AF8C-$AFA0`): `$80` exactly is turned back into **`$00`** (`$AF9A`) - the ghost is simply a waiting ghost again; every other frightened state goes through `AND #$BB` to `$20` (corner).
+Live (`tools/altirra_house_frightened.cmd`, a power pellet at a different delay after every board set-up, Pac-Man invulnerable; analyzer `tools/analyze_house_frightened_log.py`, `analysis/evidence-house-frightened-summary.txt`; 27,000 log lines, 33 boards):
+- Power pellet with a ghost waiting: `$00` -> `$80` in 134 of 134 cases (the test aid keeps eating the pellet for 16 frames, so many of these are repeats).
+- **The frightened time ended while the ghost still held `$80`: 9 natural ends** (one per ghost and episode, all with the pellet not re-eaten at once), **every one `$80` -> `$00`** (the next logged write of that ghost sees `$00` in 9 of 9), 6 with the ghost inside the house square (for example frame 2,234: ghosts 2 and 3 at (120,116) and (136,116), house timers 0 and 40) and 3 in the door column at y 100-102. The same transition was seen 75 more times when the aid ate the pellet again at once (also all correct).
+- **After `$80` -> `$00` the ghost's next state change was the ordinary release in 9 of 9**: `$00` -> `$01` at the door (124,100), then the normal start route.
+- **Leaving while frightened**: 50 cases of `$80` -> `$82` at the door row, in every one the next write sees `$82`; plus 52 normal releases `$00` -> `$01`.
+- Side observation: at level counters 18 and 19 the frightened countdown (`FrightenCountdown`, the log's `fright=` column) was 0 at the pellet, and the end followed one frame later (frames 30,847, 32,558, 32,573): a zero-length frightened period. The `$80` -> `$00` transition is the same.
