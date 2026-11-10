@@ -60,7 +60,10 @@ GAME_ZP = {0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 0x3E: "DstPtrL", 0x3F: "DstPtrH",
            # Sub_B423 adds these six BCD digits to the score; zp_E9 and zp_2B proven in docs/12-data-formats.md
            0x94: "ScoreAdd100000", 0x95: "ScoreAdd10000", 0x96: "ScoreAdd1000",
            0x97: "ScoreAdd100", 0x98: "ScoreAdd10", 0x99: "ScoreAdd1",
-           0xE9: "GhostsEaten", 0x2B: "CurrentPlayer"}
+           0xE9: "GhostsEaten", 0x2B: "CurrentPlayer",
+           # Pac-Man movement / animation (docs/12-data-formats.md, section on SmallTable_BB56)
+           0x89: "PacY", 0x8E: "PacX", 0x93: "PacDirection", 0xAB: "ChompPhase",
+           0xED: "DeathState", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
 
 
 def zp_name(addr):
@@ -84,6 +87,10 @@ ROM_NAMES = {
     0xB11F: "Copy0800To0C00",      # copies four pages $0800-$0BFF to $0C00-$0FFF
     0xB13D: "Copy0C00To1000",      # copies four pages $0C00-$0FFF to $1000-$13FF
     0xB15B: "Copy0C00To1400",      # copies four pages $0C00-$0FFF to $1400-$17FF
+    0xBB55: "PacMouthOffsets",     # 3 entries 00,0A,00 read at $B2DC (chomp cycle)
+    0xAE3D: "DeathSequence",       # state machine on DeathState (zp_ED), run while it is non-zero
+    0xAEF7: "DeathAnimation",      # plots Pac-Man's death frames while DeathAnimActive (zp_EA) is non-zero
+    0xB179: "MovePacMan",          # reads STICK0, moves PacX/PacY, picks and draws the Pac-Man shape
     0xB423: "AddToScore",          # decimal-mode add of ScoreAdd digits to the score at $202A-$202F (player 1) / $2047-$204C (player 2)
     0xA886: "GhostEaten",          # frightened ghost touched: pop-up, score 200/400/800/1600
     0xB3DE: "PowerPelletEaten",    # adds 50, sets GhostsEaten=$FF, frightens the ghosts
@@ -108,8 +115,10 @@ DATA = [
     (0xBB24, 0xBB2D, "shape", "PacShapeLeft2", None), (0xBB2E, 0xBB37, "shape", "PacShapeUp1", None),
     (0xBB38, 0xBB41, "shape", "PacShapeUp2", None), (0xBB42, 0xBB4B, "shape", "PacShapeDown1", None),
     (0xBB4C, 0xBB55, "shape", "PacShapeDown2", "last byte ($BB55) is also read as the first entry of SmallTable_BB55"),
-    (0xBB56, 0xBB64, "bytes", "SmallTable_BB56",
-     "tiny tables read with small indexes (D_BB55,x and D_BB57,x); purpose not yet known"),
+    (0xBB56, 0xBB56, "bytes", "PacMouthFrame2Offset",
+     "$0A = 10 bytes: offset from a direction's first Pac-Man frame to its second. Middle entry of PacMouthOffsets ($BB55-$BB57 = 00,0A,00); the outer two entries are shared bytes (last row of PacShapeDown2, first byte of DeathPlotBytes)"),
+    (0xBB57, 0xBB64, "bytes", "DeathPlotBytes",
+     "14 bytes, one plotted per step of the death animation (DeathAnimation $AF26): row = nibble map $0600+X minus 1, in missile memory at Pac-Man's Y"),
     (0xBB65, 0xBB6E, "words", "PacShapePtrs", "pointers to the first frame of each Pac-Man direction (full, right, left, up, down)"),
     (0xBB6F, 0xBB82, "bytes", "ZeroPageInit80", "20 bytes copied to zero page $80-$93 (X=$13..0) by the routine at $ADE0"),
     (0xBB83, 0xBB8C, "bytes", "SearchList_BB83", "10 ascending values searched linearly with CMP (X=9..0)"),
@@ -123,7 +132,7 @@ DATA = [
     (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to zp_5E-zp_61 for the DLIs"),
     (0xBBF2, 0xBBF7, "bytes", "Window3Table", "read as 3-byte windows at offsets 0-3 into zp_CB-zp_CD (90 60 30 / 60 30 04 / 30 04 00 / 04 00 00)"),
     (0xBBF8, 0xBC06, "bytes", "ByteTable_BBF8", "15 entries indexed by a level-dependent value; result goes to zp_FD"),
-    (0xBC07, 0xBC12, "shape", "StarShape", "12 rows (meaning unknown); the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),
+    (0xBC07, 0xBC12, "shape", "StarShape", "12 rows; drawn as the last (15th) frame of the death animation (AF3A); the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),
     (0xBC13, 0xBC1E, "shape", "GhostScoreZeros", "the two '0' digits shared by all four ghost-eaten pop-ups; drawn by the eaten ghost's player"),
     (0xBC1F, 0xBC2A, "shape", "GhostScore200Digits", "pop-up '200': the '2' (drawn with the four missiles), index 0 of GhostScorePtrs"),
     (0xBC2B, 0xBC36, "shape", "GhostScore400Digits", "pop-up '400': the '4', index 1"),

@@ -1,0 +1,11 @@
+Boot check, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K, no fast boot (tools/boot_crc_check.ps1).
+CRCs of the RAM the game has built when the first vertical-blank interrupt runs (breakpoint at $A5FD).
+
+variant (ROM bytes $A000-$A002)   RAM $0600-$0FFF   RAM $1000-$18C7   RAM $3000-$3327
+original   4A 4A 48               $123A086F         $AB27AE85         $5E84E650
+zeros      00 00 00               $123A086F         $AB27AE85         $5E84E650
+ones       FF FF FF               $123A086F         $AB27AE85         $5E84E650
+pattern    AA 55 AA               $123A086F         $AB27AE85         $5E84E650
+control    byte $A004 changed     $123A086F         $AB27AE85         $E574509A   (stream byte: CRC must change, and does)
+
+tools/decode_streams.py (Python) charset CRC-32 for $3000-$3327: $5E84E650  == Altirra RAM (decoder verified on the real machine)

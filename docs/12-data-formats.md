@@ -21,13 +21,13 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 ## Regions
 | ROM range | Label | Content | Evidence |
 |---|---|---|---|
-| `$A000–$A002` | UnreadHeader_A000 | 3 bytes, purpose unknown | no code reads them |
+| `$A000–$A002` | UnreadHeader_A000 | 3 bytes `4A 4A 48` that **nothing uses** | section below: never read by the game; the OS reads `$A000` only in its RAM-size test, where the value is irrelevant; boot CRCs identical for five different contents |
 | `$A003–$A1E0` | CharsetStream | type B → RAM `$3000`, 808 bytes = **101 glyphs** | DliHandler1 sets `CHBASE=$30`; 808 = 101 × 8 |
 | `$A1E1–$A385` | MazeMapStream | type A → RAM `$0800`, 920 bytes = **23 × 40** | DisplayList1 has exactly 23 mode-4 rows of 40; Start copies it to `$0C00/$1000/$1400` |
 | `$BAC0–$BAF1` | GhostShape0–4 | five ghost frames, 10 rows × 8 px | rendered bitmaps (see listing comments) |
 | `$BAF2` | GhostEyesShape | eyes only | bitmap |
 | `$BAFC–$BB55` | PacShape* | nine Pac-Man frames (full; open right ×2, left ×2, up ×2, down ×2) | bitmaps; pointer table `PacShapePtrs` at `$BB65` points to the first frame of each direction |
-| `$BB56–$BB64` | SmallTable_BB56 | 15 bytes | read by tiny indexes; purpose unknown |
+| `$BB55–$BB64` | PacMouthOffsets (`$BB55–$BB57` = `00 0A 00`), PacMouthFrame2Offset (`$BB56`), DeathPlotBytes (`$BB57–$BB64`) | chomp-animation offsets and the death-animation plot bytes | section below |
 | `$BB65–$BB6E` | PacShapePtrs | 5 words: `$BAFC $BB06 $BB1A $BB2E $BB42` | verified by test |
 | `$BB6F–$BB82` | ZeroPageInit80 | 20 bytes → zero page `$80–$93` | copy loop at `$ADE0` |
 | `$BB83–$BB96` | SearchList_BB83/BB8D | two ascending 10-value lists | linear `CMP` search loops |
@@ -76,6 +76,39 @@ Checked in `tests/test_ghost_score.py` (6 tests, all from ROM bytes), nothing as
 5. Drawn side by side (record = 8 px of missiles, then the shared zeros = 8 px of the player; positions set at `$A893–$A8A3`) the four shapes
    read **200**, **400**, **800** and **1600** (ASCII renders in the test).
 Not yet verified in the running game; the owner can confirm by eating the first ghost after a power pellet (the pop-up should say 200) in Altirra.
+
+## Confirmed: `$BB55–$BB64` (was "SmallTable_BB56")
+It was two different things that share bytes with their neighbours:
+- **`PacMouthOffsets` `$BB55–$BB57` = `00 0A 00`** (3 entries; the first is the last row byte of `PacShapeDown2`, the third the first byte of `DeathPlotBytes`).
+  `MovePacMan` (`$B179`) reads it at `$B2DC` as the Pac-Man mouth animation: `ChompPhase` (`$AB`) 0 shows `PacShapeFull`; phases 1, 2, 3 add offsets
+  0, 10, 0 to the direction's pointer (`PacShapePtrs`), so the shown frame goes **full, frame 1, frame 2, frame 1, full …** (shapes are 10 bytes apart,
+  hence `$0A`).
+  Direction handling proves the Up/Down/Left/Right names of the shapes: `STICK0` is inverted (`EOR #$0F`) into bits 1 = up, 2 = down, 4 = left, 8 = right;
+  the up handler does `DEC PacY` twice, down `INC PacY` twice, right `INC PacX`, left `DEC PacX`, and each loads pointer index 6, 8, 2, 4, which are the
+  up, down, right and left shapes of `PacShapePtrs`.
+- **`DeathPlotBytes` `$BB57–$BB64`** (14 bytes) are plotted one per step by `DeathAnimation` (`$AEF7`): frame 0 draws `PacShapeUp2`, frames 1–14 each write
+  one byte `DeathPlotBytes[x]` at row `(nibble-map byte at $0600+x) − 1` of Pac-Man's missile memory, frame 15 draws `StarShape`, then the 16 rows are cleared and
+  the animation flag is reset. Each frame lasts 8 ticks (`DeathAnimDelay` = 7). The animation runs only in the death sequence: a collision with a ghost
+  that is **not** frightened (`$A923`) sets `DeathState` = 1; `DeathSequence` (`$AE3D`) reaches state 2 and does `INC DeathAnimActive` (`$AE76`); `$A82F`
+  runs `DeathSequence` then `DeathAnimation` while `DeathState` is non-zero. Simulating the 15 frames from the ROM bytes shows the shape losing its top rows
+  and shrinking, then the starburst (`tests/test_bb56_a000.py`).
+
+## Confirmed: `$A000–$A002` are unused padding
+Three bytes `4A 4A 48` (also the ASCII letters "JJH"; no evidence that this means anything). Verified three independent ways:
+1. **Static audit of the cartridge** (test): no instruction has an absolute/indexed operand that can reach `$A000–$A002` (bases `$9F01–$A002`), no
+   JSR/JMP goes there, and the only pointer ever loaded with high byte `$A0` is the charset stream (`SrcPtr = $A003` at `$A41B`); the other two
+   `LDA #$A0` store to `zp_AD`, which is never used as a pointer. The six zero-page pointers used with `(zp),Y` (`$38 $3A $3C $3E $47 $80`) are only ever
+   assigned ROM addresses ≥ `$A003` or RAM addresses.
+2. **Dynamic trace** (Altirra tracepoint on reads of `$A000–$A002`, boot to title screen): the only reads are of `$A000`, by the **OS** RAM-size test at
+   `$F257–$F276` (probes the first byte of each 4 KB step: read, invert, write back, compare; ROM ignores the write, so the compare fails and that marks RAM top).
+   The value cannot matter: the test is `CMP` of the inverted value against the unchanged byte. `$A001` and `$A002` are never read
+   (`analysis/evidence-boot-trace.txt`).
+3. **Experiment**: booting copies of the ROM with `$A000–$A002` set to `00 00 00`, `FF FF FF` and `AA 55 AA` gives **identical** CRCs of the RAM the
+   game builds at start-up (`$0600–$0FFF`, `$1000–$18C7`, `$3000–$3327`) to the original; a control copy with a stream byte (`$A004`) changed does change the
+   `$3000` CRC, so the check can see differences (`analysis/evidence-boot-crc.txt`, `tools/boot_crc_check.ps1`). The same run shows that the Python
+   decoder reproduces Altirra's RAM exactly (charset CRC-32 `$5E84E650`).
+What they are for is not recoverable from the ROM (most likely a leftover from the build); they must be kept as they are for a byte-exact rebuild.
+Not yet covered by a running trace: reads during real play (static audit covers it); `tools/trace_altirra.ps1` is ready to record it.
 
 ## Findings worth knowing
 - The "text" on the title screen is not zero-terminated: `$00` is the **space** character, and every line has a fixed length given by the

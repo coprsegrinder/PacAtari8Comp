@@ -1,0 +1,16 @@
+Tracepoint 0 set on read at A003.
+Tracepoint 1 set on read at A000-A002.
+Tracepoint 2 set at $B2DC.
+Tracepoint 3 set at $AF26.
+Tracepoint 4 set at $AF3E.
+Tracepoint 5 set at $AE76.
+Tracepoint 6 set at $B3DE.
+Tracepoint 7 set at $A886.
+Tracepoint 8 set at $A8D3.
+Tracepoint 9 set at $B423.
+Breakpoint 10 set at $A5FD.
+READ_A000_A002 addr=$A000 value=$4A pc=$F263
+READ_A000_A002 addr=$A000 value=$4A pc=$F263
+READ_A000_A002 addr=$A000 value=$4A pc=$F265
+CONTROL_READ_A003 value=$C0 pc=$A66A
+CONTROL_READ_A003 value=$C0 pc=$A687
