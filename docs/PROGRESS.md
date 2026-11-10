@@ -17,7 +17,8 @@ Legend: DONE, NEXT, TODO, N/A (not applicable, with reason).
 | A4 | Install analysis tools (needs owner OK) | 10 | DONE (approved 2026-11-10) |
 | A5 | Boot ROM in emulator (needs owner screenshot) | 51, 52 | DONE (approved 2026-11-10) |
 | B6–B7 | Hardware/memory-map documentation, vectors | 11–20 | DONE – awaiting approval |
-| C8–C11 | Disassembler, full disassembly, byte-exact rebuild, data labelling | 21–30 | NEXT |
+| C8 | Disassembler built and validated | 21–22 | DONE – awaiting approval |
+| C9–C11 | Full disassembly, byte-exact rebuild, data labelling | 23–30 | NEXT |
 | D12–D16 | Control flow, variables, subsystem analysis | 31–50 | TODO |
 | E17–E18 | Emulator traces, correlation | 51–60 | TODO |
 | F19 | Resource extraction/decoding | 69–70 | TODO |
