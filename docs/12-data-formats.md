@@ -155,5 +155,5 @@ Movement speed comes from the `MoveDelay` cycles. Evidence is in `analysis/evide
 Patrol routes: **all 16 verified live** (`13-ghost-patrols.md`). Level-indexed tables: **every entry read live** on levels 0–50 and beyond (`14-levels.md`, `analysis/evidence-level-table-coverage.txt`).
 
 ## Still unknown
-`StarShape`'s artwork beyond its use as the last death frame, the frightened and eaten-ghost behaviour (states `$00`, `$40`–`$44`, bit 7).
+`StarShape`'s artwork beyond its use as the last death frame, the frightened-mode steering inversion (all state transitions, including frightened and eaten ghosts, are verified in `17-ghost-transitions.md`).
 These need tracing in Stage D/E. (The small tables around `$BBAB–$BBF7` are now explained in `15-small-tables.md`.)

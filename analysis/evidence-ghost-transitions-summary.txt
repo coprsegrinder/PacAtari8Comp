@@ -1,0 +1,62 @@
+state writes logged: 23322   frames: 305 - 131090
+writes that break the rule the code implies: 0
+InitBoard calls logged: 6   (A800 writes = board starts: 6 )
+continuity: consecutive writes of one ghost where old != the value the previous write left: 20   of which explained by InitBoard (old = 0 and a call between the two writes): 20
+
+transitions by store site (count):
+  $A800  game start: ghost 0 leaves the house   (6 writes)
+        $00 house                    -> $01 start route                   6
+  $A888  ghost eaten (Pac-Man touches a frightened ghost)   (58 writes)
+        $82 chase +frightened        -> $42 eaten                        33
+        $88 patrol travel +frightened -> $42 eaten                         4
+        $90 patrol +frightened       -> $42 eaten                         8
+        $A0 to corner +frightened    -> $42 eaten                        13
+  $AFA0  frightened time over   (155 writes)
+        $81 start route +frightened  -> $20 to corner                     1
+        $82 chase +frightened        -> $20 to corner                    84
+        $88 patrol travel +frightened -> $20 to corner                    11
+        $90 patrol +frightened       -> $20 to corner                    20
+        $A0 to corner +frightened    -> $20 to corner                    39
+  $B40A  power pellet eaten   (315 writes)
+        $01 start route              -> $81 start route +frightened       1
+        $02 chase                    -> $82 chase +frightened           121
+        $08 patrol travel            -> $88 patrol travel +frightened     15
+        $10 patrol                   -> $90 patrol +frightened           28
+        $20 to corner                -> $A0 to corner +frightened        52
+        $82 chase +frightened        -> $82 chase +frightened            70
+        $88 patrol travel +frightened -> $88 patrol travel +frightened     10
+        $90 patrol +frightened       -> $90 patrol +frightened           13
+        $A0 to corner +frightened    -> $A0 to corner +frightened         5
+  $B626  dots-eaten threshold (late board): all patrol/corner ghosts chase   (44 writes)
+        $08 patrol travel            -> $02 chase                         1
+        $10 patrol                   -> $02 chase                         5
+        $20 to corner                -> $02 chase                        38
+  $B6D0  eaten ghost reaches the door square   (55 writes)
+        $42 eaten                    -> $44 eaten at door                55
+  $B756  ghost leaves the house at the door row   (73 writes)
+        $00 house                    -> $01 start route                  18
+        $04 leaving house            -> $02 chase                        55
+  $B764  eaten ghost back inside the house   (55 writes)
+        $44 eaten at door            -> $04 leaving house                55
+  $B853  GhostSelectPatrol   (109 writes)
+        $01 start route              -> $08 patrol travel                17
+        $20 to corner                -> $08 patrol travel                92
+  $B895  arrived at the patrol start junction   (57 writes)
+        $08 patrol travel            -> $10 patrol                       57
+  $B8C7  GhostGoToCorner (chase time up / patrol time up)   (22341 writes)
+        $02 chase                    -> $20 to corner                    16
+        $08 patrol travel            -> $20 to corner                     5
+        $10 patrol                   -> $20 to corner                     7
+        $20 to corner                -> $20 to corner                 22313
+  $B8ED  ghost 0 finishes its start route   (6 writes)
+        $01 start route              -> $02 chase                         6
+  $BAB9  GhostSeesPacMan   (48 writes)
+        $08 patrol travel            -> $02 chase                        31
+        $10 patrol                   -> $02 chase                        17
+store sites never reached in this run: []
+
+per ghost, the states it was in (new values) and how often it entered them:
+  ghost 0: $01 start route x6, $02 chase x37, $04 leaving house x13, $08 patrol travel x21, $10 patrol x14, $20 to corner x5799, $42 eaten x14, $44 eaten at door x13, $82 chase +frightened x50, $88 patrol travel +frightened x3, $90 patrol +frightened x5, $A0 to corner +frightened x10
+  ghost 1: $01 start route x6, $02 chase x52, $04 leaving house x18, $08 patrol travel x27, $10 patrol x17, $20 to corner x6956, $42 eaten x18, $44 eaten at door x18, $82 chase +frightened x59, $88 patrol travel +frightened x12, $90 patrol +frightened x12, $A0 to corner +frightened x25
+  ghost 2: $01 start route x6, $02 chase x32, $04 leaving house x11, $08 patrol travel x30, $10 patrol x13, $20 to corner x4892, $42 eaten x12, $44 eaten at door x11, $82 chase +frightened x38, $88 patrol travel +frightened x4, $90 patrol +frightened x17, $A0 to corner +frightened x9
+  ghost 3: $01 start route x6, $02 chase x32, $04 leaving house x13, $08 patrol travel x31, $10 patrol x13, $20 to corner x4849, $42 eaten x14, $44 eaten at door x13, $81 start route +frightened x1, $82 chase +frightened x44, $88 patrol travel +frightened x6, $90 patrol +frightened x7, $A0 to corner +frightened x13
