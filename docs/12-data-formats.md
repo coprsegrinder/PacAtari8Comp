@@ -37,9 +37,9 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BBEE–$BBF1` | ColorsDli | 4 colours for the DLIs, masked by `COLRSH`/`DRKMSK` | code at `$A4BC` |
 | `$BBF2–$BBF7` | Window3Table | overlapping 3-byte windows | copy of 3 bytes at offset 0–3 |
 | `$BBF8–$BC06` | ByteTable_BBF8 | 15 entries by level index | result to `zp_FD` |
-| `$BC07–$BC4F` | StarShape, PopupZeros, PopupDigits200/400/800/1600 | 12-row shapes copied as 16 rows (4 pad bytes from the next table) | bitmaps; pointer table `PopupPtrs` indexed by `zp_E9` (**hyp**: ghost-eaten 200/400/800/1600) |
+| `$BC07–$BC4F` | StarShape, GhostScoreZeros, GhostScore200/400/800/1600Digits | 12-row shapes copied as 16 rows (4 pad bytes from the next table) | **ghost-eaten pop-ups: confirmed** (section below); StarShape's meaning is unknown |
 | `$BC50–$BCCF` | TuneAudf1, TuneAudf2 | 2 × 64 sound values → `AUDF1`/`AUDF2`, one step per 4 jiffies | `$A7DF`; index stops at `$40` (**hyp**: start-up tune) |
-| `$BCD0–$BCD7` | PopupPtrs | `$BC1F $BC2B $BC37 $BC43` | `2*zp_E9` indexing |
+| `$BCD0–$BCD7` | GhostScorePtrs | `$BC1F $BC2B $BC37 $BC43` | indexed `2*GhostsEaten` at `$A8CF` |
 | `$BCD8–$BCE5` | AudfSweepDown/Up | two 7-byte pitch sweeps, 0-terminated | chosen by `zp_F6` |
 | `$BCE6–$BCED` | RecordPtrs_BCE6 | 4 pointers into `$0686…$06A3` | indexed `2*X` |
 | `$BCEE–$BD0D` | RandomPositions | 16 (x, y) pairs | indexed by `RANDOM AND $0F` |
@@ -60,6 +60,22 @@ before `Start`, `$BE74`), and the output sizes are whole structures (below).
 | `$BF81–$BFC5` | DisplayList2, DisplayList1 | ANTIC display lists | decoded; JVB targets point to themselves |
 | `$BFC6–$BFF9` | TextPlayerGame, TextPressSelectFor, TextPressOptionTo, TextPlayGame | title-screen lines of 11, 16, 16, 9 bytes | fixed-length copy loops, lengths from the loop counts |
 | `$BFFA–$BFFF` | cartridge header | RUN, flags, INIT | standard layout |
+
+## Confirmed: the pop-up shapes are the ghost-eaten scores 200 / 400 / 800 / 1600
+Checked in `tests/test_ghost_score.py` (6 tests, all from ROM bytes), nothing assumed:
+1. **Power pellet** (`PowerPelletEaten`, `$B3DE`, reached from three corner-position checks): stores 5 in the tens digit
+   (`ScoreAdd10`) and calls `AddToScore` (+50), sets `GhostsEaten` (`$E9`) to `$FF`, and sets bit 7 of every ghost's state byte (`zp_CE,X`).
+2. **Eating a ghost** (`GhostEaten`, `$A886`): reached only when that ghost's state bit 7 is set (`BMI` at `$A881`); it does `INC GhostsEaten`,
+   so the first ghost after a pellet gives index 0 (`$FF` + 1), the fourth gives index 3.
+3. The same index drives both results: `$A8CF` loads `GhostScorePtrs[2*index]` and copies that 16-row shape to the missile memory
+   (`zp_39 = $23`: missiles at `$2300` with `PMBASE=$20`, single-line), plus `GhostScoreZeros` to the eaten ghost's player (`zp_3B = $24 + ghost`);
+   `$A900–$A91E` sets the amount: index 0 → `ScoreAdd100 = 2`, 1 → 4, 2 → 8, 3 → `ScoreAdd1000 = 1` and `ScoreAdd100 = 6`, then `JMP AddToScore`.
+4. `AddToScore` (`$B423`, decimal mode) adds the six digits `$94–$99` (`ScoreAdd100000`…`ScoreAdd1`; `Y = 5..0`) to the score digits at
+   `$202A–$202F` (player 1) or `$2047–$204C` (player 2), chosen by `CurrentPlayer` (`$2B`).
+   So the amounts are exactly **200, 400, 800, 1600**.
+5. Drawn side by side (record = 8 px of missiles, then the shared zeros = 8 px of the player; positions set at `$A893–$A8A3`) the four shapes
+   read **200**, **400**, **800** and **1600** (ASCII renders in the test).
+Not yet verified in the running game; the owner can confirm by eating the first ghost after a power pellet (the pop-up should say 200) in Altirra.
 
 ## Findings worth knowing
 - The "text" on the title screen is not zero-terminated: `$00` is the **space** character, and every line has a fixed length given by the

@@ -56,7 +56,11 @@ def hw_name(addr, mnem):
 
 
 # Game zero-page variables named so far (evidence: used as (zp),y pointers by the helpers and by Start).
-GAME_ZP = {0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 0x3E: "DstPtrL", 0x3F: "DstPtrH"}
+GAME_ZP = {0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 0x3E: "DstPtrL", 0x3F: "DstPtrH",
+           # Sub_B423 adds these six BCD digits to the score; zp_E9 and zp_2B proven in docs/12-data-formats.md
+           0x94: "ScoreAdd100000", 0x95: "ScoreAdd10000", 0x96: "ScoreAdd1000",
+           0x97: "ScoreAdd100", 0x98: "ScoreAdd10", 0x99: "ScoreAdd1",
+           0xE9: "GhostsEaten", 0x2B: "CurrentPlayer"}
 
 
 def zp_name(addr):
@@ -80,6 +84,9 @@ ROM_NAMES = {
     0xB11F: "Copy0800To0C00",      # copies four pages $0800-$0BFF to $0C00-$0FFF
     0xB13D: "Copy0C00To1000",      # copies four pages $0C00-$0FFF to $1000-$13FF
     0xB15B: "Copy0C00To1400",      # copies four pages $0C00-$0FFF to $1400-$17FF
+    0xB423: "AddToScore",          # decimal-mode add of ScoreAdd digits to the score at $202A-$202F (player 1) / $2047-$204C (player 2)
+    0xA886: "GhostEaten",          # frightened ghost touched: pop-up, score 200/400/800/1600
+    0xB3DE: "PowerPelletEaten",    # adds 50, sets GhostsEaten=$FF, frightens the ghosts
 }
 
 
@@ -116,16 +123,16 @@ DATA = [
     (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to zp_5E-zp_61 for the DLIs"),
     (0xBBF2, 0xBBF7, "bytes", "Window3Table", "read as 3-byte windows at offsets 0-3 into zp_CB-zp_CD (90 60 30 / 60 30 04 / 30 04 00 / 04 00 00)"),
     (0xBBF8, 0xBC06, "bytes", "ByteTable_BBF8", "15 entries indexed by a level-dependent value; result goes to zp_FD"),
-    (0xBC07, 0xBC12, "shape", "StarShape", "12 rows; the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),
-    (0xBC13, 0xBC1E, "shape", "PopupZeros", "'00' digits shared by the four score pop-ups (hyp: ghost-eaten 200/400/800/1600)"),
-    (0xBC1F, 0xBC2A, "shape", "PopupDigits200", "leading digit '2' (hyp)"),
-    (0xBC2B, 0xBC36, "shape", "PopupDigits400", "leading digit '4' (hyp)"),
-    (0xBC37, 0xBC42, "shape", "PopupDigits800", "leading digit '8' (hyp)"),
-    (0xBC43, 0xBC4E, "shape", "PopupDigits1600", "leading '16' (hyp)"),
+    (0xBC07, 0xBC12, "shape", "StarShape", "12 rows (meaning unknown); the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),
+    (0xBC13, 0xBC1E, "shape", "GhostScoreZeros", "the two '0' digits shared by all four ghost-eaten pop-ups; drawn by the eaten ghost's player"),
+    (0xBC1F, 0xBC2A, "shape", "GhostScore200Digits", "pop-up '200': the '2' (drawn with the four missiles), index 0 of GhostScorePtrs"),
+    (0xBC2B, 0xBC36, "shape", "GhostScore400Digits", "pop-up '400': the '4', index 1"),
+    (0xBC37, 0xBC42, "shape", "GhostScore800Digits", "pop-up '800': the '8', index 2"),
+    (0xBC43, 0xBC4E, "shape", "GhostScore1600Digits", "pop-up '1600': the '16', index 3"),
     (0xBC4F, 0xBC4F, "bytes", "Pad_BC4F", "zero byte: padding"),
     (0xBC50, 0xBC8F, "bytes", "TuneAudf1", "64 entries stored to AUDF1, stepped every 4th jiffy by the routine around $A7DF (hyp: start-up tune)"),
     (0xBC90, 0xBCCF, "bytes", "TuneAudf2", "64 entries stored to AUDF2 together with TuneAudf1"),
-    (0xBCD0, 0xBCD7, "words", "PopupPtrs", "pointers to the four pop-up shapes (indexed by 2*zp_E9)"),
+    (0xBCD0, 0xBCD7, "words", "GhostScorePtrs", "pointers to the four ghost-eaten pop-up shapes, indexed by 2*GhostsEaten (confirmed, see docs/12-data-formats.md)"),
     (0xBCD8, 0xBCDE, "bytes", "AudfSweepDown", "AUDF1 values, descending, ended by 0; chosen when zp_F6 = 0"),
     (0xBCDF, 0xBCE5, "bytes", "AudfSweepUp", "AUDF1 values, ascending, ended by 0; chosen when zp_F6 <> 0"),
     (0xBCE6, 0xBCED, "words", "RecordPtrs_BCE6", "4 pointers into RAM $0686-$06A3 (indexed by 2*X)"),
