@@ -22,3 +22,20 @@ Key events in log order:
 Chomp table reads at $B2DC: 740, ChompPhase values in order: 01 02 03 01 02 03 01 02 03 01 02 03 ...
 Death plot reads at $AF26: 112 = 14 frames x 8 redraws; (frame,X) order: 01/00 02/01 03/02 04/03 05/04 06/05 07/06 08/07 09/08 0A/09 0B/0A 0C/0B 0D/0C 0E/0D
 StarShape row reads at $AF3E: 128 = 16 rows x 8 redraws, all in frame $0F
+
+Second session, with -InfinitePowerPill (debugger refills zp_FD each frame; ROM untouched). Full log kept locally (F:\Ports\play-trace2.txt, 1110 lines).
+Result: 1 power pellet, then 4 ghosts eaten in a row; $A000-$A002 again read only at boot (3 reads by the OS).
+  line  185  POWER_PELLET_EATEN E9_before=$00
+  line  186  ADD_TO_SCORE digits=$00$00$00$00$05$00   (digits $94..$99)
+  line  572  GHOST_EATEN E9_before_inc=$FF
+  line  573  GHOST_SCORE_PTR_READ index*2=Y=$00
+  line  574  ADD_TO_SCORE digits=$00$00$00$02$00$00   (digits $94..$99)
+  line  713  GHOST_EATEN E9_before_inc=$00
+  line  714  GHOST_SCORE_PTR_READ index*2=Y=$02
+  line  715  ADD_TO_SCORE digits=$00$00$00$04$00$00   (digits $94..$99)
+  line  773  GHOST_EATEN E9_before_inc=$01
+  line  774  GHOST_SCORE_PTR_READ index*2=Y=$04
+  line  775  ADD_TO_SCORE digits=$00$00$00$08$00$00   (digits $94..$99)
+  line  985  GHOST_EATEN E9_before_inc=$02
+  line  986  GHOST_SCORE_PTR_READ index*2=Y=$06
+  line  987  ADD_TO_SCORE digits=$00$00$01$06$00$00   (digits $94..$99)

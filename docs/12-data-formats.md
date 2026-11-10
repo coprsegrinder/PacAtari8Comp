@@ -75,7 +75,7 @@ Checked in `tests/test_ghost_score.py` (6 tests, all from ROM bytes), nothing as
    So the amounts are exactly **200, 400, 800, 1600**.
 5. Drawn side by side (record = 8 px of missiles, then the shared zeros = 8 px of the player; positions set at `$A893–$A8A3`) the four shapes
    read **200**, **400**, **800** and **1600** (ASCII renders in the test).
-**Live check (Altirra, 2026-11-10, `analysis/evidence-play-trace-summary.txt`):** after a power pellet (`GhostsEaten` was `$FF`), eating a ghost logged `INC` then pop-up index 0 (`GhostScorePtrs` read with Y = 0), and `AddToScore` received digits `000200`. Power pellets added `000050` and dots `000010`. Only one ghost was eaten in that session, so 400, 800 and 1600 rest on the code and the shape renders, not on a live run.
+**Live check (Altirra, 2026-11-10, `analysis/evidence-play-trace-summary.txt`):** after a power pellet (`GhostsEaten` was `$FF`), eating a ghost logged `INC` then pop-up index 0 (`GhostScorePtrs` read with Y = 0), and `AddToScore` received digits `000200`. Power pellets added `000050` and dots `000010`. A second session (power pellet held with a debugger refill of the countdown, ROM untouched) ate four ghosts in a row: `GhostsEaten` went `$FF → 0, 1, 2, 3`, `GhostScorePtrs` was read with Y = 0, 2, 4, 6, and `AddToScore` received `000200`, `000400`, `000800`, `001600`. So all four pop-ups are confirmed live.
 
 ## Confirmed: `$BB55–$BB64` (was "SmallTable_BB56")
 It was two different things that share bytes with their neighbours:
