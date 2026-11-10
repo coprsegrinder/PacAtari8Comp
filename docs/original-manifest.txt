@@ -1,0 +1,5 @@
+# Manifest of original materials (stage 7). Format: SHA-256  size  path
+# Verify with:  python -I tools/verify_originals.py
+a99b2dd10b546d90d14de56d73a58a9d38e19ec411e37e33dcbd7e0633d8a56a  8192  original/Pac-Man.rom
+1afa7d69b5463a2379aeb1197dc66e918346a7b56a22a2fc6f09c421bfae2090  16051  original/Decompilation steps.txt
+3130f4de3c5108d2911b7eb0587ada55737219df840b0b0713881ab8f3741ddc  225063  original/reference-AtariAge-thread-291065.htm
