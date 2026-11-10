@@ -16,7 +16,7 @@ Legend: DONE, NEXT, TODO, N/A (not applicable, with reason).
 | A3 | File inventory, checksums, read-only ROM backup | 6, 7, 8 | DONE (approved 2026-11-10) |
 | A4 | Install analysis tools (needs owner OK) | 10 | DONE (approved 2026-11-10) |
 | A5 | Boot ROM in emulator (needs owner screenshot) | 51, 52 | DONE (approved 2026-11-10) |
-| B6–B7 | Hardware/memory-map documentation, vectors | 11–20 | DONE – awaiting approval |
+| B6–B7 | Hardware/memory-map documentation, vectors | 11–20 | DONE (approved 2026-11-10) |
 | C8 | Disassembler built and validated | 21–22 | DONE – awaiting approval |
 | C9–C11 | Full disassembly, byte-exact rebuild, data labelling | 23–30 | NEXT |
 | D12–D16 | Control flow, variables, subsystem analysis | 31–50 | TODO |
