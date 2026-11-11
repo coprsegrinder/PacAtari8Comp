@@ -87,3 +87,17 @@ On the title screen `DliHandler2` writes `COLPF1` = `$44` (the red "1 PLAYER GAM
 - The colours of the frightened and eaten ghosts are written by code, not from these tables; they are **verified live and explained** in `16-ghost-frames.md` ("Colours of frightened and eaten ghosts").
 - Colour of the bottom-row items other than by the rule above (identified from the code and the scanline log; no pixel-by-pixel check of every item).
 - The sight test while a ghost is frightened or eaten (it is only called from the patrol states).
+
+## The sight test while a ghost is frightened or eaten (verified 2026-11-11)
+**Rule: only a ghost in state `$08` (patrol travel) or `$10` (patrol) is ever tested.** `GhostSeesPacMan` has exactly one caller, the loop at `$B603` (once per frame, in `Sub_B5C7`), which compares the state with `$08` and `$10` for equality (`tests/test_sight_colors.py`, `SightOnlyForPatrolGhosts`). Consequences, all from that one comparison:
+- **Frightened ghosts** have bit 7 set, so a patrol ghost that becomes frightened is `$88` or `$90` and no longer equals `$08`/`$10`: it is **not tested** and can never be switched to chase by sight, however clearly Pac-Man is in line. (It does not need to be: a frightened ghost already steers by the Pac-Man target, mirrored, see `18-frightened-eaten-house.md`.)
+- **Eaten ghosts** (`$42` eyes, `$44` at the door) are never tested either; they go home and come back as chase (`$02`).
+- When the frightened time ends a frightened patrol ghost does **not** return to patrol: `$AF8C-$AFA0` turns `$88`/`$90` into `$20` (corner), from where the normal corner arrival gives a fresh patrol (`17-ghost-transitions.md`). So the sight test resumes only after that.
+- Ghosts in the house, on the start route, chasing or going to a corner are not tested for the same reason (they were already not tested before; this is just the same comparison).
+Live (`tools/altirra_sight_states.cmd`, `tools/analyze_sight_states_log.py`, `analysis/evidence-sight-states-summary.txt`; Pac-Man invulnerable and, by test aid, kept on the line of sight of one ghost at a time, power pellets eaten at many moments of each board including whenever a ghost was in `$10`; 49,800 frames of the loop, levels 0-39, 199,200 ghost-frames):
+- **GhostSeesPacMan was called for exactly the ghosts in `$08`/`$10` and for no others**: 2,416 ghost-frames in `$08`/`$10`, 2,416 calls; 0 calls for any other of the 196,784 ghost-frames.
+- **Patrol ghosts: the sighting equals the exact software model of the test in every frame** (66 sightings in 2,416 frames, 0 differences), so the control works: the aid really does put Pac-Man in sight.
+- **Frightened patrol ghosts (`$88`: 1,068 ghost-frames, `$90`: 349) with Pac-Man in line of sight according to the model: 155 frames (141 and 14) - 0 calls, 0 sightings, the state stayed frightened.** All frightened states together (`$80` house, `$81`/`$82`/`$84`/`$88`/`$90`/`$A0`): 91,446 ghost-frames, the model says "would see" in 12,473, 0 calls, 0 sightings; eaten ghosts (`$42`/`$44`: 25,685 ghost-frames, 2,836 "would see"): 0 calls, 0 sightings.
+- All other states (`$00 $01 $02 $04 $20`): 79,653 ghost-frames, 10,818 "would see", 0 calls, 0 sightings.
+Limit: the line of sight was produced by test aids (Pac-Man moved in front of the ghost), not by a person; the sighting of the shipped test is the one in this document (it reads the offset tables, not the lists).
+

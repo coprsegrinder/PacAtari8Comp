@@ -38,7 +38,7 @@ Counts are from the 131,090-frame run; the "store" column is the address of the 
 | **Chase time up** | `$B8C7` | `$02 → $20` | `ChaseTimer = 0` | 16 |
 | (corner state re-entered every step) | `$B8C7` | `$20 → $20` | – | 22,313 |
 | **Corner reached** | `$B853` | `$20 → $08` (new random patrol) | steering has nothing left to do | 92 |
-| **Sighting** | `$BAB9` | `$08` or `$10 → $02` (chase), then `ChaseTimer := $A0` | `GhostSeesPacMan` (`15-small-tables.md`); ghost 2 only if `RTCLOK2` bit 7 is clear | 31 + 17 |
+| **Sighting** | `$BAB9` | `$08` or `$10 → $02` (chase), then `ChaseTimer := $A0` | `GhostSeesPacMan` (`15-small-tables.md`); ghost 2 only if `RTCLOK2` bit 7 is clear; **only ghosts in exactly `$08`/`$10` are tested, never frightened or eaten ones** (verified, `15-small-tables.md`) | 31 + 17 |
 | **Late board (dots eaten)** | `$B626` | `$08`, `$10` or `$20 → $02` | dots eaten ≥ `$E0` (ghosts 0–2) or ≥ `$F0` (ghost 3); afterwards `ChaseTimer := $FF` so the chase never times out | 1 + 5 + 38 |
 | Power pellet | `$B40A` | any not-eaten state `→` state OR `$80` | ghost not eaten (bit 6 clear) | 315 |
 | Frightened time over | `$AFA0` | `$8x → $20` (corner); `$80 → $00` | `FrightenPhase` reached `FrightenEndPhase`; only frightened ghosts | 155 |

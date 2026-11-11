@@ -164,5 +164,25 @@ class ListMeaning(unittest.TestCase):
         self.assertEqual(L.closed_gaps_row(7), [248 - g for g in reversed(L.closed_gaps_row(7))])
 
 
+class SightOnlyForPatrolGhosts(unittest.TestCase):
+    """The sight test is applied to a ghost only in state $08 or $10 (docs/15, 'The sight test while a ghost is frightened or eaten'). Live: analysis/evidence-sight-states-summary.txt."""
+    def test_loop_and_single_caller(self):
+        # $B601: LDX #3 / LDA GhostState,X / CMP #$08 / BEQ / CMP #$10 / BEQ / BNE next / JSR GhostSeesPacMan / DEX / BPL / RTS
+        self.assertEqual(at(0xB601, 21), hx("A203B5CEC908F006C910F002D0032019BACA10EE60"))
+        import disasm6502 as D
+        base = 0xA000
+        data = bytes(rd(base + i) for i in range(0x2000))
+        code, _ = D.trace(data, base, [0xA386, 0xA6B4, 0xA5FD, 0xA573, 0xA5CE])
+        callers = [hex(a) for a in sorted(code) if D.decode(data, base, a)[2] == "abs" and D.decode(data, base, a)[3] == 0xBA19]
+        self.assertEqual(callers, ["0xb60f"])                         # the only reference to GhostSeesPacMan
+        # exact compare: a frightened patrol ghost is $88 / $90 (bit 7 set), an eaten one has bit 6 set: neither equals $08 / $10
+        for st in (0x88, 0x90, 0x42, 0x44, 0x82, 0xA0, 0x20, 0x02, 0x01, 0x04, 0x00, 0x80):
+            self.assertNotIn(st, (0x08, 0x10))
+        # a frightened patrol ghost does not return to patrol when the time ends: $AF8C-$AFA0 turns $8x into $20 (corner), $80 into $00
+        self.assertEqual(at(0xAF8C, 22), hx("B5CE1012C980F00629BBF00AD004A900F002A92095CE"))
+        self.assertEqual(0x88 & 0xBB, 0x88)
+        self.assertEqual(0x90 & 0xBB, 0x90)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

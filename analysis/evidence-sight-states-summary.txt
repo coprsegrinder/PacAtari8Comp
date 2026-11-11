@@ -1,0 +1,29 @@
+sight-loop snapshots: 49800 (frames 306 to 66927 )  levels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]
+
+by state of the ghost at the start of the loop:
+  state              ghost-frames    would see       called      sighted
+  patrol $08                 2414           66         2414           66
+  patrol $10                    2            0            2            0
+  eaten $42                 23346         2793            0            0
+  eaten $44                  2339           43            0            0
+  frightened $80             1277           18            0            0
+  frightened $81            21761         3221            0            0
+  frightened $82            32655         3978            0            0
+  frightened $84             2601           76            0            0
+  frightened $88             1068          141            0            0
+  frightened $90              349           14            0            0
+  frightened $A0            31735         5025            0            0
+  other $00                  8796          502            0            0
+  other $01                  6954         1313            0            0
+  other $02                 10710         1550            0            0
+  other $04                  6728          222            0            0
+  other $20                 46465         7231            0            0
+
+grouped:
+  patrol ($08/$10)                   ghost-frames    2416 | would see     66 | called   2416 | sighted    66
+  frightened ($80 bit, not eaten)    ghost-frames   91446 | would see  12473 | called      0 | sighted     0
+  eaten ($42/$44 ...)                ghost-frames   25685 | would see   2836 | called      0 | sighted     0
+  all other states                   ghost-frames   79653 | would see  10818 | called      0 | sighted     0
+
+frightened patrol ghosts ($88 / $90) that the model says would see Pac-Man: 155 - sightings among them: 0
+violations: none
