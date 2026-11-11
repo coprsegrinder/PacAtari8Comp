@@ -89,5 +89,36 @@ class DeathModel(unittest.TestCase):
             self.assertEqual(sum(1 for a, b in zip(C.death_page(k), C.death_page(k - 1)) if a != b) <= 1, True)
 
 
+class ZpAEAndRestart(unittest.TestCase):
+    """zp_AE = "draw only, do not step" (StepAndDrawEntity) and the restart after the death (docs/20, 'After the death')."""
+    def test_every_access_to_zp_ae(self):
+        import disasm6502 as DD
+        base = 0xA000
+        data = bytes(rd(base + i) for i in range(0x2000))
+        code, _ = DD.trace(data, base, [0xA386, 0xA6B4, 0xA5FD, 0xA573, 0xA5CE])
+        uses = [(hex(a), DD.decode(data, base, a)[1]) for a in sorted(code) if DD.decode(data, base, a)[2] in ("zp", "zpx", "zpy") and DD.decode(data, base, a)[3] == 0xAE]
+        # writes: $A92E (the death sets 1), $AD4B (Sub_AD49 sets 1), $AD59 (Sub_AD49 clears); reads: only the four direction cases of StepAndDrawEntity; InitBoard's zero-page clear (STA $80,X) also zeroes it
+        self.assertEqual(uses, [("0xa92e", "sta"), ("0xad4b", "sta"), ("0xad59", "sta"), ("0xb906", "ldy"), ("0xb916", "ldy"), ("0xb926", "ldy"), ("0xb934", "ldy")])
+        self.assertEqual(at(0xB906, 8), hx("A4AED004D685D685"))              # LDY zp_AE / BNE skip / DEC EntityY,X x2   (up: two lines)
+        self.assertEqual(at(0xB934, 6), hx("A4AED002F68A"))                  # LDY zp_AE / BNE skip / INC EntityX,X       (right: one clock)
+        self.assertEqual(at(0xAD49, 21), hx("A90185AEA203B58F2002B9CA10F8A90085AE4CCEB2"))   # Sub_AD49: AE := 1, draw the four ghosts in place, AE := 0, JMP $B2CE (draw Pac-Man, Full)
+
+    def test_restart_code(self):
+        # $A805: zp_24 = 0 -> normal step; 1 -> Sub_AA2D, then zp_24 := 2 and zp_25 := $40 (when zp_23 and zp_20 are 0); 2 -> count zp_25 down, at 0 zp_24 := 0 and fall into $A800
+        self.assertEqual(at(0xA805, 0x27), hx("A524F023C901D012202DAAA523D0B3A520D0AFE624A940852560A525F003C62560A9008524F0D4"))
+        self.assertEqual(at(0xA800, 5), hx("E6CE205EAD"))                    # INC GhostState (ghost 0: 0 -> 1, start route) / JSR Sub_AD5E (clear the READY row)
+        self.assertEqual(at(0xAD5E, 11), hx("A20DA9009DED0DCA10FA60"))        # 14 bytes at $0DED := 0
+        # $AAE0 (one player, lives left): InitBoard, DrawLevelIndicator (writes the READY tiles), Sub_AD0E (Sub_AD49, then lives - 1, then the life icons)
+        self.assertEqual(at(0xAAE0, 15), hx("A62BB52CF00920AFAD2093AC4C0EAD"))
+        self.assertEqual(at(0xAD0E, 11), hx("2049ADA62BD62CA62BB52C"))
+        self.assertEqual(at(0xAC93, 19), hx("A9A2A2009DEF0D186901E8E00AD0F5A62BB530"))   # READY!: tiles $A2-$AB at $0DEF-$0DF8 (then the level indicator)
+        self.assertEqual(at(0xADAF, 10), hx("20F1B0A27F9580CA10FB"))         # InitBoard: clear player/missile memory, then zero page $80-$FF := 0 (DeathState, zp_AA, zp_AE, FrightenPhase ... )
+
+    def test_game_over_code(self):
+        # last life: $AAEF writes the 14 tiles $AC-$B9 at $0DED ("GAME OVER"), COLOR3 and COLPF3 := $44, then the high-score compare and zp_20 := 1, zp_1E := $E2
+        self.assertEqual(at(0xAAEF, 35), hx("A9ACA2009DED0D186901E8E00ED0F5A9448DC7028D19D0A523D0D5A22A2026ABA24720"))
+        self.assertEqual(at(0xAB14, 12), hx("A9008524A9018520A9E2851E"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

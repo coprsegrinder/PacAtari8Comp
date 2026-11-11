@@ -23,7 +23,7 @@ pellets, 105 bonus items and 106 level indicators, **0 mismatches**), and later 
 | Frightened flash length | `$AF71` → `FrightenEndPhase` | Level | **none** (20 entries) |
 | Bonus item in the maze | `$B662` → `BonusItemCodes` | Level | **12** |
 | Bonus score and its pop-up | `$A974` → `BonusScore`; `$A93F` → `BonusScoreGlyphOffsets` → `BonusScoreGlyphs` | Level | **12** |
-| Level indicator (bottom row) | `DrawLevelIndicator` (`$AC93`) → `BonusItemCodes` | Level | 6 / 18 (see below) |
+| Level indicator (bottom row) | `DrawLevelIndicator` (`$AC93`; it first also writes the READY! text tiles, see `20-pacman-and-death.md`) → `BonusItemCodes` | Level | 6 / 18 (see below) |
 | Ghost-house release timers | `SetupBoard` → `SetReleaseTimers` (`$AE2B`) → `HouseReleaseTimers` | Level + 1 | **3** |
 
 **Nothing else depends on the level**: the ghost state machine, the patrol and start routes, the maze and the sight test contain no read of the counter.

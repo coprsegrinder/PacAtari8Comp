@@ -26,6 +26,10 @@ foreach ($k in $shapes.Keys) {
 $targets += ,@('Death_freeze', 'death', '(db($ed)=1)&(db($ee)=50)&((db($14)&$0F)=8)')
 for ($k = 0; $k -le 15; $k++) { $targets += ,@(('Death_anim{0:D2}' -f $k), 'death', ('(db($ed)>=3)&(db($ea)=1)&(db($eb)={0})&(db($ec)=3)' -f $k)) }
 $targets += ,@('Death_end', 'death', '(db($ed)=6)&(db($ea)=0)&(db($24)=0)&(db($f1)=64)')
+# after the death (the per-frame routine at $A78C): the get-ready wait (zp_24 = 2, zp_25 counts 64 -> 0) and the first frame after it
+$targets += ,@('Ready_wait', 'ready', '(db($24)=2)&(db($25)=30)')
+$targets += ,@('Ready_wait_start', 'ready', '(db($24)=2)&(db($25)=50)')
+$targets += ,@('Ready_play', 'readylatch', '(db($24)=0)&(db($ce)=1)&(db($ed)=0)&(db($0def)=0)&(db($21)=1)')
 if ($Only) { $Only = @($Only | ForEach-Object { $_ -split ',' }); $targets = @($targets | Where-Object { $Only -contains $_[0] }) }
 $tpl = Get-Content (Join-Path $root 'altirra_pacshots.cmd') | Where-Object { $_ -notmatch '^\s*(#|$)' }
 $bot = 'bp -n a82f "r @t5 ((@frame/$30)%4); eb $278 ($0E*(@t5=0))+($07*(@t5=1))+($0D*(@t5=2))+($0B*(@t5=3))"'
@@ -37,6 +41,13 @@ foreach ($t in @($targets)) {
     $ml = @('bp -n a504 "r pc $a537; bc 0"', 'bp -n a923 "r pc $a936"', $bot,
             ('bp -n a82f "r @t1 (' + $cond + '); r @t2 (@t2|@t1); eb $aa db($aa)|(@t2*$80)"'),
             ('bp -n a82f "r @t3 (@t3+@t2); r @t6 (@t3>=4); ' + $frz + '"'))
+  } elseif ($mode -eq 'readylatch') {
+    $ml = @('bp -n a504 "r pc $a537; bc 0"', 'bp -n a923 "eb $2c 3; eb $2d 3"', $bot,
+            ('bp -n a78c "r @t1 (' + $cond + '); r @t2 (@t2|@t1)"'),
+            ('bp -n a78c "r @t3 (@t3+@t2); r @t6 (@t3>=8); ' + $frz.Replace('$a82f', '$a78c') + '"'))
+  } elseif ($mode -eq 'ready') {
+    $ml = @('bp -n a504 "r pc $a537; bc 0"', 'bp -n a923 "eb $2c 3; eb $2d 3"', $bot,
+            ('bp -n a78c "r @t6 (' + $cond + '); ' + $frz.Replace('$a82f', '$a78c') + '"'))
   } else {
     $ml = @('bp -n a504 "r pc $a537; bc 0"', 'bp -n a923 "eb $2c 3; eb $2d 3"', $bot,
             ('bp -n a82f "r @t6 (' + $cond + '); ' + $frz + '"'))

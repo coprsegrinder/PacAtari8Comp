@@ -1,0 +1,26 @@
+frames logged: 4921  events: {'INITBOARD': 3, 'LEVEL_INDICATOR': 3, 'SUB_AD0E': 3, 'SUB_AD49': 3, 'TURN_START': 3, 'START_PLAY': 3, 'CLEAR_READY': 3, 'DEATH_START': 3, 'DEATH_DONE': 3, 'INITBOARD_CALL': 2, 'AA2D_RETURN': 3, 'Z24_INC': 2, 'GAME_OVER_TEXT': 1}
+
+PART 1 - the restart after the death: 2 deaths
+  frames from the end of the death routine (zp_24 := 1) to the start of play: {66: 2}
+  frames in the wait (zp_24 = 2): {65: 2}
+  sound registers written between the end of the death and the start of play: 0
+  writes to the READY row ($0DED-$0DFA) in that time (by instruction): {'pc=$AC97': 20, 'pc=$AD62': 28} (AC97 = DrawLevelIndicator writes the 10 tiles, AD62 = Sub_AD5E clears 14 bytes at the start of play)
+
+PART 2 - zp_AE: calls of StepAndDrawEntity ($B902) with the value of zp_AE and the ghost's coordinates before and after the movement code
+  calls with zp_AE <> 0 by place: {}
+  zp_AE = 0: 0 calls moved the ghost by one step in its direction (all equal to the rule); zp_AE = 1: 0 calls, 0 moved a ghost
+
+PART 3 - the death of the last life: 1 game over(s)
+  first frame: zp_20 = 1, zp_24 = 0, zp_1E = 226, READY/GAME OVER row = ACADAEAFB0B1B2B3B4B5B6B7B8B9, COLOR3 = $44, lives = 0,3, DeathState 6, zp_AE 1
+  zp_1E counted from 226 to 1 over 1797 frames (225 decrements; spacing in frames between decrements: {8: 224})
+  last logged frame 4961: zp_1E = 1 (after it the per-frame routine is not called again: the code at $A4ED sets zp_19 := 4 and the game leaves the board screen)
+
+  deaths followed to the start of play                                                                                                                   2
+  dots eaten, power-pellet flags and bonus counter are kept through the death                                                                            2
+  first frame of play: zp_24 = 0, ghost 0 state 1, ghosts 1-3 state 0, READY row cleared                                                                 2
+  first frame of the wait: zp_24 = 2, zp_25 = 64, DeathState 0, zp_AE 0, zp_AA 0, ghosts state 0 at the ZeroPageInit80 positions, Pac-Man (124,164) facing left, colours = ColorsGame, READY tiles 2
+  game over screen unchanged during the whole countdown (text, ghosts, Pac-Man, lives, dots)                                                             1
+  game over: zp_20 = 1, zp_24 = 0, zp_1E = $E2, GAME OVER tiles $AC-$B9 at $0DED, COLOR3 = $44 (red), lives 0                                            1
+  lives: TURN_START took exactly one life of player 1 (the value logged before the DEC, minus 1); player 2 untouched                                     2
+  wait: 65 frames with zp_25 = 64..0, ghosts, Pac-Man, READY row, lives, dots unchanged                                                                  2
+violations: none

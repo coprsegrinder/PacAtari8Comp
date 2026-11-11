@@ -114,6 +114,7 @@ def main():
     ghost_rgb = list(G.KNOWN.values())
     P("targets with a log:", len(names))
     results = {}
+    ready_rows = []
     for name in names:
         mem, mode = parse(os.path.join(d, name + ".log"))
         pngs = [os.path.join(d, "%s_%d.png" % (name, i)) for i in range(3) if os.path.exists(os.path.join(d, "%s_%d.png" % (name, i)))]
@@ -137,7 +138,7 @@ def main():
         elif name == "Death_end":
             exp = death_page(16)
             kind = "death end (rows cleared)"
-        else:                                    # Death_freeze: Pac-Man shows the picture he had when he was caught - one of the nine shapes
+        else:                                    # Death_freeze / Ready_*: Pac-Man shows one of the nine shapes (the picture he had when he was caught; Full at the restart)
             exp = None
             kind = "freeze"
         tot["targets"] += 1
@@ -148,8 +149,8 @@ def main():
             tot["missile memory == expected picture (%s)" % ("ROM shape" if name.startswith("Shape_") else "simulated DeathAnimation")] += 1
         else:
             hit = [nm for nm, rows in SHAPES.items() if page == [0, 0, 0] + rows + [0, 0, 0]]
-            if not hit or mem[0xED] != 1:
-                bad.append((name, "freeze: Pac-Man's memory is not one of the nine shapes", [hex(b) for b in page]))
+            if not hit or mem[0xED] != (1 if name == "Death_freeze" else 0):
+                bad.append((name, "freeze: Pac-Man's memory is not one of the nine shapes (or DeathState is not as expected)", [hex(b) for b in page]))
                 continue
             exp = page
             kind = "freeze (Pac-Man shows %s)" % hit[0]
@@ -171,7 +172,7 @@ def main():
                     rgb_of[name.split("_")[0] + ("/" + name.split("_")[1][:5] if name.startswith("Death") else "")][(mem[0x2C7], GOLD)] += 1
                     tot["set cells showing Pac-Man's gold (of the set cells compared)"] += rgb[0]
                     tot["set cells covered by a ghost / wall / dot of higher priority"] += rgb[1]
-                    tot["on screen == picture: " + ("shape" if name.startswith("Shape_") else ("freeze" if name == "Death_freeze" else "death animation"))] += 1
+                    tot["on screen == picture: " + ("shape" if name.startswith("Shape_") else ("freeze / restart" if (name == "Death_freeze" or name.startswith("Ready_")) else "death animation"))] += 1
                 else:
                     bad.append((name, png, "no position matches the bitmap"))
             else:
@@ -195,15 +196,15 @@ def main():
                 else:
                     tot["... no ghost-coloured pixel on the playfield (ghosts hidden)"] += 1
     # ---- the freeze: the four ghosts ----
-    if "Death_freeze" in results:
-        kind, pacx, pacy, exp, mem, pngs = results["Death_freeze"]
+    for fname in [n for n in results if n == "Death_freeze" or n.startswith("Ready_")]:
+        kind, pacx, pacy, exp, mem, pngs = results[fname]
         for png in pngs:
             im = np.array(Image.open(png).convert("RGB"))
             for g in range(4):
                 loc = G.locate(mem, g)
-                tot["freeze: ghost views"] += 1
+                tot["freeze / restart: ghost views"] += 1
                 if loc is None:
-                    bad.append(("Death_freeze", g, "player memory is none of the 11 pictures"))
+                    bad.append((fname, g, "player memory is none of the 11 pictures"))
                     continue
                 row, pic, rows = loc
                 x = mem[0x8A + g]
@@ -218,9 +219,73 @@ def main():
                     if hit:
                         break
                 if hit:
-                    tot["freeze: ghost on screen == its player-memory picture (%s)" % pic.split("/")[0]] += 1
+                    tot["freeze / restart: ghost on screen == its player-memory picture (%s)" % pic.split("/")[0]] += 1
                 else:
-                    tot["freeze: ghost not matched (overlap with another sprite?)"] += 1
+                    tot["freeze / restart: ghost not matched (overlap with another sprite?)"] += 1
+    # ---- the READY! text row (screen RAM $0DED-$0DFA, ANTIC mode 4 characters of the game charset at $3000) ----
+    for fname in sorted([n for n in results if n.startswith("Ready_")], key=lambda n: n == "Ready_play"):
+        kind, pacx, pacy, exp, mem, pngs = results[fname]
+        tiles = [mem[0xDED + i] for i in range(14)]
+        want = [0, 0] + list(range(0xA2, 0xAC)) + [0, 0] if fname != "Ready_play" else [0] * 14
+        if tiles != want:
+            bad.append((fname, "screen RAM row of the READY text", tiles, want))
+            continue
+        tot["READY row in screen RAM ($0DED-$0DFA) as expected (%s)" % ("tiles $A2-$AB" if fname != "Ready_play" else "cleared")] += 1
+        for png in pngs:
+            im = np.array(Image.open(png).convert("RGB"))
+            ok_pos = None
+            best = None
+            for dl in range(0, 256):
+                for dc in (0,):
+                    mapping = {}
+                    good = True
+                    nsamples = 0
+                    for i, code in enumerate(tiles):
+                        col = 13 + i
+                        glyph = [mem[0x3000 + (code & 0x7F) * 8 + r] for r in range(8)]
+                        for r in range(8):
+                            for k in range(4):
+                                v = (glyph[r] >> (6 - 2 * k)) & 3
+                                cls = "PF3" if (code & 0x80 and v == 3) else v
+                                clock = 48 + 4 * col + k
+                                py = int(round(AY * (dl + r + 0.5) + BY))
+                                pxx = int(round(AX * (clock + 0.5) + BX))
+                                if not (0 <= py < im.shape[0] and 0 <= pxx < im.shape[1]):
+                                    good = False
+                                    break
+                                rgb = tuple(int(c) for c in im[py, pxx])
+                                if mapping.setdefault(cls, rgb) != rgb:
+                                    good = False
+                                    break
+                                nsamples += 1
+                            if not good:
+                                break
+                        if not good:
+                            break
+                    if good and len(set(mapping.values())) == len(mapping):
+                        score = (len(mapping), -abs(dl - 8 * 12 - 16))
+                        if fname == "Ready_play":
+                            # the row is blank: every cell is the background colour; the row is found from the READY images (the same screen position)
+                            pass
+                        if best is None or score > best[0]:
+                            best = (score, dl, mapping, nsamples)
+            if fname != "Ready_play":
+                if best and best[2].get(0) == BLACK and best[2].get("PF3") == GOLD:
+                    tot["READY! text on the screen == the charset glyphs (14 tiles x 4 x 8 pixels: glyph pixel 3 = gold, 0 = black, nothing else)"] += 1
+                    rgb_of["READY text"][(0x2A, GOLD)] += 1
+                    ready_rows.append(best[1])
+                else:
+                    bad.append((fname, png, "READY text does not match the glyphs"))
+            else:
+                region = []
+                for dl in ready_rows[:1] or [0]:
+                    for r in range(8):
+                        for c in range(56):
+                            region.append(tuple(int(v) for v in im[int(round(AY * (dl + r + 0.5) + BY)), int(round(AX * (48 + 4 * 13 + c / 1.0 + 0.5) + BX))]))
+                if set(region) == {(0, 0, 0)}:
+                    tot["READY! text row is blank after the restart (all pixels background)"] += 1
+                else:
+                    bad.append((fname, png, "READY row not blank", collections.Counter(region).most_common(3)))
     for k in sorted(tot):
         P("  %-86s %d" % (k, tot[k]))
     P("column found on the screen minus PacX (0 = where the game says):", dict(sorted(dxs.items())))

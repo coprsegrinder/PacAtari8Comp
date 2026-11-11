@@ -1,0 +1,30 @@
+frames logged: 57295  events: {'INITBOARD': 53, 'LEVEL_INDICATOR': 53, 'SUB_AD0E': 53, 'SUB_AD49': 53, 'TURN_START': 53, 'START_PLAY': 53, 'CLEAR_READY': 53, 'DEATH_START': 52, 'DEATH_DONE': 52, 'INITBOARD_CALL': 52, 'AA2D_RETURN': 52, 'Z24_INC': 52}
+
+PART 1 - the restart after the death: 52 deaths
+  frames from the end of the death routine (zp_24 := 1) to the start of play: {66: 52}
+  frames in the wait (zp_24 = 2): {65: 52}
+  sound registers written between the end of the death and the start of play: 0
+  writes to the READY row ($0DED-$0DFA) in that time (by instruction): {'pc=$AC97': 520, 'pc=$AD62': 728} (AC97 = DrawLevelIndicator writes the 10 tiles, AD62 = Sub_AD5E clears 14 bytes at the start of play)
+
+PART 2 - zp_AE: calls of StepAndDrawEntity ($B902) with the value of zp_AE and the ghost's coordinates before and after the movement code
+   ('ae=0', 1, (0, -2)) 9775
+   ('ae=0', 2, (0, 2)) 12114
+   ('ae=0', 4, (-1, 0)) 9723
+   ('ae=0', 8, (1, 0)) 10127
+   ('ae=1', 1, (0, 0)) 2026
+   ('ae=1', 2, (0, 0)) 5333
+   ('ae=1', 4, (0, 0)) 8885
+   ('ae=1', 8, (0, 0)) 3936
+   ('no movement/draw code reached (direction 2)', 0) 18
+   ('no movement/draw code reached (direction 4)', 0) 16
+   ('no movement/draw code reached (direction 8)', 0) 6
+  calls with zp_AE <> 0 by place: {'inside Sub_AD49 (draw in place)': 212, 'during the death freeze (set at $A92E)': 19968}
+  zp_AE = 0: 41739 calls moved the ghost by one step in its direction (all equal to the rule); zp_AE = 1: 20180 calls, 0 moved a ghost
+
+  deaths followed to the start of play                                                                                                                   52
+  dots eaten, power-pellet flags and bonus counter are kept through the death                                                                            52
+  first frame of play: zp_24 = 0, ghost 0 state 1, ghosts 1-3 state 0, READY row cleared                                                                 52
+  first frame of the wait: zp_24 = 2, zp_25 = 64, DeathState 0, zp_AE 0, zp_AA 0, ghosts state 0 at the ZeroPageInit80 positions, Pac-Man (124,164) facing left, colours = ColorsGame, READY tiles 52
+  lives: TURN_START took exactly one life of player 1 (the value logged before the DEC, minus 1); player 2 untouched                                     52
+  wait: 65 frames with zp_25 = 64..0, ghosts, Pac-Man, READY row, lives, dots unchanged                                                                  52
+violations: none
