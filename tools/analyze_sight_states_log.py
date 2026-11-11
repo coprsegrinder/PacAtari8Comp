@@ -101,6 +101,34 @@ def main():
     k88 = sum(table[c]["model says: would see"] for c in table if c in ("frightened $88", "frightened $90"))
     P()
     P("frightened patrol ghosts ($88 / $90) that the model says would see Pac-Man:", k88, "- sightings among them:", sum(table[c]["sighted ($BAB9 executed)"] for c in ("frightened $88", "frightened $90") if c in table))
+    # frightened patrol ghosts in detail: separate episodes (a ghost in that state, gaps of at most 2 frames joined) and separate runs of 'would see' frames, per ghost
+    P()
+    P("frightened patrol ghosts in detail (episodes = separate frightened periods of one ghost in that state; runs = separate stretches of consecutive 'model says would see' frames):")
+    for stv in (0x88, 0x90):
+        eps = {g: [] for g in range(4)}
+        runs = {g: [] for g in range(4)}
+        frames = collections.Counter()
+        wsf = collections.Counter()
+        for s in snaps:
+            for g in range(4):
+                if s["st"][g] != stv:
+                    continue
+                frames[g] += 1
+                e = eps[g]
+                if e and s["f"] - e[-1][1] <= 2:
+                    e[-1][1] = s["f"]
+                else:
+                    e.append([s["f"], s["f"], s["lv"]])
+                if M.sees(g, s["x"][g], s["y"][g], s["d"][g], s["px"], s["py"], s["rt"]):
+                    wsf[g] += 1
+                    r = runs[g]
+                    if r and s["f"] - r[-1][1] <= 2:
+                        r[-1][1] = s["f"]
+                    else:
+                        r.append([s["f"], s["f"], s["lv"]])
+        for g in range(4):
+            P("  $%02X ghost %d: %5d ghost-frames in %3d episodes (levels %s) | would see: %4d frames in %3d runs (levels %s)" % (stv, g, frames[g], len(eps[g]), sorted({e[2] for e in eps[g]}), wsf[g], len(runs[g]), sorted({r[2] for r in runs[g]})))
+        P("  $%02X total: %d episodes, %d runs of 'would see' frames; sightings in this state: %d" % (stv, sum(len(e) for e in eps.values()), sum(len(r) for r in runs.values()), sum(1 for s in snaps for g in range(4) if s["st"][g] == stv and g in s["sighted"])))
     P("violations:", {k: len(v) for k, v in bad.items()} or "none")
     for k, v in bad.items():
         P("  first", k, v[:3])

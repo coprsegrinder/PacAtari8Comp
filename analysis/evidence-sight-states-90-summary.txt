@@ -1,0 +1,39 @@
+sight-loop snapshots: 141663 (frames 306 to 148289 )  levels: [0]
+
+by state of the ghost at the start of the loop:
+  state              ghost-frames    would see       called      sighted
+  patrol $08                65916           33        65916           33
+  eaten $42                 27994         1349            0            0
+  eaten $44                  2509            0            0            0
+  frightened $81               66            0            0            0
+  frightened $82            67311          499            0            0
+  frightened $84               83            0            0            0
+  frightened $88            23287         8410            0            0
+  frightened $90             9809         7274            0            0
+  frightened $A0            45843          546            0            0
+  other $00                   784            0            0            0
+  other $01                  1260            0            0            0
+  other $02                157219        11972            0            0
+  other $04                 10566            0            0            0
+  other $20                154005         2423            0            0
+
+grouped:
+  patrol ($08/$10)                   ghost-frames   65916 | would see     33 | called  65916 | sighted    33
+  frightened ($80 bit, not eaten)    ghost-frames  146399 | would see  16729 | called      0 | sighted     0
+  eaten ($42/$44 ...)                ghost-frames   30503 | would see   1349 | called      0 | sighted     0
+  all other states                   ghost-frames  323834 | would see  14395 | called      0 | sighted     0
+
+frightened patrol ghosts ($88 / $90) that the model says would see Pac-Man: 15684 - sightings among them: 0
+
+frightened patrol ghosts in detail (episodes = separate frightened periods of one ghost in that state; runs = separate stretches of consecutive 'model says would see' frames):
+  $88 ghost 0:  6556 ghost-frames in  52 episodes (levels [0]) | would see: 2845 frames in  45 runs (levels [0])
+  $88 ghost 1:  3727 ghost-frames in  29 episodes (levels [0]) | would see: 1329 frames in  32 runs (levels [0])
+  $88 ghost 2:  5661 ghost-frames in  57 episodes (levels [0]) | would see: 1294 frames in  34 runs (levels [0])
+  $88 ghost 3:  7343 ghost-frames in  62 episodes (levels [0]) | would see: 2942 frames in  50 runs (levels [0])
+  $88 total: 200 episodes, 161 runs of 'would see' frames; sightings in this state: 0
+  $90 ghost 0:  2375 ghost-frames in  27 episodes (levels [0]) | would see: 2029 frames in  21 runs (levels [0])
+  $90 ghost 1:  2816 ghost-frames in  32 episodes (levels [0]) | would see: 2449 frames in  30 runs (levels [0])
+  $90 ghost 2:  2845 ghost-frames in  34 episodes (levels [0]) | would see: 1168 frames in  27 runs (levels [0])
+  $90 ghost 3:  1773 ghost-frames in  21 episodes (levels [0]) | would see: 1628 frames in  18 runs (levels [0])
+  $90 total: 114 episodes, 96 runs of 'would see' frames; sightings in this state: 0
+violations: none
