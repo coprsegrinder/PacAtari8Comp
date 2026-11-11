@@ -1,0 +1,26 @@
+targets with a log: 27
+  ... no ghost-coloured pixel on the playfield (ghosts hidden)                           51
+  Pac-Man views                                                                          81
+  frames checked for ghost-coloured pixels (death animation)                             51
+  freeze: ghost on screen == its player-memory picture (Down)                            3
+  freeze: ghost on screen == its player-memory picture (Left)                            9
+  freeze: ghost views                                                                    12
+  missile memory == expected picture (ROM shape)                                         9
+  missile memory == expected picture (simulated DeathAnimation)                          17
+  missile memory == one of the nine ROM shapes (freeze)                                  1
+  on screen == picture: cleared (nothing drawn)                                          3
+  on screen == picture: death animation                                                  48
+  on screen == picture: freeze                                                           3
+  on screen == picture: shape                                                            27
+  set cells covered by a ghost / wall / dot of higher priority                           123
+  set cells showing Pac-Man's gold (of the set cells compared)                           2433
+  targets                                                                                27
+column found on the screen minus PacX (0 = where the game says): {0: 78}
+row found on the screen minus the missile-memory row: {0: 78}
+sub-cell pixel offset needed (scale-fit error), (x, y) in window pixels: {(0, 0): 78}
+(colour register $02C7 at the freeze, screen RGB) per kind:
+  Death/anim0    {'$2A (210, 163, 58)': 30}
+  Death/anim1    {'$2A (210, 163, 58)': 18}
+  Death/freez    {'$2A (210, 163, 58)': 3}
+  Shape          {'$2A (210, 163, 58)': 27}
+deviations: 0

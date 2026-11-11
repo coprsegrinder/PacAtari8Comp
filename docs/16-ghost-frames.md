@@ -60,7 +60,7 @@ Added 2026-11-10. The bitmaps and colours above were first checked as data; this
   The routine that applies the mask has not been analysed (see below).
 
 ## Not covered
-- Pac-Man's own frames (documented in `12-data-formats.md`: `PacMouthOffsets`, shapes) and the ghosts during the death sequence (they are hidden by setting their horizontal positions to 0, not by a different frame).
+- ~~Pac-Man's own frames and the ghosts during the death sequence~~ now verified: `20-pacman-and-death.md` (the ghosts freeze for 97 frames, are redrawn with toggling feet, then hidden by `HPOSP0-3` := 0).
 - The code that clips ghosts at the tunnel edges (masks `$F8`, `$FC` seen; the left side and the other masks were not captured), and ghosts inside the tunnel.
 - Overlapping ghosts (merged colours) were not compared pixel by pixel.
 

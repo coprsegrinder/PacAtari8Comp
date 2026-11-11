@@ -1,0 +1,44 @@
+PART 1 - Pac-Man's pictures: 27181 draws (a selection followed by the copy to missile memory)
+  picture chosen by (shape, byte offset, PacDirection) - counts:
+    Down   offset  0 direction  2 : 484
+    Down   offset 10 direction  2 : 681
+    Full   offset  0 direction  1 : 458
+    Full   offset  0 direction  2 : 238
+    Full   offset  0 direction  4 : 3133
+    Full   offset  0 direction  8 : 2519
+    Left   offset  0 direction  4 : 6149
+    Left   offset 10 direction  4 : 3410
+    Right  offset  0 direction  8 : 5019
+    Right  offset 10 direction  8 : 2819
+    Up     offset  0 direction  1 : 926
+    Up     offset 10 direction  1 : 1345
+  ChompPhase ($AB) at the selection -> (kind, offset): {0: {('Full', 0): 45, ('dir', 0): 6277, ('dir', 10): 90}, 1: {('Full', 0): 6303, ('dir', 10): 675}, 2: {('dir', 0): 6301, ('dir', 10): 934}, 3: {('dir', 10): 6556}}
+  consecutive pictures (previous -> next) - counts: {('f1', 'f2'): 6286, ('f1', 'full'): 6291, ('f2', 'f1'): 6290, ('f2', 'f2'): 1956, ('f2', 'full'): 9, ('full', 'f1'): 6288, ('full', 'f2'): 13, ('full', 'full'): 47}
+
+PART 2 - the death sequence: 44 deaths (DEATH_START), 42757 frames logged
+  44 runs of frames with DeathState <> 0
+  model checks (one per frame, all variables: DeathState, zp_EE, DeathAnimActive/Frame/Delay, zp_F0/EF/F1, zp_24): 15532  mismatches: 0  full deaths compared: 44
+  frames spent in each DeathState over all deaths (state -> frames): {1: 4268, 3: 2596, 4: 2640, 5: 396, 6: 5676}
+  (frames with DeathState <> 0, index of the frame where zp_24 first became non-zero) -> number of deaths: {(354, None): 44}
+  model: frames in state 1,2,3,4,5,6 until zp_24 is set: {1: 97, 3: 59, 4: 60, 5: 9, 6: 129}  total 354 frames
+  model: DeathAnimation draws per animation frame (0 = PacShapeUp2, 1-14 = DeathPlotBytes, 15 = StarShape, 'end' = rows cleared): {0: 7, 1: 8, 2: 8, 3: 8, 4: 8, 5: 8, 6: 8, 7: 8, 8: 8, 9: 8, 10: 8, 11: 8, 12: 8, 13: 8, 14: 8, 15: 8, 'end': 1}
+  AUDF1 writes (sound frequency) per death: model 129 writes; deaths logged 44, with exactly the model's sequence: 44
+  AUDF1 model sequence, first 24 (state, value): [(3, 53), (3, 61), (3, 69), (3, 77), (4, 85), (4, 77), (4, 69), (4, 61), (3, 57), (3, 65), (3, 73), (3, 81), (4, 89), (4, 81), (4, 73), (4, 65), (3, 61), (3, 69), (3, 77), (3, 85), (4, 93), (4, 85), (4, 77), (4, 69)]
+  ANIM_PLOT: draws per DeathPlotBytes index (each death: 8 per index): {0: 352, 1: 352, 2: 352, 3: 352, 4: 352, 5: 352, 6: 352, 7: 352, 8: 352, 9: 352, 10: 352, 11: 352, 12: 352, 13: 352}
+  events: {'FREEZE_LEG': 4224, 'GHOST_HPOS_ZERO': 176, 'ANIM_ON': 44, 'ANIM_FRAME0': 308, 'ANIM_PLOT': 4928, 'ANIM_STAR': 352, 'ANIM_END': 44, 'DEATH_DONE': 44}
+
+PART 3 - the ghosts during the death
+  freeze: 16896 ghost redraws in 4268 frames (4 per frame); HPOSP0-3 := 0 events: 176 (4 per death)
+  ghost redraws per freeze frame: {1: 44, 4: 4180, 3: 44}
+  ghost redraws compared with the position/state at DEATH_START: 16896  moved or changed: 0
+  pictures drawn during the freeze: {'freeze draw: shape matches direction/state': 16896}
+  frames with the leg-phase toggle call in the freeze: 4224 (96 per death); feet-row changes seen between consecutive freeze frames per ghost: {0: 264, 1: 264, 2: 264, 3: 264}
+  calls of the ghost draw routine after ANIM_ON until the death routine ends (counted by log order, not by frame number): 0 (over 44 deaths)
+  state of the ghost that killed Pac-Man: {'killing ghost state $01': 20, 'killing ghost state $02': 20, 'killing ghost state $08': 3, 'killing ghost state $10': 1}
+  states of all four ghosts at the moment of death (counts of ghost-deaths): {'$00': 41, '$01': 45, '$02': 42, '$08': 33, '$10': 14, '$20': 1}
+
+  direction shapes whose index matches PacDirection (up 6, down 8, left 4, right 2)          20833
+  draws                                                                                      27181
+  missile memory rows ($2300+PacY+3..+12) == staged shape                                    27181
+  staged bytes == ROM shape (PacShapePtrs[Y] + X)                                            27181
+violations: none
