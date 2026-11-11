@@ -63,3 +63,21 @@ Added 2026-11-10. The bitmaps and colours above were first checked as data; this
 - Pac-Man's own frames (documented in `12-data-formats.md`: `PacMouthOffsets`, shapes) and the ghosts during the death sequence (they are hidden by setting their horizontal positions to 0, not by a different frame).
 - The code that clips ghosts at the tunnel edges (masks `$F8`, `$FC` seen; the left side and the other masks were not captured), and ghosts inside the tunnel.
 - Overlapping ghosts (merged colours) were not compared pixel by pixel.
+
+## Colours of frightened and eaten ghosts: verified and understood (2026-11-11)
+The colours are not in a table; the code writes them (`GhostColourCode` in `tests/test_ghost_frames.py` pins the bytes). The complete life of a ghost's colour register `PCOLR0+g` (`$02C0+g`):
+1. **Normal:** `ColorsGame[g]` = `$44 $4A $D8 $28`, loaded for all eight colour registers at the start of every board (`LoadShadowColors`, `$B113`).
+2. **Power pellet:** `FrightenPhase` := 1. From then on `Sub_AF54` runs every frame and `$AFBE` writes the colour of every ghost with state bit 7: **`$84` blue when the phase is odd, `$0C` white when it is even**. Phase 1 lasts `FrightenFrames[level]` frames (solid blue); then the phase counter goes up every 24 frames (`FrightenFlashTimer` := 24), so phases 2, 3, 4 ... show white, blue, white ... for 24 frames each; when the phase equals `FrightenEndPhase[level]` the next frame ends the period, so that last phase is shown for exactly one frame.
+3. **End:** `$AF84` gives every ghost with bit 7 its own `ColorsGame` colour back, then `$AF9A/$AF9E` set the new states (`docs/18`).
+4. **Eaten:** `$A8A6`: the ghost's register and COLOR3 (Pac-Man's colour) both become the pop-up colour **`$DC`**; after the 32-33 frame pause `$B09D` finds the player holding `$DC` and makes it **`$0C`** (the eyes, white), and COLOR3 goes back to `$2A` (`$B091`). An eaten ghost has bit 7 clear, so a later power pellet or flash does not touch its eyes.
+5. **Home:** `$B766`: when the eyes reach their home position the state becomes `$04` and `ColorsGame[g]` is written back.
+Live (`tools/altirra_ghostcolors.cmd`: Pac-Man invulnerable, a power pellet and an eaten ghost every 2,048 frames, the game advances through levels 0-17 by itself; `tools/analyze_ghostcolors_log.py`, `analysis/evidence-ghost-colours-summary.txt`; 33,349 frames, 133,396 ghost-frames sampled, 16,875 colour writes):
+- **Every ghost-frame had the colour the rule gives: 0 mismatches of 133,396.** Normal ghosts always their own colour (about 28,000 frames each); frightened ghosts only `$84` (10,711) or `$0C` (7,452); eaten ghosts only `$DC` (429) or `$0C` (2,319).
+- Every colour write at `$AFD0` was `$84` for an odd phase and `$0C` for an even one (16,875 of 16,875), only for ghosts with bit 7 and never bit 6.
+- **The colour sequence of 18 complete frightened periods equals the model exactly** (levels 0-15 and 17, every level at least once; solid blue of 255, 192, 128, 64 or 0 frames, then 24-frame runs: for end phase 11 nine runs `white blue white blue white blue white blue white`, for end phase 7 five runs, then one blue frame). For example level 0: `blue255 white24 blue24 white24 blue24 white24 blue24 white24 blue24 white24 blue1`; level 4 (no solid time): `white24 blue24 ... blue1`. 12 more periods could not be compared (a new pellet inside them, or cut by the log).
+- 75 end-of-frightened restores wrote the ghost's own colour each time; 13 home restores (state already `$04`) wrote the own colour each time.
+- **Pop-up -> eyes:** 13 eaten ghosts; `$DC` was held for 32 frames (5 times) or 33 frames (8 times); then `$0C` until the home restore (13 of 13). COLOR3 was `$DC` in 423 of 424 pop-up frames (the other sample is a boundary frame) and `$2A` otherwise.
+- Colours on the screen: `$84` and `$0C` were already compared pixel by pixel above; the eyes' `$0C` too.
+
+Not covered: the on-screen look of the `$DC` pop-up (register value only, no screenshot); flashing periods on levels from 18 (end phase 1 on level 16 means no flash by the table, not captured); a person-played game for the colours.
+

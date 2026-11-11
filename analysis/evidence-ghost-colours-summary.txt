@@ -1,0 +1,34 @@
+COLS frames: 33349  FRIGHT_COLOR writes: 16875  events: {'LEVEL_SETUP': 19, 'LOAD_SHADOW': 152, 'PELLET': 32, 'END_RESTORE': 75, 'LEVEL_ADVANCE': 18, 'GHOST_EATEN': 13, 'POPUP': 13, 'EYES': 13, 'HOME_RESTORE': 13}
+
+colour of the ghost player registers ($02C0-$02C3) per frame, by ghost state class (counts of ghost-frames):
+  eaten       colour $0C : 2319
+  eaten       colour $DC : 429
+  frightened  colour $0C : 7452
+  frightened  colour $84 : 10711
+  normal      colour $28 : 27918
+  normal      colour $44 : 28196
+  normal      colour $4A : 28433
+  normal      colour $D8 : 27938
+
+ghost-frames whose colour was not the rule's (grouped by state, colour; these should be the single-frame transitions around a write):
+  total mismatching ghost-frames: 0 of 133396
+
+score pop-up -> eyes: 13 eaten ghosts, frames between (pop-up colour $DC held): [(32, 5), (33, 8)]
+   eyes ($0C) until home restore 13
+
+COLOR3 ($02C7, Pac-Man's colour) per frame: {('during a pop-up', 42): 1, ('during a pop-up', 220): 423, ('otherwise', 42): 32918, ('otherwise', 220): 6}
+
+colour sequence of every frightened period against the model (blue FrightenFrames, then (end phase - 2) runs of 24 frames alternating white/blue, then the end phase for 1 frame):
+  level   0  FrightenFrames=255 EndPhase=11 : blue255 white24 blue24 white24 blue24 white24 blue24 white24 blue24 white24 blue1
+  level   1  FrightenFrames=192 EndPhase=11 : blue192 white24 blue24 white24 blue24 white24 blue24 white24 blue24 white24 blue1
+  level   2  FrightenFrames=128 EndPhase=11 : blue128 white24 blue24 white24 blue24 white24 blue24 white24 blue24 white24 blue1
+  level   3  FrightenFrames= 64 EndPhase=11 : blue64 white24 blue24 white24 blue24 white24 blue24 white24 blue24 white24 blue1
+  level   4  FrightenFrames=  0 EndPhase=11 : white24 blue24 white24 blue24 white24 blue24 white24 blue24 white24 blue1
+  level   8  FrightenFrames=  0 EndPhase= 7 : white24 blue24 white24 blue24 white24 blue1
+  level  13  FrightenFrames= 64 EndPhase= 7 : blue64 white24 blue24 white24 blue24 white24 blue1
+   period cut before its end (re-armed by a new pellet or log end) 3
+   period not starting at the first phase (pellet re-armed inside it, or cut by the end of the log) 9
+   periods compared with the model: identical 18
+levels (zero-based counter) with at least one complete frightened period compared, and how many were identical to the model: {0: '1/1', 1: '1/1', 2: '1/1', 3: '1/1', 4: '1/1', 5: '1/1', 6: '1/1', 7: '1/1', 8: '1/1', 9: '1/1', 10: '1/1', 11: '1/1', 12: '2/2', 13: '1/1', 14: '1/1', 15: '1/1', 17: '1/1'}
+
+violations: none

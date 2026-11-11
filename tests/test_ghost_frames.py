@@ -103,5 +103,21 @@ class ScreenshotChecker(unittest.TestCase):
         self.assertIn(0xF8, K.CLIPS)
 
 
+class GhostColourCode(unittest.TestCase):
+    """Colours of frightened and eaten ghosts are written by code (docs/16, 'Colours: verified'). Live evidence: analysis/evidence-ghost-colours-summary.txt."""
+    def test_frightened_colour(self):
+        # $AFBE: A = FrightenPhase; LSR; odd -> Y = $84 (blue), even -> Y = $0C (white); every ghost with bit 7 set gets Y in PCOLR0+x
+        self.assertEqual(at(0xAFBE, 25), hx("A5FC4A9004A084D002A00CA203B5CE1004989DC002CA10F560"))
+    def test_end_of_frightened_restores_own_colour(self):
+        # $AF7D: ghosts with bit 7 get ColorsGame[x] back
+        self.assertEqual(at(0xAF7D, 11), hx("B5CE1006BDE2BB9DC002CA"))
+        self.assertEqual(at(0xBBE2, 8), hx("444AD828860C002A"))
+    def test_eaten_popup_and_eyes(self):
+        # $A8A6: pop-up colour $DC into COLOR3 and the eaten ghost's PCOLR; $B09D: the player holding $DC becomes $0C (the eyes); $B760: at home the own colour comes back
+        self.assertEqual(at(0xA8A6, 8), hx("A9DC8DC7029DC002"))
+        self.assertEqual(at(0xB09D, 16), hx("BDC002C9DCF004CA10F660A90C9DC002"))
+        self.assertEqual(at(0xB760, 10), hx("B5CE290F95CEBDE2BB9D"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
