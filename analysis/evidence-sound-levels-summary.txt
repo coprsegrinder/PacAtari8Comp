@@ -1,0 +1,82 @@
+Sound session at other levels and dot counts (tools/run_sound_levels.py, tools/altirra_sound_levels.cmd, analysis/sound-levels/<name>.txt per run)
+
+L0    level poke db($1b)   OPTION presses 0 | trace f=39..52291 | PROBLEMS none
+      start tune: 793 lv 0 sl 0 | siren: 22429 calls, 0 mism., steps {0: 5, 2: 4171, 3: 1939, 4: 2265, 5: 14049}
+      frightened: 9958 calls/57 ep./0 mism. | eyes: 13093 calls/0 mism. | ghost eaten: 142 ok 0 bad | bonus: 10 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=58 min 186 median 411 max 786
+      events: {'NEWGAME': 1, 'INIT_BOARD': 5, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 5, 'BONUS_APPEAR': 10, 'PELLET': 74, 'GHOST_EATEN': 142, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 4}
+L1    level poke $01       OPTION presses 0 | trace f=39..52185 | PROBLEMS none
+      start tune: 793 lv 1 sl 0 | siren: 24065 calls, 0 mism., steps {0: 6, 2: 4903, 3: 2082, 4: 2343, 5: 14731}
+      frightened: 8538 calls/60 ep./0 mism. | eyes: 13191 calls/0 mism. | ghost eaten: 122 ok 0 bad | bonus: 11 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=60 min 186 median 347 max 748
+      events: {'NEWGAME': 1, 'INIT_BOARD': 6, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 6, 'BONUS_APPEAR': 11, 'PELLET': 81, 'GHOST_EATEN': 122, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 5}
+L4    level poke $04       OPTION presses 0 | trace f=39..22825 | PROBLEMS none
+      start tune: 793 lv 4 sl 0 | siren: 10676 calls, 0 mism., steps {0: 3, 2: 2575, 3: 1291, 4: 1438, 5: 5369}
+      frightened: 2594 calls/24 ep./0 mism. | eyes: 6224 calls/0 mism. | ghost eaten: 53 ok 0 bad | bonus: 6 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=24 min 217 median 220 max 651
+      events: {'NEWGAME': 1, 'INIT_BOARD': 3, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 3, 'BONUS_APPEAR': 6, 'PELLET': 43, 'GHOST_EATEN': 53, 'LEVEL_ADV': 2, 'EXTRA_LIFE': 1}
+L8    level poke $08       OPTION presses 0 | trace f=39..50925 | PROBLEMS none
+      start tune: 793 lv 8 sl 0 | siren: 30291 calls, 0 mism., steps {0: 6, 2: 6691, 3: 3417, 4: 3230, 5: 16947}
+      frightened: 4917 calls/60 ep./0 mism. | eyes: 9879 calls/0 mism. | ghost eaten: 105 ok 0 bad | bonus: 12 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=60 min 121 median 123 max 479
+      events: {'NEWGAME': 1, 'INIT_BOARD': 6, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 6, 'BONUS_APPEAR': 12, 'PELLET': 61, 'GHOST_EATEN': 106, 'BONUS_EATEN': 2, 'LEVEL_ADV': 5, 'EXTRA_LIFE': 1}
+L12   level poke $0C       OPTION presses 0 | trace f=39..7566 | PROBLEMS none
+      start tune: 793 lv 12 sl 0 | siren: 4584 calls, 0 mism., steps {0: 1, 2: 1274, 3: 514, 4: 590, 5: 2205}
+      frightened: 586 calls/8 ep./0 mism. | eyes: 975 calls/0 mism. | ghost eaten: 11 ok 0 bad | bonus: 2 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=8 min 121 median 123 max 123
+      events: {'NEWGAME': 1, 'INIT_BOARD': 1, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 1, 'BONUS_APPEAR': 2, 'PELLET': 8, 'GHOST_EATEN': 11, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1}
+L13   level poke $0D       OPTION presses 0 | trace f=39..21760 | PROBLEMS none
+      start tune: 793 lv 13 sl 0 | siren: 11594 calls, 0 mism., steps {0: 3, 2: 3245, 3: 977, 4: 1026, 5: 6343}
+      frightened: 2260 calls/28 ep./0 mism. | eyes: 4709 calls/0 mism. | ghost eaten: 49 ok 0 bad | bonus: 6 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=28 min 122 median 217 max 317
+      events: {'NEWGAME': 1, 'INIT_BOARD': 3, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 3, 'BONUS_APPEAR': 6, 'PELLET': 37, 'GHOST_EATEN': 49, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 2}
+L18   level poke $12       OPTION presses 0 | trace f=39..85829 | PROBLEMS none
+      start tune: 793 lv 18 sl 0 | siren: 66775 calls, 0 mism., steps {0: 8, 2: 12093, 3: 5919, 4: 5746, 5: 43009}
+      frightened: 3722 calls/100 ep./0 mism. | eyes: 9473 calls/0 mism. | ghost eaten: 88 ok 0 bad | bonus: 16 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=65 min 1 median 134 max 544
+      events: {'NEWGAME': 1, 'INIT_BOARD': 8, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 8, 'BONUS_APPEAR': 16, 'PELLET': 110, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 7, 'GHOST_EATEN': 88}
+L19   level poke $13       OPTION presses 0 | trace f=39..36244 | PROBLEMS none
+      start tune: 793 lv 19 sl 0 | siren: 27221 calls, 0 mism., steps {0: 4, 2: 5511, 3: 2819, 4: 3060, 5: 15827}
+      frightened: 2044 calls/44 ep./0 mism. | eyes: 3963 calls/0 mism. | ghost eaten: 36 ok 0 bad | bonus: 8 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=33 min 1 median 134 max 368
+      events: {'NEWGAME': 1, 'INIT_BOARD': 4, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 4, 'BONUS_APPEAR': 8, 'PELLET': 48, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 3, 'GHOST_EATEN': 36}
+L20   level poke $14       OPTION presses 0 | trace f=39..10975 | PROBLEMS none
+      start tune: 793 lv 20 sl 0 | siren: 5718 calls, 0 mism., steps {0: 1, 2: 1105, 3: 592, 4: 589, 5: 3431}
+      frightened: 1105 calls/12 ep./0 mism. | eyes: 2230 calls/0 mism. | ghost eaten: 26 ok 0 bad | bonus: 2 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=12 min 195 median 197 max 198
+      events: {'NEWGAME': 1, 'INIT_BOARD': 1, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 1, 'BONUS_APPEAR': 2, 'PELLET': 12, 'GHOST_EATEN': 26, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1}
+L40   level poke $28       OPTION presses 0 | trace f=39..52239 | PROBLEMS none
+      start tune: 793 lv 40 sl 0 | siren: 38366 calls, 0 mism., steps {0: 7, 2: 9587, 3: 3970, 4: 3711, 5: 21091}
+      frightened: 3826 calls/59 ep./0 mism. | eyes: 5719 calls/0 mism. | ghost eaten: 52 ok 0 bad | bonus: 14 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=60 min 6 median 145 max 437
+      events: {'NEWGAME': 1, 'INIT_BOARD': 7, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 7, 'BONUS_APPEAR': 14, 'PELLET': 64, 'GHOST_EATEN': 53, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 6}
+L70   level poke $46       OPTION presses 0 | trace f=39..13843 | PROBLEMS none
+      start tune: 793 lv 70 sl 0 | siren: 6409 calls, 0 mism., steps {0: 2, 2: 2129, 3: 830, 4: 830, 5: 2618}
+      frightened: 4219 calls/9 ep./0 mism. | eyes: 1442 calls/0 mism. | ghost eaten: 14 ok 0 bad | bonus: 4 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=9 min 69 median 69 max 5295
+      events: {'NEWGAME': 1, 'INIT_BOARD': 2, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 2, 'BONUS_APPEAR': 4, 'PELLET': 16, 'GHOST_EATEN': 14, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 1}
+L100  level poke $64       OPTION presses 0 | trace f=39..15482 | PROBLEMS none
+      start tune: 793 lv 100 sl 0 | siren: 10813 calls, 0 mism., steps {0: 2, 2: 2885, 3: 1327, 4: 1424, 5: 5175}
+      frightened: 841 calls/16 ep./0 mism. | eyes: 1857 calls/0 mism. | ghost eaten: 20 ok 0 bad | bonus: 4 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=16 min 1 median 243 max 244
+      events: {'NEWGAME': 1, 'INIT_BOARD': 2, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 2, 'BONUS_APPEAR': 4, 'PELLET': 16, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 1, 'GHOST_EATEN': 20}
+L254  level poke $FE       OPTION presses 0 | trace f=39..29380 | PROBLEMS none
+      start tune: 793 lv 254 sl 0 | siren: 15269 calls, 0 mism., steps {0: 3, 2: 3224, 3: 1469, 4: 1251, 5: 9322}
+      frightened: 3726 calls/33 ep./0 mism. | eyes: 6584 calls/0 mism. | ghost eaten: 67 ok 0 bad | bonus: 6 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=33 min 148 median 245 max 475
+      events: {'NEWGAME': 1, 'INIT_BOARD': 3, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 3, 'BONUS_APPEAR': 6, 'PELLET': 38, 'GHOST_EATEN': 67, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 2}
+L255  level poke $FF       OPTION presses 0 | trace f=39..9533 | PROBLEMS none
+      start tune: 793 lv 255 sl 0 | siren: 5433 calls, 0 mism., steps {0: 1, 2: 1215, 3: 712, 4: 577, 5: 2928}
+      frightened: 738 calls/10 ep./0 mism. | eyes: 1740 calls/0 mism. | ghost eaten: 17 ok 0 bad | bonus: 2 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=10 min 149 median 149 max 152
+      events: {'NEWGAME': 1, 'INIT_BOARD': 1, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 1, 'BONUS_APPEAR': 2, 'PELLET': 10, 'GHOST_EATEN': 17, 'EXTRA_LIFE': 1}
+S4    level poke db($1b)   OPTION presses 3 | trace f=39..1807 | PROBLEMS none
+      start tune: 793 lv 4 sl 4 | siren: 450 calls, 0 mism., steps {0: 1, 2: 449}
+      frightened: 87 calls/1 ep./0 mism. | eyes: 151 calls/0 mism. | ghost eaten: 2 ok 0 bad | bonus: 1 ok 0 bad
+      no frightened run
+      events: {'NEWGAME': 1, 'INIT_BOARD': 1, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 1, 'BONUS_APPEAR': 1, 'PELLET': 2, 'GHOST_EATEN': 2}
+S12   level poke db($1b)   OPTION presses 7 | trace f=39..51968 | PROBLEMS none
+      start tune: 793 lv 12 sl 12 | siren: 33969 calls, 0 mism., steps {0: 6, 2: 7619, 3: 3847, 4: 3797, 5: 18700}
+      frightened: 4151 calls/62 ep./0 mism. | eyes: 8657 calls/0 mism. | ghost eaten: 86 ok 0 bad | bonus: 12 ok 0 bad
+      frightened game frames per pellet (runs of FrightenPhase <> 0, sweep frames excluded): n=53 min 121 median 186 max 372
+      events: {'NEWGAME': 1, 'INIT_BOARD': 6, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 6, 'BONUS_APPEAR': 12, 'PELLET': 69, 'GHOST_EATEN': 86, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 5}

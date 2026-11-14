@@ -1,0 +1,75 @@
+Recording: 171.94 s at 44100 Hz.  First sound at 15.035 s; the tune is fitted to start at 15.043 s (fit score = mean similarity of the audible steps minus the share of sound inside the silent steps: 0.983).
+Step length: 66.75 ms measured, 66.75 ms nominal (4 frames at 59.9227 Hz) -> -0.00 %;  tune length 4.27 s.
+
+Step  kind    model Hz (voice1 / voice2)   measured Hz (cents)            similarity  level  result
+  0   tone    rest    / 196                v2 196 (+0)                    0.99        0.48   ok
+  1   tone    rest    / 131                v2 131 (+0)                    0.99        0.46   ok
+  2   tone    rest    / 131                v2 131 (+0)                    0.99        0.46   ok
+  3   tone    524     / 131                v1 524 (+0)  v2 131 (+0)       0.99        1.10   ok
+  4   silent  -                           -                              -           0.00   ok
+  5   tone    390     / rest               v1 390 (+0)                    0.97        1.00   ok
+  6   silent  -                           -                              -           0.00   ok
+  7   tone    329     / rest               v1 329 (+0)                    0.98        1.00   ok
+  8   tone    rest    / 196                v2 196 (+0)                    0.99        0.48   ok
+  9   tone    524     / 131                v1 524 (+0)  v2 131 (+0)       0.99        1.10   ok
+ 10   tone    390     / 131                v1 390 (+2)  v2 131 (+0)       0.98        1.21   ok
+ 11   tone    rest    / 131                v2 131 (+0)                    0.99        0.46   ok
+ 12   silent  -                           -                              -           0.00   ok
+ 13   tone    329     / rest               v1 329 (+0)                    0.98        1.00   ok
+ 14   tone    329     / rest               v1 329 (+0)                    0.98        1.00   ok
+ 15   silent  -                           -                              -           0.00   ok
+ 16   tone    rest    / 208                v2 208 (-0)                    0.98        0.48   ok
+ 17   tone    rest    / 138                v2 138 (-0)                    0.99        0.46   ok
+ 18   tone    rest    / 138                v2 138 (-0)                    0.99        0.46   ok
+ 19   tone    551     / 138                v1 551 (+0)  v2 138 (-0)       0.99        1.12   ok
+ 20   silent  -                           -                              -           0.00   ok
+ 21   tone    415     / rest               v1 415 (+0)                    0.98        1.00   ok
+ 22   silent  -                           -                              -           0.00   ok
+ 23   tone    347     / rest               v1 347 (-0)                    0.98        1.00   ok
+ 24   tone    rest    / 208                v2 208 (-0)                    0.99        0.48   ok
+ 25   tone    551     / 138                v1 551 (+0)  v2 138 (-0)       0.99        1.12   ok
+ 26   tone    415     / 138                v1 415 (+0)  v2 138 (+0)       0.99        0.99   ok
+ 27   tone    rest    / 138                v2 138 (-0)                    0.99        0.46   ok
+ 28   silent  -                           -                              -           0.00   ok
+ 29   tone    347     / rest               v1 347 (-0)                    0.97        1.00   ok
+ 30   tone    347     / rest               v1 347 (-0)                    0.98        1.00   ok
+ 31   silent  -                           -                              -           0.00   ok
+ 32   tone    rest    / 196                v2 196 (+0)                    0.99        0.48   ok
+ 33   tone    rest    / 131                v2 131 (+0)                    0.99        0.46   ok
+ 34   tone    rest    / 131                v2 131 (+0)                    0.99        0.46   ok
+ 35   tone    524     / 131                v1 524 (+0)  v2 131 (+0)       0.99        1.10   ok
+ 36   silent  -                           -                              -           0.00   ok
+ 37   tone    390     / rest               v1 390 (+0)                    0.97        1.00   ok
+ 38   silent  -                           -                              -           0.00   ok
+ 39   tone    329     / rest               v1 329 (+0)                    0.98        1.00   ok
+ 40   tone    rest    / 196                v2 196 (+0)                    0.99        0.48   ok
+ 41   tone    524     / 131                v1 524 (+0)  v2 131 (+0)       0.99        1.10   ok
+ 42   tone    390     / 131                v1 390 (+2)  v2 131 (+0)       0.98        1.21   ok
+ 43   tone    rest    / 131                v2 131 (+0)                    0.99        0.46   ok
+ 44   silent  -                           -                              -           0.00   ok
+ 45   tone    329     / rest               v1 329 (+0)                    0.98        1.00   ok
+ 46   tone    329     / rest               v1 329 (+0)                    0.98        1.00   ok
+ 47   silent  -                           -                              -           0.00   ok
+ 48   tone    rest    / 196                v2 196 (+0)                    0.99        0.48   ok
+ 49   tone    329     / 165                v1 329 (-0)  v2 165 (+0)       0.99        1.11   ok
+ 50   tone    347     / rest               v1 347 (-0)                    0.98        1.00   ok
+ 51   tone    372     / rest               v1 372 (+0)                    0.98        1.00   ok
+ 52   silent  -                           -                              -           0.00   ok
+ 53   tone    372     / 184                v1 372 (+0)  v2 184 (-1)       0.99        1.12   ok
+ 54   tone    390     / rest               v1 390 (+0)                    0.97        1.00   ok
+ 55   tone    415     / rest               v1 415 (+0)                    0.98        1.01   ok
+ 56   silent  -                           -                              -           0.00   ok
+ 57   tone    415     / 208                v1 415 (+0)  v2 208 (-0)       0.99        1.10   ok
+ 58   tone    438     / rest               v1 438 (+0)                    0.96        1.00   ok
+ 59   tone    463     / rest               v1 463 (+0)                    0.96        1.00   ok
+ 60   silent  -                           -                              -           0.00   ok
+ 61   tone    524     / 262                v1 524 (+0)  v2 262 (-0)       0.98        1.12   ok
+ 62   tone    524     / 262                v1 524 (+0)  v2 262 (-0)       0.98        1.12   ok
+ 63   silent  -                           -                              -           0.00   ok
+
+Pitch: 62 voice-steps measured, mean error 0.1 cents, worst 1.9 cents (limit 70; a semitone is 100).
+Steps: 48 audible ok 48, silent ok 16 of 64.
+Level of voice 1 against voice 2 where both sound (peak heights, median): recording 2.21, model 2.00  (information only: the emulator's mixing is not linear).
+After the 64 steps: level 0.31 of a typical step.
+
+PROBLEMS: none

@@ -1,0 +1,90 @@
+Frames in the log: 56441 (f=39 .. 56479); events: 1247
+RTCLOK2 - frame offsets seen at the tune steps (mod 256): {235: 256}
+
+== Games started: 4 (NEWGAME events at frames [458, 1974, 10974, 11589])
+
+== First board start (NEWGAME -> start of play), per game
+game 1: NEWGAME f=458  RESTART +0  READY drawn +3  first tune step +7  ghosts/Pac-Man drawn (step $28) +167  tune done +263  start of play +263  READY cleared +263  | 1P/2P z1a=0 scores cleared by Sub_A632 | StartLevel 0, level counters at start of play [0, 0]
+        tune: 64 steps in order True, every 4th frame True, RTCLOK2 mod 4 = 0 True, AUDF1/AUDF2 equal the ROM tables True;  lives at step $28: [3, 3] -> [2, 3];  sound writes {'A617': 1, 'A7E2': 64, 'A7E8': 64, 'A7ED': 64, 'A7F2': 64, 'B0EA': 8};  READY-row writes {'AC97': 10, 'AD62': 14, 'B12A': 38, 'B130': 2}
+game 2: NEWGAME f=1974  RESTART +0  READY drawn +3  first tune step +7  ghosts/Pac-Man drawn (step $28) +167  tune done +263  start of play +263  READY cleared +263  | 1P/2P z1a=1 scores cleared by Sub_A64E | StartLevel 2, level counters at start of play [2, 2]
+        tune: 64 steps in order True, every 4th frame True, RTCLOK2 mod 4 = 0 True, AUDF1/AUDF2 equal the ROM tables True;  lives at step $28: [3, 3] -> [2, 3];  sound writes {'A617': 1, 'A7E2': 64, 'A7E8': 64, 'A7ED': 64, 'A7F2': 64, 'B0EA': 8};  READY-row writes {'AC97': 10, 'AD62': 14, 'B12A': 38, 'B130': 2}
+game 3: NEWGAME f=10974  RESTART +0  READY drawn +3  first tune step +7  ghosts/Pac-Man drawn (step $28) +167  tune done +263  start of play +263  READY cleared +263  | 1P/2P z1a=1 scores cleared by Sub_A64E | StartLevel 2, level counters at start of play [2, 2]
+        tune: 64 steps in order True, every 4th frame True, RTCLOK2 mod 4 = 0 True, AUDF1/AUDF2 equal the ROM tables True;  lives at step $28: [3, 3] -> [2, 3];  sound writes {'A7E2': 64, 'A7E8': 64, 'A7ED': 64, 'A7F2': 64, 'B0EA': 8};  READY-row writes {'AC97': 10, 'AD62': 14, 'B12A': 38, 'B130': 2}
+game 4: NEWGAME f=11589  RESTART +0  READY drawn +4  first tune step +8  ghosts/Pac-Man drawn (step $28) +168  tune done +264  start of play +264  READY cleared +264  | 1P/2P z1a=1 scores cleared by Sub_A64E | StartLevel 2, level counters at start of play [2, 2]
+        tune: 64 steps in order True, every 4th frame True, RTCLOK2 mod 4 = 0 True, AUDF1/AUDF2 equal the ROM tables True;  lives at step $28: [3, 3] -> [2, 3];  sound writes {'A7E2': 64, 'A7E8': 64, 'A7ED': 64, 'A7F2': 64, 'B0EA': 8, 'B546': 1, 'B54B': 1};  READY-row writes {'AC97': 10, 'AD62': 14, 'B12A': 38, 'B130': 2}
+Frame-by-frame model of zp_22, zp_A3, zp_21 from the READY! frame to the start of play: 1052 frames, 0 mismatches
+READY! drawn -> start of play (frames), per game: {260: 4} ; first tune step after READY! (frames): {4: 4}
+
+== High-score comparison (Sub_AB26), every call
+Calls: 4  (X=$2A player 1, X=$47 player 2); model (digit by digit, copy from the first greater digit) matched in 4 of 4 (result of the compare and the new high score)
+Cases (X, result): {'P1:copy': 1, 'P1:less': 1, 'P2:less': 2}
+Order of the two calls at each game over (player 1 then player 2, same frame or the next): Counter({(42, 71, 1): 1, (42, 71, 0): 1})
+  f=8965 P1 score=000000151210 [520] high 000000000000 [-] -> 000000151210 [520] (3 digits copied)
+  f=8966 P2 score=000000111010 [100] high 000000151210 [520] -> 000000151210 [520] (0 digits copied)
+  f=17679 P1 score=000000121510 [250] high 000000151210 [520] -> 000000151210 [520] (0 digits copied)
+  f=17679 P2 score=000000111010 [100] high 000000151210 [520] -> 000000151210 [520] (0 digits copied)
+Writes to the high-score bytes $2039-$203E after the first 100 frames, by program counter: {'AB3E': 3}
+High score over all 56441 frames: never decreases True; changes 1 times
+
+== Game over, countdown, return to the title
+GAME OVER text drawn at frames (final, z23 = 0): [8965, 17679] ; drawn while the other player still plays (z23 <> 0, no score compare): [7850, 16561]
+game over 1 at f=8965: zp_1E starts at 226, 225 steps, gaps {8: 224}, frames in the countdown state 8966..10773, COUNTDOWN_DONE (main loop sees zp_1E = 0) at f=10773
+game over 2 at f=17679: zp_1E starts at 226, 225 steps, gaps {8: 224}, frames in the countdown state 17680..19485, COUNTDOWN_DONE (main loop sees zp_1E = 0) at f=19485
+Countdown model (zp_1E decrements when RTCLOK2 AND 7 = 0): 3614 frames checked, 0 mismatches
+  frame after game over f=8966: z19=0 z20=1 z1e=226 z23=0 z24=0 lives=[0, 0] col3=$44 display list=$BFA3 s1=000000151210 hi=000000151210
+  frame after game over f=8967: z19=0 z20=1 z1e=226 z23=0 z24=0 lives=[0, 0] col3=$44 display list=$BFA3 s1=000000151210 hi=000000151210
+
+Return to the title after a completed countdown:
+  SET z19 := 4 at f=10773 (zp_1E = 0, zp_20 = 1); first VBI with z19 = 4: f=10774 (+1). Before: display list $BFA3 colours ['86', '0C', '00', '44', '00'] lives [0, 0] ; at z19=4: display list $BF81 colours ['DA', '0C', '00', '2A', '00'], ATRACT=4, z20=1 z1e=0 scores s1=000000151210 hi=000000151210
+    title state 4 lasted 200 frames (f=10774..10973); variables that changed during it (other than the debounce counter zp_45 and ATRACT): {'sl': 1, 'c': 1, 'in': 1}
+  SET z19 := 4 at f=19485 (zp_1E = 0, zp_20 = 1); first VBI with z19 = 4: f=19486 (+1). Before: display list $BFA3 colours ['86', '0C', '00', '44', '00'] lives [0, 0] ; at z19=4: display list $BF81 colours ['DA', '0C', '00', '2A', '00'], ATRACT=4, z20=1 z1e=0 scores s1=000000121510 hi=000000151210
+    title state 4 lasted 36994 frames (f=19486..56479); variables that changed during it (other than the debounce counter zp_45 and ATRACT): {'sl': 1, 'c': 1}
+  ATRACT ($4D) while in title state 4: starts at 4, ends at 254 after 37194 frames (the OS adds 1 about every 256 frames; from $80 on the OS rotates and dims the colours)
+  ATRACT ($4D) during play (z19 = 0): values seen 1..14 (the game sets it to 0 when READY! is drawn, to 3 or 4 when the title is entered)
+  title colours COLOR0-3 seen in states 3/4: [['86', '0C', '00', '2A'], ['86', '0C', '00', '44'], ['DA', '00', '00', '2A'], ['DA', '0C', '00', '2A']]; ROM ColorsTitle ($BBEA): ['DA', '0C', '00', '2A']
+
+== Keys during the countdown and at the title (injected at the controller registers)
+press START(CONSOL=6)  frames 406..456 (game counter 0): state z19=3 z20=0 z1e=0, StartLevel=0, 1P/2P z1a=0, lives=[0, 0], s1=000000001010 hi=000000000000  ->  first reaction: NEWGAME at f=458 (+52 frames)
+      press held 51 frames (406..456); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1321..1361 (game counter 1): state z19=0 z20=0 z1e=0, StartLevel=0, 1P/2P z1a=0, lives=[2, 3], s1=000000111010 hi=000000000000  ->  first reaction: SET_Z19 new=3 at f=1363 (+42 frames)
+      press held 41 frames (1321..1361); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1422..1429 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=0, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1431 (+9 frames)
+      press held 8 frames (1422..1429); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1462..1469 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=1, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1471 (+9 frames)
+      press held 8 frames (1462..1469); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1502..1509 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=2, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1511 (+9 frames)
+      press held 8 frames (1502..1509); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1542..1549 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=4, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1551 (+9 frames)
+      press held 8 frames (1542..1549); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1582..1589 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=6, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1591 (+9 frames)
+      press held 8 frames (1582..1589); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1622..1629 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=8, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1631 (+9 frames)
+      press held 8 frames (1622..1629); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1662..1669 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=10, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1671 (+9 frames)
+      press held 8 frames (1662..1669); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1702..1709 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=12, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1711 (+9 frames)
+      press held 8 frames (1702..1709); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1742..1749 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=0, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1751 (+9 frames)
+      press held 8 frames (1742..1749); the reaction came 2 frame(s) after the last frame of the press
+press OPTION(CONSOL=3) frames 1782..1789 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=1, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_OPTION at f=1791 (+9 frames)
+      press held 8 frames (1782..1789); the reaction came 2 frame(s) after the last frame of the press
+press SELECT(CONSOL=5) frames 1862..1870 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=2, 1P/2P z1a=0, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: KEY_SELECT at f=1872 (+10 frames)
+      press held 9 frames (1862..1870); the reaction came 2 frame(s) after the last frame of the press
+press START(CONSOL=6)  frames 1922..1972 (game counter 1): state z19=3 z20=0 z1e=0, StartLevel=2, 1P/2P z1a=1, lives=[2, 3], s1=000000001010 hi=000000000000  ->  first reaction: NEWGAME at f=1974 (+52 frames)
+      press held 51 frames (1922..1972); the reaction came 2 frame(s) after the last frame of the press
+press STRIG1           frames 10973..10973 (game counter 2): state z19=4 z20=1 z1e=0, StartLevel=2, 1P/2P z1a=1, lives=[0, 0], s1=000000151210 hi=000000151210  ->  first reaction: NEWGAME at f=10974 (+1 frames)
+      press held 1 frames (10973..10973); the reaction came 1 frame(s) after the last frame of the press
+press START(CONSOL=6)  frames 11537..11587 (game counter 3): state z19=0 z20=0 z1e=0, StartLevel=2, 1P/2P z1a=1, lives=[2, 3], s1=000000121210 hi=000000151210  ->  first reaction: NEWGAME at f=11589 (+52 frames)
+      press held 51 frames (11537..11587); the reaction came 2 frame(s) after the last frame of the press
+
+KEY_SELECT / KEY_OPTION events: [('KEY_OPTION', 1431, '3', '0', '0'), ('KEY_OPTION', 1471, '3', '0', '1'), ('KEY_OPTION', 1511, '3', '0', '2'), ('KEY_OPTION', 1551, '3', '0', '4'), ('KEY_OPTION', 1591, '3', '0', '6'), ('KEY_OPTION', 1631, '3', '0', '8'), ('KEY_OPTION', 1671, '3', '0', '10'), ('KEY_OPTION', 1711, '3', '0', '12'), ('KEY_OPTION', 1751, '3', '0', '0'), ('KEY_OPTION', 1791, '3', '0', '1'), ('KEY_SELECT', 1872, '3', '0', '0')]
+SET_Z19 events (new value, frame, zp_20, zp_1E): [('3', 1363, '0', '0'), ('3', 1431, '0', '0'), ('3', 1471, '0', '0'), ('3', 1511, '0', '0'), ('3', 1551, '0', '0'), ('3', 1591, '0', '0'), ('3', 1631, '0', '0'), ('3', 1671, '0', '0'), ('3', 1711, '0', '0'), ('3', 1751, '0', '0'), ('3', 1791, '0', '0'), ('3', 1872, '0', '0'), ('4', 10773, '1', '0'), ('4', 19485, '1', '0')]
+
+== Lives (no refill anywhere in this session)
+game 1 lives (P1,P2) over time: [(0, 0), (3, 3), (2, 3)]
+game 2 lives (P1,P2) over time: [(0, 0), (3, 3), (2, 3), (2, 2), (1, 2), (1, 1), (0, 1), (0, 0)]
+game 3 lives (P1,P2) over time: [(0, 0), (3, 3), (2, 3)]
+game 4 lives (P1,P2) over time: [(0, 0), (3, 3), (2, 3), (2, 2), (1, 2), (1, 1), (0, 1), (0, 0)]
+Deaths: 12; game overs: 2; INITBOARD_CALL (restart after a death): 10
+
+PROBLEMS: none

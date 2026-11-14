@@ -1,0 +1,18 @@
+     15 s  best lag  -0.10 samples  correlation 0.9998
+     75 s  best lag  +0.19 samples  correlation 0.9997
+    135 s  best lag  +0.55 samples  correlation 0.9984
+    195 s  best lag  +0.87 samples  correlation 0.9999
+    255 s  best lag  +1.21 samples  correlation 0.9995
+    315 s  best lag  +1.54 samples  correlation 0.9983
+    375 s  best lag  +1.91 samples  correlation 0.9999
+    435 s  best lag  +1.95 samples  correlation 0.9839
+    495 s  best lag  +2.53 samples  correlation 0.9983
+    555 s  best lag  +2.90 samples  correlation 0.9999
+    615 s  best lag  +3.25 samples  correlation 0.9992
+    675 s  best lag  +3.58 samples  correlation 0.9979
+    735 s  best lag  +3.99 samples  correlation 1.0000
+    795 s  best lag  +4.21 samples  correlation 0.9995
+    855 s  best lag  +4.58 samples  correlation 0.9985
+blocks not fitted (correlation < 0.99): [435]
+fit over 14 blocks: lag = -0.216 + +0.00562 samples/s * t ;  residual max 0.07 samples ;  min block correlation 0.9979
+--rate-ppm -0.1274   (the recording has 0.127 ppm more samples per emulated cycle than the model assumes)

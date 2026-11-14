@@ -1,0 +1,61 @@
+Trace: 96951 sound-register writes, 54445 frames (f=39..54483), 756 events.
+Events: {'NEWGAME': 9, 'INIT_BOARD': 30, 'READY_DRAW': 9, 'TUNE': 576, 'START_PLAY': 30, 'PELLET': 9, 'GHOST_EATEN': 11, 'DEATH_START': 30, 'DEATH_DONE': 30, 'BONUS_APPEAR': 8, 'BONUS_EATEN': 4, 'GAME_OVER_TEXT': 10}
+
+0. Start tune (the loop at $A7D3, PCs $A7E2 $A7E8 $A7ED $A7F2)
+  ok   576 tune steps for 9 game start(s)
+  ok   game 1: 64 steps from f=465, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 0, StartLevel 0)
+  ok   game 2: 64 steps from f=7173, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 6, StartLevel 6)
+  ok   game 3: 64 steps from f=14713, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 10, StartLevel 10)
+  ok   game 4: 64 steps from f=21453, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 2, StartLevel 2)
+  ok   game 5: 64 steps from f=27573, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 10, StartLevel 10)
+  ok   game 6: 64 steps from f=32069, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 12, StartLevel 12)
+  ok   game 7: 64 steps from f=36397, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 0, StartLevel 0)
+  ok   game 8: 64 steps from f=45053, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 1, StartLevel 1)
+  ok   game 9: 64 steps from f=50757, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 2, StartLevel 2)
+
+0b. Siren (LB508..LB54E, PCs $B546/$B54B; the step zp_9C comes from the dots eaten, Sub_B5C7)
+  ok   siren: 16686 calls, every (AUDF2, AUDC2) equals the port with the step from the dot counter (0 mismatches); steps seen {0: 30, 2: 16271, 3: 385}
+   dots eaten reached 181 (siren steps 3 / 4 / 5 start at 176 / 224 / 240)
+
+1. Bonus item eaten (Sub_ABC9, PCs $ABFE/$AC01)
+   port: 31 calls; AUDF1 ['0x7d', '0x82', '0x87', '...', '0x7d', '0x78', '0x0'] ... AUDC1 ['0x0', '0xa3', '0xa5']
+  ok   4 bonus sound episodes in the trace (BONUS_APPEAR events: 8)
+  ok   episode f=2776..2806: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=38444..38474: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=42001..42031: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=48133..48139: 7 of 31 calls, every (AUDF1, AUDC1) equals the port; cut short by DEATH_START at f=48140 (Pac-Man was caught 7 frames after eating the item)
+
+2. Ghost eaten (the code at $A8EC and $B049-$B088)
+   port: 34 frames (the collision frame, then 32 sweep calls; last = ClearPokeyRegisters and AUDCTL := 0); AUDF1 first 0x80 last 0x14
+  ok   A8EE (AUDC2 := 0) ran 11 times for 11 GHOST_EATEN events
+  ok   ghost eaten at f=1699 (ghost 0): 34 frames to f=1732, every write equals the port
+  ok   ghost eaten at f=15357 (ghost 0): 34 frames to f=15390, every write equals the port
+  ok   ghost eaten at f=15453 (ghost ?): 34 frames to f=15486, every write equals the port
+  ok   ghost eaten at f=16992 (ghost 0): 34 frames to f=17025, every write equals the port
+  ok   ghost eaten at f=17496 (ghost 0): 34 frames to f=17529, every write equals the port
+  ok   ghost eaten at f=37245 (ghost 0): 34 frames to f=37278, every write equals the port
+  ok   ghost eaten at f=37378 (ghost 1): 34 frames to f=37411, every write equals the port
+  ok   ghost eaten at f=39631 (ghost 0): 34 frames to f=39664, every write equals the port
+  ok   ghost eaten at f=40558 (ghost 0): 34 frames to f=40591, every write equals the port
+  ok   ghost eaten at f=46945 (ghost 0): 34 frames to f=46978, every write equals the port
+  ok   ghost eaten at f=47060 (ghost 1): 34 frames to f=47093, every write equals the port
+   the ghost-eaten sound is a sweep from 248 Hz up to 1522 Hz over 34 frames (0.57 s); the rest of the game does not run meanwhile (the main loop jumps to $B049 at $A840)
+
+3. Frightened phase (Sub_AFD7, PCs $B021/$B028) and eyes returning (Sub_B02C, PCs $B042/$B028)
+  ok   frightened: 2562 calls in 9 episodes, every (AUDF2, AUDC2) equals the port (0 mismatches)
+  ok   the frightened routine is called only while FrightenPhase <> 0 (at the start of the routine, or a pellet is eaten in it), no eaten ghost is returning (zp_F2 = 0 as recomputed in it) and no ghost-eaten sound runs (zp_E5 = 0): 0 exceptions []
+  ok   eyes: 1045 calls, every (AUDF2, AUDC2) equals the port (0 mismatches); values 13..23
+  ok   the eyes routine is called only while an eaten ghost is returning (zp_F2 <> 0 as recomputed in the routine) and no ghost-eaten sound runs (zp_E5 = 0 at its start): 0 exceptions []
+
+4. Who writes channel 2 (AUDC2) in each situation (frames, PCs)
+   frightened (FrightenPhase)       {('B028',): 2289, ('A8EE',): 11}
+   ghost-eaten sound (zp_E5)        {(): 352, ('B0EA',): 11}
+   eaten ghost returning (zp_F2)    {('B028',): 1039, (): 353, ('B54B',): 4, ('B0EA',): 2}
+   normal                           {(): 28471, ('B54B',): 16153, ('A617',): 3660, ('A7F2',): 512}
+
+5. Extra life and board change: no sound routine exists (census of all POKEY write sites: 31, none for these)
+
+PROBLEMS: none

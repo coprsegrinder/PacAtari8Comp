@@ -1,0 +1,25 @@
+Segments of the audit's list compared in the waveform domain: 21946 (silence skipped); recording sound-bot5-recorded.wav
+  all segments                       21946 segs  correlation >= 0.90 in 21946 (100.0%), min 0.995, median 0.9996;  drift: median 0.00 cents, 95% within 0.0, max 0.6
+  segments of 12-40 ms               21569 segs  correlation >= 0.90 in 21569 (100.0%), min 0.996, median 0.9996;  drift: median 0.00 cents, 95% within 0.0, max 0.6
+  segments of 40 ms or more            377 segs  correlation >= 0.90 in   377 (100.0%), min 0.995, median 0.9997;  drift: median 0.00 cents, 95% within 0.0, max 0.2
+  pitch not resolved by the audit     1116 segs  correlation >= 0.90 in  1116 (100.0%), min 0.996, median 0.9997;  drift: median 0.01 cents, 95% within 0.0, max 0.1
+  flagged by the audit (FAIL)           16 segs  correlation >= 0.90 in    16 (100.0%), min 0.999, median 0.9997;  drift: median 0.01 cents, 95% within 0.0, max 0.1
+
+Weakest 8 segments by correlation (time s, length ms, correlation, drift cents, audit state):
+    356.115 s  60.0 ms  corr 0.995  drift   -0.0 cents  ok  silence
+    844.877 s  60.0 ms  corr 0.996  drift   +0.1 cents  ok  silence
+    533.009 s  60.0 ms  corr 0.996  drift   -0.2 cents  ok  silence
+    278.425 s  17.0 ms  corr 0.996  drift   +0.0 cents  unresolved  ch3 1141 Hz v8 (-)  ch4 1141 Hz v8 (-)  ch1 1141 Hz v8 (-)
+    457.979 s  60.0 ms  corr 0.996  drift   +0.0 cents  ok  silence
+      5.597 s  60.0 ms  corr 0.997  drift   +0.0 cents  ok  silence
+    656.261 s  17.0 ms  corr 0.997  drift   -0.2 cents  ok  ch3 1522 Hz v8 (-1)  ch4 1522 Hz v8 (-)  ch1 1522 Hz v8 (-)
+    605.236 s  60.0 ms  corr 0.997  drift   -0.2 cents  ok  silence
+
+Shift test (the true model against the model with one channel's tone stretched by +-c cents; positive = the recording prefers the true model):
+  unresolved tones             1116 tested, 0 not testable;  prefers the true model at  5 cents: 1116/1116 (min +0.0001);  10 cents: 1116/1116 (min +0.0007);  20 cents: 1116/1116 (min +0.0028);  40 cents: 1116/1116 (min +0.0073)
+    of which inside ghost-eaten sweeps: 6;  5 cents: 6/6 (min +0.0055, median +0.0163);  10 cents: 6/6 (min +0.0283, median +0.0649);  20 cents: 6/6 (min +0.1008, median +0.1927);  40 cents: 6/6 (min +0.2286, median +0.3640)
+  tones of flagged segments      4 tested, 0 not testable;  prefers the true model at  5 cents: 4/4 (min +0.0003);  10 cents: 4/4 (min +0.0018);  20 cents: 4/4 (min +0.0067);  40 cents: 4/4 (min +0.0177)
+
+Unresolved or flagged segments outside the limits (correlation >= 0.90, drift <= 20 cents): 0
+
+PROBLEMS: none

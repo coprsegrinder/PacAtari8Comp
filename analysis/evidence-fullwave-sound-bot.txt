@@ -1,0 +1,25 @@
+RMS ratio model / recording over the windows with correlation >= 0.90: median 0.963, 5-95%: 0.962..0.964.
+  whole-recording correlation at lag -2 samples (-0.045 ms): 0.9362
+  whole-recording correlation at lag -1 samples (-0.023 ms): 0.9687
+  whole-recording correlation at lag +0 samples (+0.000 ms): 0.9904
+  whole-recording correlation at lag +1 samples (+0.023 ms): 0.9980
+  whole-recording correlation at lag +2 samples (+0.045 ms): 0.9903
+
+Windows below 0.90: 0.  Worst 25 (time s, frame, correlation, rms ratio):
+Single-channel windows (2313): |correlation| median 0.9898, 5th percentile 0.9637; >= 0.90 in 2313 (100.0%); signed >= 0.90 in 2313 (100.0%), inverted (<= -0.90) in 0 (0.0%).
+Single-channel windows with |correlation| < 0.90: 0; their RMS ratio median 0.00; first 12 (time s, frame, channels, correlation, rms ratio):
+
+By audible channels (tone mode with volume > 0): windows, of which below 0.90:
+  channels (2,)          1801 windows,    0 below
+  channels (1, 2)         576 windows,    0 below
+  channels (1,)           512 windows,    0 below
+  channels ()              24 windows,    0 below
+
+By game event (windows in the 1.5 s after the latest event): windows, with correlation >= 0.90:
+  (no event in the previous 1.5 s)    2266 windows, 100.0%
+  START_PLAY                           367 windows, 100.0%
+  TUNE                                 240 windows, 100.0%
+  PELLET                                30 windows, 100.0%
+  INIT_BOARD                             5 windows, 100.0%
+  READY_DRAW                             3 windows, 100.0%
+  DEATH_START                            2 windows, 100.0%

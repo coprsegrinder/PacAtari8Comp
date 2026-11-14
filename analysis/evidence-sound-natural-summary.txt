@@ -1,0 +1,2118 @@
+Recording 73.59 s, 44100 Hz.  Trace: 11443 register writes, frames up to 4745.
+Alignment: the first sound of the start tune appears at 9.5629 s; its writes (frame 909, 16.38 ms into the frame) happened 2.55 ms earlier, at 9.5603 s (the tune fit's step start is 9.5692 s: -8.91 ms).
+Clock check: 5 later silence-to-sound transitions (first at 39.5 s, last at 60.7 s): the sound appears +2.21 ms (mean) from where the writes put it, spread 0.86 ms (min +1.69, max +2.55).
+Game events (first occurrence): NEWGAME f=905 (9.48 s), INIT_BOARD f=906 (9.49 s), READY_DRAW f=908 (9.53 s), START_PLAY f=1165 (13.82 s), PELLET f=1363 (17.12 s), GHOST_EATEN f=1626 (21.51 s), BONUS_APPEAR f=2199 (31.07 s), BONUS_EATEN f=2464 (35.49 s), DEATH_DONE f=2959 (43.75 s);  DEATH_START frames: []
+Level calibration from 34 single-voice tune steps: RMS = 0.00860 x volume (volume 8: 0.00861 per unit, volume 4: 0.00796 per unit).
+
+Segments of constant register state: 1957 judged (1934 with a pitch measurement), 362 shorter than 12 ms (not judged); ok: 1953
+Accounting of the 73.59 s recording: before the first register write 0.00 s (nothing writes sound there, the recording is silent: level 0.0000); after the end of the usable trace 0.23 s (not compared); inside the trace 73.36 s = judged 60.89 s + segments shorter than 12 ms 6.02 s + settle/half-period margins 6.45 s.
+
+By kind of sound:  segments (with pitch), time, worst pitch error, level recording/expected (min..max), PCs that write the AUDF/AUDC registers of it
+  silence                  23 segs (  0)   32.34 s  worst   0.0 cents  level -  PCs $A617 $A7E2 $A7E8 $A7ED $A7F2 $AED2 $AED7 $B0EA $F280
+  ch2 $A1                 817 segs (817)   11.48 s  worst   1.6 cents  level 0.86..1.13  PCs $B546 $B54B
+  ch1 $A4 + ch2 $A1       441 segs (441)    5.87 s  worst 133.5 cents  level 0.81..1.22  PCs $B0DD $B0E2 $B546 $B54B
+  ch1 $A8                 330 segs (330)    5.20 s  worst   1.6 cents  level 0.99..1.04  PCs $A7E2 $A7E8 $A7ED $A7F2 $AE94 $AE99 $AEAD $AEB2 $AED2 $AED7 $B0EA
+  ch2 $A4                 104 segs (104)    2.19 s  worst   0.6 cents  level 0.91..1.03  PCs $A7E2 $A7E8 $A7ED $A7F2 $B021 $B028 $B042
+  ch1 $A4 + ch2 $A4       102 segs (102)    1.32 s  worst   9.5 cents  level 0.42..1.37  PCs $B021 $B028 $B042 $B0DD $B0E2
+  ch1 $A8 + ch2 $A4        13 segs ( 13)    0.85 s  worst   2.0 cents  level 0.89..1.09  PCs $A7E2 $A7E8 $A7ED $A7F2
+  ch2 $A3                  64 segs ( 64)    0.83 s  worst   0.1 cents  level 0.92..0.94  PCs $B021 $B028
+  ch1 $A4 + ch2 $A3        38 segs ( 38)    0.47 s  worst  19.4 cents  level 0.67..1.22  PCs $B021 $B028 $B0DD $B0E2
+  ch3 $A8 + ch4 $A8 + ch1 $A8 HP   14 segs ( 14)    0.19 s  worst   1.3 cents  level 0.45..1.25  PCs $B072 $B075 $B078 $B07D $B080 $B0E2
+  ch2 $A5                   7 segs (  7)    0.09 s  worst   1.5 cents  level 0.99..1.03  PCs $B021 $B028
+  ch3 $A8 + ch4 $A4 + ch1 $A4 HP    2 segs (  2)    0.02 s  worst   1.2 cents  level 0.97..1.08  PCs $B058 $B05B $B060 $B080 $B0E2
+  ch4 $A4 + ch1 $A4 HP      1 segs (  1)    0.01 s  worst   0.2 cents  level 1.03..1.03  PCs $B058 $B05B $B060 $B080 $B0E2
+  ch1 $A5 + ch2 $A1         1 segs (  1)    0.01 s  worst   2.2 cents  level 0.97..0.97  PCs $ABFE $AC01 $B546 $B54B
+Pitch error, segments of 40 ms or more: 54 tones, mean 0.12 cents, 95% within 0.6, worst 2.0 (limit 30).
+Pitch error, segments of 12-40 ms (siren, death glide, sweeps): 2327 tones, mean 2.26 cents, 95% within 13.5, worst 133.5 (limit 80).
+Pitch not resolved (weak voice under a louder one in a 12-13 ms window: the fit at the expected pitch is within 15 % of the best fit, level still checked): 122 tones
+    14.052 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    14.219 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    14.386 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    14.471 s  channel 2 expected 491.7 Hz, best fit 529.1 Hz, residual ratio 1.06
+    14.553 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    14.719 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    14.887 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    14.904 s  channel 2 expected 491.7 Hz, best fit 525.2 Hz, residual ratio 1.07
+    15.053 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    15.221 s  channel 2 expected 626.7 Hz, another channel starts in the window (onset transient)
+    15.438 s  channel 2 expected 603.0 Hz, best fit 573.9 Hz, residual ratio 1.00
+    15.554 s  channel 2 expected 819.5 Hz, another channel starts in the window (onset transient)
+    15.755 s  channel 2 expected 507.3 Hz, best fit 469.2 Hz, residual ratio 1.02
+    15.789 s  channel 2 expected 507.3 Hz, best fit 533.0 Hz, residual ratio 1.12
+    15.871 s  channel 2 expected 603.0 Hz, another channel starts in the window (onset transient)
+    16.021 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    16.189 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    16.206 s  channel 2 expected 491.7 Hz, best fit 525.3 Hz, residual ratio 1.06
+    16.355 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    16.489 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    16.656 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    16.806 s  channel 2 expected 710.2 Hz, another channel starts in the window (onset transient)
+    16.972 s  channel 2 expected 603.0 Hz, another channel starts in the window (onset transient)
+    17.006 s  channel 2 expected 560.7 Hz, best fit 529.4 Hz, residual ratio 1.04
+    17.592 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    17.758 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    17.925 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    18.092 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    18.259 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    18.426 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    18.593 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    18.760 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    18.927 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    19.093 s  channel 2 expected 282.8 Hz, another channel starts in the window (onset transient)
+    22.313 s  channel 2 expected 1997.5 Hz, another channel starts in the window (onset transient)
+    22.463 s  channel 2 expected 2282.9 Hz, another channel starts in the window (onset transient)
+    22.630 s  channel 2 expected 1331.7 Hz, another channel starts in the window (onset transient)
+    22.797 s  channel 2 expected 1389.6 Hz, another channel starts in the window (onset transient)
+    22.964 s  channel 2 expected 1452.7 Hz, another channel starts in the window (onset transient)
+    23.131 s  channel 2 expected 1521.9 Hz, another channel starts in the window (onset transient)
+    23.297 s  channel 2 expected 1598.0 Hz, another channel starts in the window (onset transient)
+    23.448 s  channel 2 expected 1775.6 Hz, another channel starts in the window (onset transient)
+    23.614 s  channel 2 expected 1880.0 Hz, another channel starts in the window (onset transient)
+    23.782 s  channel 2 expected 1997.5 Hz, another channel starts in the window (onset transient)
+    23.916 s  channel 2 expected 394.6 Hz, another channel starts in the window (onset transient)
+    24.249 s  channel 2 expected 394.6 Hz, another channel starts in the window (onset transient)
+    24.583 s  channel 2 expected 394.6 Hz, another channel starts in the window (onset transient)
+    24.917 s  channel 2 expected 394.6 Hz, another channel starts in the window (onset transient)
+    25.251 s  channel 2 expected 394.6 Hz, another channel starts in the window (onset transient)
+    25.401 s  channel 2 expected 491.7 Hz, another channel starts in the window (onset transient)
+    25.567 s  channel 2 expected 491.7 Hz, another channel starts in the window (onset transient)
+    25.734 s  channel 2 expected 779.5 Hz, another channel starts in the window (onset transient)
+    25.934 s  channel 2 expected 523.9 Hz, another channel starts in the window (onset transient)
+    25.968 s  channel 2 expected 491.7 Hz, best fit 525.2 Hz, residual ratio 1.06
+    25.985 s  channel 2 expected 507.3 Hz, best fit 469.2 Hz, residual ratio 1.02
+    26.251 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    26.418 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    26.585 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    26.752 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    26.919 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    27.085 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    27.253 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    27.270 s  channel 2 expected 491.7 Hz, best fit 525.2 Hz, residual ratio 1.07
+    27.419 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    27.570 s  channel 2 expected 652.2 Hz, another channel starts in the window (onset transient)
+    27.737 s  channel 2 expected 523.9 Hz, another channel starts in the window (onset transient)
+    27.770 s  channel 2 expected 560.7 Hz, best fit 529.2 Hz, residual ratio 1.04
+    27.887 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    28.053 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    28.138 s  channel 2 expected 491.7 Hz, best fit 527.2 Hz, residual ratio 1.05
+    28.221 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    28.387 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    28.555 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    28.571 s  channel 2 expected 491.7 Hz, best fit 525.2 Hz, residual ratio 1.06
+    30.440 s  channel 2 expected 652.2 Hz, another channel starts in the window (onset transient)
+    30.590 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    30.757 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    30.924 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    31.091 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    31.176 s  channel 2 expected 491.7 Hz, best fit 529.7 Hz, residual ratio 1.06
+    31.225 s  channel 2 expected 541.7 Hz, another channel starts in the window (onset transient)
+    31.242 s  channel 2 expected 560.7 Hz, best fit 529.4 Hz, residual ratio 1.05
+    31.391 s  channel 2 expected 819.5 Hz, another channel starts in the window (onset transient)
+    31.558 s  channel 2 expected 541.7 Hz, another channel starts in the window (onset transient)
+    31.725 s  channel 2 expected 626.7 Hz, another channel starts in the window (onset transient)
+    31.892 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    32.059 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    32.226 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    32.392 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    32.477 s  channel 2 expected 491.7 Hz, best fit 528.3 Hz, residual ratio 1.05
+    32.560 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    32.709 s  channel 2 expected 779.5 Hz, another channel starts in the window (onset transient)
+    32.877 s  channel 2 expected 523.9 Hz, another channel starts in the window (onset transient)
+    33.460 s  channel 2 expected 626.7 Hz, another channel starts in the window (onset transient)
+    33.627 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    33.761 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    33.829 s  channel 2 expected 541.7 Hz, best fit 517.0 Hz, residual ratio 1.04
+    33.928 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    34.094 s  channel 2 expected 626.7 Hz, another channel starts in the window (onset transient)
+    34.162 s  channel 2 expected 541.7 Hz, best fit 515.0 Hz, residual ratio 1.03
+    34.262 s  channel 2 expected 541.7 Hz, another channel starts in the window (onset transient)
+    34.279 s  channel 2 expected 560.7 Hz, best fit 529.2 Hz, residual ratio 1.04
+    35.515 s  channel 2 expected 491.7 Hz, another channel starts in the window (onset transient)
+    37.349 s  channel 2 expected 603.0 Hz, another channel starts in the window (onset transient)
+    45.242 s  channel 2 expected 710.2 Hz, another channel starts in the window (onset transient)
+    45.409 s  channel 2 expected 603.0 Hz, another channel starts in the window (onset transient)
+    46.560 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    46.728 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    46.745 s  channel 2 expected 560.7 Hz, best fit 529.5 Hz, residual ratio 1.05
+    46.894 s  channel 2 expected 581.1 Hz, another channel starts in the window (onset transient)
+    47.061 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    47.228 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    47.296 s  channel 2 expected 541.7 Hz, best fit 516.9 Hz, residual ratio 1.04
+    47.395 s  channel 2 expected 680.0 Hz, another channel starts in the window (onset transient)
+    47.562 s  channel 2 expected 626.7 Hz, another channel starts in the window (onset transient)
+    47.630 s  channel 2 expected 541.7 Hz, best fit 516.9 Hz, residual ratio 1.04
+    47.696 s  channel 2 expected 507.3 Hz, another channel starts in the window (onset transient)
+    47.862 s  channel 2 expected 743.3 Hz, another channel starts in the window (onset transient)
+    48.113 s  channel 2 expected 491.7 Hz, another channel starts in the window (onset transient)
+    48.147 s  channel 2 expected 523.9 Hz, best fit 561.2 Hz, residual ratio 1.03
+    48.279 s  channel 2 expected 710.2 Hz, another channel starts in the window (onset transient)
+    49.081 s  channel 2 expected 603.0 Hz, another channel starts in the window (onset transient)
+
+Segment list (start, length, what the registers say, pitch error in cents, level recording/expected):
+     0.000 s   9560 ms  silence                                              level 0.0000  ok
+     9.563 s     63 ms  ch2 196 Hz v4 (-0)                                   level 1.00  ok
+     9.634 s    126 ms  ch2 131 Hz v4 (+0)                                   level 0.92  ok
+     9.769 s     58 ms  ch1 524 Hz v8 (-0)  ch2 131 Hz v4 (+0)               level 0.99  ok
+     9.838 s     55 ms  silence                                              level 0.0002  ok
+     9.896 s     64 ms  ch1 390 Hz v8 (-0)                                   level 1.00  ok
+     9.969 s     58 ms  silence                                              level 0.0004  ok
+    10.030 s     64 ms  ch1 329 Hz v8 (+0)                                   level 0.99  ok
+    10.105 s     56 ms  ch2 196 Hz v4 (+0)                                   level 0.96  ok
+    10.168 s     59 ms  ch1 524 Hz v8 (-0)  ch2 131 Hz v4 (-0)               level 0.99  ok
+    10.236 s     58 ms  ch1 390 Hz v8 (+2)  ch2 131 Hz v4 (-0)               level 1.08  ok
+    10.309 s     52 ms  ch2 131 Hz v4 (-0)                                   level 0.91  ok
+    10.370 s     57 ms  silence                                              level 0.0003  ok
+    10.430 s    131 ms  ch1 329 Hz v8 (-0)                                   level 1.00  ok
+    10.570 s     58 ms  silence                                              level 0.0003  ok
+    10.631 s     63 ms  ch2 208 Hz v4 (-0)                                   level 0.96  ok
+    10.702 s    126 ms  ch2 138 Hz v4 (-0)                                   level 0.93  ok
+    10.836 s     59 ms  ch1 551 Hz v8 (-0)  ch2 138 Hz v4 (-0)               level 0.99  ok
+    10.906 s     55 ms  silence                                              level 0.0003  ok
+    10.964 s     65 ms  ch1 415 Hz v8 (-0)                                   level 1.00  ok
+    11.037 s     58 ms  silence                                              level 0.0004  ok
+    11.098 s     64 ms  ch1 347 Hz v8 (-0)                                   level 1.00  ok
+    11.172 s     56 ms  ch2 208 Hz v4 (-0)                                   level 0.96  ok
+    11.236 s     60 ms  ch1 551 Hz v8 (-0)  ch2 138 Hz v4 (-0)               level 1.00  ok
+    11.304 s     58 ms  ch1 415 Hz v8 (-0)  ch2 138 Hz v4 (+0)               level 0.89  ok
+    11.377 s     52 ms  ch2 138 Hz v4 (+0)                                   level 0.93  ok
+    11.438 s     57 ms  silence                                              level 0.0008  ok
+    11.498 s    131 ms  ch1 347 Hz v8 (+0)                                   level 1.00  ok
+    11.638 s     58 ms  silence                                              level 0.0003  ok
+    11.699 s     63 ms  ch2 196 Hz v4 (-0)                                   level 0.95  ok
+    11.770 s    126 ms  ch2 131 Hz v4 (+0)                                   level 0.92  ok
+    11.905 s     58 ms  ch1 524 Hz v8 (-0)  ch2 131 Hz v4 (+0)               level 0.99  ok
+    11.975 s     55 ms  silence                                              level 0.0002  ok
+    12.032 s     64 ms  ch1 390 Hz v8 (-0)                                   level 1.00  ok
+    12.105 s     58 ms  silence                                              level 0.0005  ok
+    12.166 s     64 ms  ch1 329 Hz v8 (+0)                                   level 0.99  ok
+    12.241 s     56 ms  ch2 196 Hz v4 (+0)                                   level 0.96  ok
+    12.304 s     59 ms  ch1 524 Hz v8 (-0)  ch2 131 Hz v4 (-0)               level 0.99  ok
+    12.372 s     58 ms  ch1 390 Hz v8 (+2)  ch2 131 Hz v4 (-0)               level 1.09  ok
+    12.445 s     52 ms  ch2 131 Hz v4 (-0)                                   level 0.91  ok
+    12.507 s     57 ms  silence                                              level 0.0003  ok
+    12.566 s    131 ms  ch1 329 Hz v8 (-0)                                   level 1.00  ok
+    12.706 s     58 ms  silence                                              level 0.0003  ok
+    12.767 s     63 ms  ch2 196 Hz v4 (-0)                                   level 0.95  ok
+    12.837 s     60 ms  ch1 329 Hz v8 (-0)  ch2 165 Hz v4 (+0)               level 0.98  ok
+    12.903 s     61 ms  ch1 347 Hz v8 (+0)                                   level 1.00  ok
+    12.968 s     63 ms  ch1 372 Hz v8 (+0)                                   level 1.00  ok
+    13.040 s     58 ms  silence                                              level 0.0003  ok
+    13.101 s     63 ms  ch1 372 Hz v8 (-0)  ch2 184 Hz v4 (-1)               level 0.99  ok
+    13.170 s     61 ms  ch1 390 Hz v8 (-0)                                   level 1.00  ok
+    13.235 s     63 ms  ch1 415 Hz v8 (+0)                                   level 1.01  ok
+    13.307 s     58 ms  silence                                              level 0.0004  ok
+    13.368 s     63 ms  ch1 415 Hz v8 (-0)  ch2 208 Hz v4 (+0)               level 1.00  ok
+    13.436 s     62 ms  ch1 438 Hz v8 (-0)                                   level 1.00  ok
+    13.501 s     64 ms  ch1 463 Hz v8 (+0)                                   level 1.01  ok
+    13.574 s     58 ms  silence                                              level 0.0003  ok
+    13.635 s    131 ms  ch1 524 Hz v8 (+0)  ch2 262 Hz v4 (-0)               level 1.00  ok
+    13.775 s     57 ms  silence                                              level 0.0001  ok
+    13.834 s     15 ms  ch2 780 Hz v1 (-2)                                   level 1.13  ok
+    13.851 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    13.868 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    13.885 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    13.902 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.87  ok
+    13.918 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.87  ok
+    13.935 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.87  ok
+    13.952 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.87  ok
+    13.969 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    13.985 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.87  ok
+    14.002 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    14.019 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.87  ok
+    14.036 s     14 ms  ch2 492 Hz v1 (+0)                                   level 0.87  ok
+    14.052 s     14 ms  ch1 551 Hz v4 (+0)  ch2 507 Hz v1 (-)                level 1.06  ok
+    14.069 s     14 ms  ch1 470 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.06  ok
+    14.086 s     13 ms  ch1 410 Hz v4 (-0)  ch2 542 Hz v1 (-47)              level 1.04  ok
+    14.103 s     13 ms  ch1 363 Hz v4 (-0)  ch2 561 Hz v1 (+20)              level 1.03  ok
+    14.120 s     13 ms  ch1 326 Hz v4 (+0)  ch2 581 Hz v1 (+24)              level 1.00  ok
+    14.137 s     12 ms  ch1 296 Hz v4 (+0)  ch2 603 Hz v1 (-0)               level 1.02  ok
+    14.169 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.91  ok
+    14.185 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.89  ok
+    14.202 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    14.219 s     14 ms  ch1 385 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.05  ok
+    14.236 s     13 ms  ch1 410 Hz v4 (-0)  ch2 780 Hz v1 (-44)              level 1.02  ok
+    14.253 s     13 ms  ch1 438 Hz v4 (-0)  ch2 819 Hz v1 (-13)              level 1.02  ok
+    14.269 s     13 ms  ch1 470 Hz v4 (-0)  ch2 780 Hz v1 (+0)               level 1.01  ok
+    14.286 s     14 ms  ch1 507 Hz v4 (-0)  ch2 743 Hz v1 (+0)               level 1.03  ok
+    14.303 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-3)               level 1.03  ok
+    14.335 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.89  ok
+    14.352 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    14.369 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    14.386 s     14 ms  ch1 551 Hz v4 (+0)  ch2 581 Hz v1 (-)                level 1.04  ok
+    14.403 s     14 ms  ch1 470 Hz v4 (+0)  ch2 561 Hz v1 (-0)               level 0.99  ok
+    14.420 s     13 ms  ch1 410 Hz v4 (+0)  ch2 542 Hz v1 (-39)              level 1.00  ok
+    14.437 s     13 ms  ch1 363 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.01  ok
+    14.454 s     13 ms  ch1 326 Hz v4 (+0)  ch2 507 Hz v1 (+12)              level 1.02  ok
+    14.471 s     12 ms  ch1 296 Hz v4 (+0)  ch2 492 Hz v1 (-)                level 1.02  ok
+    14.503 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.90  ok
+    14.519 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.89  ok
+    14.536 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.88  ok
+    14.553 s     13 ms  ch1 385 Hz v4 (-0)  ch2 581 Hz v1 (-)                level 1.05  ok
+    14.570 s     13 ms  ch1 410 Hz v4 (-0)  ch2 603 Hz v1 (-0)               level 0.99  ok
+    14.587 s     13 ms  ch1 438 Hz v4 (-0)  ch2 627 Hz v1 (-0)               level 1.02  ok
+    14.603 s     13 ms  ch1 470 Hz v4 (-0)  ch2 652 Hz v1 (-0)               level 1.03  ok
+    14.620 s     14 ms  ch1 507 Hz v4 (-0)  ch2 680 Hz v1 (-63)              level 1.03  ok
+    14.636 s     14 ms  ch1 551 Hz v4 (+0)  ch2 710 Hz v1 (-3)               level 1.01  ok
+    14.669 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.90  ok
+    14.686 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    14.702 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    14.719 s     14 ms  ch1 551 Hz v4 (-0)  ch2 743 Hz v1 (-)                level 1.04  ok
+    14.736 s     14 ms  ch1 470 Hz v4 (-0)  ch2 710 Hz v1 (+3)               level 1.02  ok
+    14.753 s     13 ms  ch1 410 Hz v4 (-0)  ch2 680 Hz v1 (+0)               level 1.01  ok
+    14.771 s     13 ms  ch1 363 Hz v4 (-0)  ch2 652 Hz v1 (+10)              level 1.01  ok
+    14.787 s     13 ms  ch1 326 Hz v4 (-0)  ch2 627 Hz v1 (-66)              level 1.02  ok
+    14.804 s     12 ms  ch1 296 Hz v4 (-0)  ch2 603 Hz v1 (+2)               level 1.01  ok
+    14.836 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.90  ok
+    14.853 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.89  ok
+    14.870 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.89  ok
+    14.887 s     13 ms  ch1 385 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.08  ok
+    14.904 s     13 ms  ch1 410 Hz v4 (+0)  ch2 492 Hz v1 (-)                level 1.03  ok
+    14.920 s     13 ms  ch1 438 Hz v4 (+0)  ch2 507 Hz v1 (-0)               level 1.02  ok
+    14.937 s     13 ms  ch1 470 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.03  ok
+    14.953 s     14 ms  ch1 507 Hz v4 (-0)  ch2 542 Hz v1 (-0)               level 0.91  ok
+    14.970 s     14 ms  ch1 551 Hz v4 (-1)  ch2 561 Hz v1 (-)                level 1.19  ok
+    15.003 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.89  ok
+    15.020 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    15.036 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    15.053 s     14 ms  ch1 551 Hz v4 (-0)  ch2 680 Hz v1 (-)                level 1.05  ok
+    15.070 s     14 ms  ch1 470 Hz v4 (-0)  ch2 710 Hz v1 (-2)               level 1.00  ok
+    15.087 s     13 ms  ch1 410 Hz v4 (+0)  ch2 743 Hz v1 (-12)              level 1.01  ok
+    15.104 s     13 ms  ch1 363 Hz v4 (+0)  ch2 780 Hz v1 (+15)              level 1.01  ok
+    15.121 s     13 ms  ch1 326 Hz v4 (-0)  ch2 819 Hz v1 (-8)               level 1.00  ok
+    15.138 s     12 ms  ch1 296 Hz v4 (+0)  ch2 780 Hz v1 (-12)              level 1.01  ok
+    15.170 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.90  ok
+    15.186 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    15.203 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    15.221 s     14 ms  ch1 385 Hz v4 (+0)  ch2 627 Hz v1 (-)                level 1.01  ok
+    15.238 s     13 ms  ch1 410 Hz v4 (-0)  ch2 603 Hz v1 (+0)               level 1.03  ok
+    15.254 s     13 ms  ch1 438 Hz v4 (-0)  ch2 581 Hz v1 (-43)              level 1.01  ok
+    15.271 s     13 ms  ch1 470 Hz v4 (-0)  ch2 561 Hz v1 (-0)               level 1.00  ok
+    15.287 s     14 ms  ch1 507 Hz v4 (+0)  ch2 542 Hz v1 (+0)               level 1.12  ok
+    15.304 s     14 ms  ch1 551 Hz v4 (-0)  ch2 524 Hz v1 (-0)               level 0.99  ok
+    15.337 s     14 ms  ch2 492 Hz v1 (+0)                                   level 0.90  ok
+    15.354 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.89  ok
+    15.371 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    15.387 s     14 ms  ch1 551 Hz v4 (-)  ch2 542 Hz v1 (+1)                level 1.22  ok
+    15.404 s     14 ms  ch1 470 Hz v4 (-0)  ch2 561 Hz v1 (+0)               level 1.05  ok
+    15.421 s     13 ms  ch1 410 Hz v4 (-0)  ch2 581 Hz v1 (+0)               level 0.99  ok
+    15.438 s     13 ms  ch1 363 Hz v4 (-0)  ch2 603 Hz v1 (-)                level 1.01  ok
+    15.455 s     13 ms  ch1 326 Hz v4 (+0)  ch2 627 Hz v1 (-65)              level 1.03  ok
+    15.472 s     12 ms  ch1 296 Hz v4 (+0)  ch2 652 Hz v1 (-23)              level 1.01  ok
+    15.504 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.90  ok
+    15.520 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    15.537 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    15.554 s     14 ms  ch1 385 Hz v4 (-0)  ch2 819 Hz v1 (-)                level 1.06  ok
+    15.571 s     13 ms  ch1 410 Hz v4 (-0)  ch2 780 Hz v1 (-24)              level 1.02  ok
+    15.588 s     13 ms  ch1 438 Hz v4 (-0)  ch2 743 Hz v1 (-1)               level 1.01  ok
+    15.604 s     13 ms  ch1 470 Hz v4 (-0)  ch2 710 Hz v1 (+3)               level 1.03  ok
+    15.621 s     14 ms  ch1 507 Hz v4 (-0)  ch2 680 Hz v1 (-63)              level 1.03  ok
+    15.638 s     14 ms  ch1 551 Hz v4 (+0)  ch2 652 Hz v1 (-0)               level 1.05  ok
+    15.671 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.90  ok
+    15.687 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    15.704 s     14 ms  ch1 551 Hz v4 (-9)  ch2 561 Hz v1 (-)                level 0.96  ok
+    15.721 s     14 ms  ch1 470 Hz v4 (+0)  ch2 542 Hz v1 (+0)               level 1.02  ok
+    15.738 s     13 ms  ch1 410 Hz v4 (+0)  ch2 524 Hz v1 (+9)               level 1.03  ok
+    15.755 s     13 ms  ch1 363 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.02  ok
+    15.772 s     13 ms  ch1 326 Hz v4 (-0)  ch2 492 Hz v1 (+50)              level 1.02  ok
+    15.789 s     12 ms  ch1 296 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.02  ok
+    15.821 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.89  ok
+    15.838 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    15.854 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    15.871 s     13 ms  ch1 385 Hz v4 (+0)  ch2 603 Hz v1 (-)                level 1.04  ok
+    15.888 s     13 ms  ch1 410 Hz v4 (-0)  ch2 627 Hz v1 (+33)              level 1.00  ok
+    15.905 s     13 ms  ch1 438 Hz v4 (+0)  ch2 652 Hz v1 (+0)               level 1.03  ok
+    15.922 s     13 ms  ch1 470 Hz v4 (+0)  ch2 680 Hz v1 (-0)               level 1.01  ok
+    15.938 s     14 ms  ch1 507 Hz v4 (-0)  ch2 710 Hz v1 (-0)               level 1.03  ok
+    15.955 s     14 ms  ch1 551 Hz v4 (-0)  ch2 743 Hz v1 (+0)               level 1.01  ok
+    15.987 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.90  ok
+    16.004 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    16.021 s     14 ms  ch1 551 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.04  ok
+    16.038 s     14 ms  ch1 470 Hz v4 (-0)  ch2 710 Hz v1 (-2)               level 1.03  ok
+    16.055 s     13 ms  ch1 410 Hz v4 (-0)  ch2 680 Hz v1 (-0)               level 0.99  ok
+    16.072 s     13 ms  ch1 363 Hz v4 (+0)  ch2 652 Hz v1 (+1)               level 1.02  ok
+    16.089 s     13 ms  ch1 326 Hz v4 (+0)  ch2 627 Hz v1 (-62)              level 1.03  ok
+    16.106 s     12 ms  ch1 296 Hz v4 (+0)  ch2 603 Hz v1 (-1)               level 1.02  ok
+    16.138 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.91  ok
+    16.155 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    16.172 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    16.189 s     13 ms  ch1 385 Hz v4 (+0)  ch2 507 Hz v1 (-)                level 1.00  ok
+    16.206 s     13 ms  ch1 410 Hz v4 (-0)  ch2 492 Hz v1 (-)                level 1.03  ok
+    16.222 s     13 ms  ch1 438 Hz v4 (-0)  ch2 507 Hz v1 (-0)               level 1.03  ok
+    16.239 s     13 ms  ch1 470 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.08  ok
+    16.255 s     14 ms  ch1 507 Hz v4 (+0)  ch2 542 Hz v1 (-0)               level 1.06  ok
+    16.272 s     14 ms  ch1 551 Hz v4 (-4)  ch2 561 Hz v1 (-)                level 1.04  ok
+    16.305 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.91  ok
+    16.321 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.89  ok
+    16.338 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    16.355 s     14 ms  ch1 551 Hz v4 (-0)  ch2 680 Hz v1 (-)                level 1.07  ok
+    16.372 s     14 ms  ch1 470 Hz v4 (+0)  ch2 710 Hz v1 (-1)               level 1.03  ok
+    16.389 s     13 ms  ch1 410 Hz v4 (-0)  ch2 743 Hz v1 (-10)              level 1.03  ok
+    16.406 s     13 ms  ch1 363 Hz v4 (-0)  ch2 780 Hz v1 (+26)              level 1.00  ok
+    16.423 s     13 ms  ch1 326 Hz v4 (+0)  ch2 819 Hz v1 (+9)               level 1.01  ok
+    16.440 s     12 ms  ch1 296 Hz v4 (+0)  ch2 780 Hz v1 (-11)              level 1.00  ok
+    16.471 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.90  ok
+    16.489 s     14 ms  ch1 385 Hz v4 (+0)  ch2 680 Hz v1 (-)                level 1.03  ok
+    16.506 s     13 ms  ch1 410 Hz v4 (-0)  ch2 652 Hz v1 (-18)              level 1.02  ok
+    16.522 s     13 ms  ch1 438 Hz v4 (+0)  ch2 627 Hz v1 (+0)               level 1.04  ok
+    16.539 s     13 ms  ch1 470 Hz v4 (-0)  ch2 603 Hz v1 (+3)               level 1.01  ok
+    16.556 s     14 ms  ch1 507 Hz v4 (-0)  ch2 581 Hz v1 (+0)               level 1.02  ok
+    16.572 s     14 ms  ch1 551 Hz v4 (-14)  ch2 561 Hz v1 (-)               level 0.81  ok
+    16.605 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.91  ok
+    16.622 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.89  ok
+    16.639 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    16.656 s     14 ms  ch1 551 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 0.97  ok
+    16.672 s     14 ms  ch1 470 Hz v4 (-0)  ch2 524 Hz v1 (+0)               level 0.97  ok
+    16.689 s     13 ms  ch1 410 Hz v4 (+0)  ch2 542 Hz v1 (-47)              level 1.01  ok
+    16.706 s     13 ms  ch1 363 Hz v4 (+0)  ch2 561 Hz v1 (+23)              level 0.99  ok
+    16.723 s     13 ms  ch1 326 Hz v4 (+0)  ch2 581 Hz v1 (+12)              level 1.00  ok
+    16.740 s     12 ms  ch1 296 Hz v4 (+0)  ch2 603 Hz v1 (-2)               level 1.01  ok
+    16.772 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.91  ok
+    16.789 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.89  ok
+    16.806 s     14 ms  ch1 385 Hz v4 (-0)  ch2 710 Hz v1 (-)                level 1.07  ok
+    16.823 s     13 ms  ch1 410 Hz v4 (-0)  ch2 743 Hz v1 (-9)               level 1.01  ok
+    16.840 s     13 ms  ch1 438 Hz v4 (-0)  ch2 780 Hz v1 (+13)              level 1.03  ok
+    16.856 s     13 ms  ch1 470 Hz v4 (+0)  ch2 819 Hz v1 (+46)              level 1.02  ok
+    16.873 s     14 ms  ch1 507 Hz v4 (-0)  ch2 780 Hz v1 (+35)              level 1.00  ok
+    16.889 s     14 ms  ch1 551 Hz v4 (-0)  ch2 743 Hz v1 (-0)               level 1.04  ok
+    16.922 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.90  ok
+    16.939 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    16.956 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    16.972 s     14 ms  ch1 551 Hz v4 (-0)  ch2 603 Hz v1 (-)                level 0.98  ok
+    16.989 s     14 ms  ch1 470 Hz v4 (+0)  ch2 581 Hz v1 (+59)              level 1.01  ok
+    17.006 s     13 ms  ch1 410 Hz v4 (-0)  ch2 561 Hz v1 (-)                level 1.02  ok
+    17.023 s     13 ms  ch1 363 Hz v4 (+0)  ch2 542 Hz v1 (-1)               level 1.00  ok
+    17.040 s     13 ms  ch1 326 Hz v4 (+0)  ch2 524 Hz v1 (-30)              level 1.02  ok
+    17.057 s     12 ms  ch1 296 Hz v4 (+0)  ch2 507 Hz v1 (+62)              level 1.02  ok
+    17.090 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.91  ok
+    17.106 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    17.123 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    17.141 s     12 ms  ch2 248 Hz v5 (-1)                                   level 1.03  ok
+    17.174 s     12 ms  ch2 329 Hz v5 (-0)                                   level 0.99  ok
+    17.190 s     13 ms  ch2 395 Hz v5 (-0)                                   level 1.00  ok
+    17.207 s     13 ms  ch2 492 Hz v5 (-0)                                   level 1.00  ok
+    17.223 s     13 ms  ch2 395 Hz v5 (-0)                                   level 0.99  ok
+    17.240 s     13 ms  ch2 329 Hz v5 (+0)                                   level 0.99  ok
+    17.258 s     12 ms  ch2 283 Hz v5 (+0)                                   level 0.99  ok
+    17.341 s     12 ms  ch1 507 Hz v4 (+2)  ch2 329 Hz v4 (-0)               level 1.00  ok
+    17.357 s     13 ms  ch1 551 Hz v4 (+0)  ch2 395 Hz v4 (-0)               level 1.03  ok
+    17.390 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.03  ok
+    17.407 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.02  ok
+    17.425 s     12 ms  ch2 283 Hz v4 (+0)                                   level 1.02  ok
+    17.508 s     12 ms  ch1 326 Hz v4 (-2)  ch2 329 Hz v3 (-)                level 0.97  ok
+    17.525 s     12 ms  ch1 296 Hz v4 (+0)  ch2 395 Hz v3 (-18)              level 0.91  ok
+    17.557 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    17.574 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.93  ok
+    17.592 s     12 ms  ch1 385 Hz v4 (-7)  ch2 283 Hz v3 (-)                level 1.04  ok
+    17.675 s     12 ms  ch1 551 Hz v4 (+0)  ch2 329 Hz v4 (-0)               level 1.05  ok
+    17.707 s     13 ms  ch2 492 Hz v4 (+0)                                   level 1.03  ok
+    17.724 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.03  ok
+    17.741 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.02  ok
+    17.758 s     12 ms  ch1 551 Hz v4 (+0)  ch2 283 Hz v4 (-)                level 1.01  ok
+    17.842 s     12 ms  ch1 296 Hz v4 (-0)  ch2 329 Hz v3 (-0)               level 1.22  ok
+    17.874 s     13 ms  ch2 492 Hz v3 (-0)                                   level 0.93  ok
+    17.891 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.92  ok
+    17.908 s     13 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    17.925 s     12 ms  ch1 385 Hz v4 (-6)  ch2 283 Hz v3 (-)                level 1.02  ok
+    18.009 s     12 ms  ch1 551 Hz v4 (+1)  ch2 329 Hz v4 (-0)               level 1.04  ok
+    18.041 s     13 ms  ch2 492 Hz v4 (-0)                                   level 1.02  ok
+    18.058 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.03  ok
+    18.075 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.02  ok
+    18.092 s     12 ms  ch1 551 Hz v4 (+2)  ch2 283 Hz v4 (-)                level 1.05  ok
+    18.176 s     12 ms  ch1 296 Hz v4 (-0)  ch2 329 Hz v3 (-0)               level 1.21  ok
+    18.208 s     13 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    18.225 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    18.242 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.92  ok
+    18.259 s     12 ms  ch1 385 Hz v4 (+1)  ch2 283 Hz v3 (-)                level 0.96  ok
+    18.342 s     12 ms  ch1 551 Hz v4 (-1)  ch2 329 Hz v4 (-0)               level 1.00  ok
+    18.375 s     13 ms  ch2 492 Hz v4 (+0)                                   level 1.03  ok
+    18.391 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.03  ok
+    18.409 s     13 ms  ch2 329 Hz v4 (-0)                                   level 1.01  ok
+    18.426 s     12 ms  ch1 551 Hz v4 (-2)  ch2 283 Hz v4 (-)                level 1.06  ok
+    18.510 s     12 ms  ch1 296 Hz v4 (+0)  ch2 329 Hz v3 (+0)               level 0.69  FAIL
+    18.542 s     13 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    18.558 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.92  ok
+    18.576 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.93  ok
+    18.593 s     12 ms  ch1 385 Hz v4 (-2)  ch2 283 Hz v3 (-)                level 0.98  ok
+    18.676 s     12 ms  ch1 551 Hz v4 (+1)  ch2 329 Hz v4 (-0)               level 0.98  ok
+    18.709 s     13 ms  ch2 492 Hz v4 (-0)                                   level 1.03  ok
+    18.725 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.02  ok
+    18.742 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.02  ok
+    18.760 s     12 ms  ch1 551 Hz v4 (+2)  ch2 283 Hz v4 (-)                level 1.07  ok
+    18.843 s     12 ms  ch1 296 Hz v4 (-0)  ch2 329 Hz v3 (+0)               level 0.73  FAIL
+    18.875 s     13 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    18.892 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    18.909 s     13 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    18.927 s     12 ms  ch1 385 Hz v4 (+1)  ch2 283 Hz v3 (-)                level 0.91  ok
+    19.010 s     12 ms  ch1 551 Hz v4 (-2)  ch2 329 Hz v4 (+0)               level 0.99  ok
+    19.042 s     13 ms  ch2 492 Hz v4 (+0)                                   level 1.02  ok
+    19.059 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.02  ok
+    19.076 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.03  ok
+    19.093 s     12 ms  ch1 551 Hz v4 (-0)  ch2 283 Hz v4 (-)                level 1.07  ok
+    19.177 s     12 ms  ch1 296 Hz v4 (+0)  ch2 329 Hz v3 (-0)               level 0.81  ok
+    19.209 s     13 ms  ch2 492 Hz v3 (-0)                                   level 0.93  ok
+    19.226 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    19.243 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.92  ok
+    19.260 s     12 ms  ch2 283 Hz v3 (-0)                                   level 0.92  ok
+    19.344 s     12 ms  ch2 329 Hz v4 (-0)                                   level 1.02  ok
+    19.360 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.03  ok
+    19.376 s     13 ms  ch2 492 Hz v4 (+0)                                   level 1.03  ok
+    19.393 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.03  ok
+    19.410 s     13 ms  ch2 329 Hz v4 (-0)                                   level 1.01  ok
+    19.427 s     12 ms  ch2 283 Hz v4 (-0)                                   level 1.02  ok
+    19.511 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    19.527 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    19.543 s     13 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    19.560 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.92  ok
+    19.577 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.93  ok
+    19.594 s     12 ms  ch2 283 Hz v3 (+0)                                   level 0.92  ok
+    19.677 s     12 ms  ch2 329 Hz v4 (-0)                                   level 1.03  ok
+    19.694 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.02  ok
+    19.710 s     13 ms  ch2 492 Hz v4 (-0)                                   level 1.03  ok
+    19.727 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.02  ok
+    19.744 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.02  ok
+    19.761 s     12 ms  ch2 283 Hz v4 (+0)                                   level 1.02  ok
+    19.844 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.93  ok
+    19.861 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    19.877 s     13 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    19.893 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    19.911 s     13 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    19.928 s     12 ms  ch2 283 Hz v3 (-0)                                   level 0.92  ok
+    20.011 s     12 ms  ch2 329 Hz v4 (+0)                                   level 1.02  ok
+    20.027 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.03  ok
+    20.044 s     13 ms  ch2 492 Hz v4 (+0)                                   level 1.03  ok
+    20.060 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.02  ok
+    20.077 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.03  ok
+    20.095 s     12 ms  ch2 283 Hz v4 (+0)                                   level 1.02  ok
+    20.178 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.93  ok
+    20.194 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    20.210 s     13 ms  ch2 492 Hz v3 (-0)                                   level 0.93  ok
+    20.227 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    20.244 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.92  ok
+    20.262 s     12 ms  ch2 283 Hz v3 (+0)                                   level 0.92  ok
+    20.345 s     12 ms  ch2 329 Hz v4 (-0)                                   level 1.02  ok
+    20.361 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.03  ok
+    20.377 s     13 ms  ch2 492 Hz v4 (+0)                                   level 1.03  ok
+    20.394 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.03  ok
+    20.411 s     13 ms  ch2 329 Hz v4 (-0)                                   level 1.01  ok
+    20.428 s     12 ms  ch2 283 Hz v4 (-0)                                   level 1.02  ok
+    20.512 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    20.528 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    20.544 s     13 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    20.561 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.92  ok
+    20.578 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.93  ok
+    20.595 s     12 ms  ch2 283 Hz v3 (+0)                                   level 0.92  ok
+    20.679 s     12 ms  ch2 329 Hz v4 (-0)                                   level 1.03  ok
+    20.695 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.02  ok
+    20.711 s     13 ms  ch2 492 Hz v4 (-0)                                   level 1.03  ok
+    20.728 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.02  ok
+    20.745 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.02  ok
+    20.762 s     12 ms  ch2 283 Hz v4 (-0)                                   level 1.02  ok
+    20.846 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.93  ok
+    20.862 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    20.878 s     13 ms  ch2 492 Hz v3 (-0)                                   level 0.93  ok
+    20.895 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    20.912 s     13 ms  ch2 329 Hz v3 (+0)                                   level 0.92  ok
+    20.929 s     12 ms  ch2 283 Hz v3 (+0)                                   level 0.92  ok
+    21.013 s     12 ms  ch1 410 Hz v4 (-5)  ch2 329 Hz v4 (+0)               level 1.03  ok
+    21.029 s     13 ms  ch1 438 Hz v4 (-0)  ch2 395 Hz v4 (-0)               level 0.85  ok
+    21.045 s     13 ms  ch1 470 Hz v4 (+0)  ch2 492 Hz v4 (-)                level 0.95  ok
+    21.062 s     13 ms  ch1 507 Hz v4 (-0)  ch2 395 Hz v4 (+0)               level 0.97  ok
+    21.079 s     13 ms  ch1 551 Hz v4 (-0)  ch2 329 Hz v4 (+0)               level 1.06  ok
+    21.180 s     12 ms  ch1 410 Hz v4 (-4)  ch2 329 Hz v3 (+0)               level 0.99  ok
+    21.196 s     13 ms  ch1 363 Hz v4 (+0)  ch2 395 Hz v3 (-0)               level 0.67  FAIL
+    21.212 s     13 ms  ch1 326 Hz v4 (+0)  ch2 492 Hz v3 (+7)               level 1.01  ok
+    21.229 s     12 ms  ch1 296 Hz v4 (-0)  ch2 395 Hz v3 (-19)              level 1.01  ok
+    21.263 s     12 ms  ch2 283 Hz v3 (-0)                                   level 0.93  ok
+    21.346 s     12 ms  ch1 438 Hz v4 (-9)  ch2 329 Hz v4 (-0)               level 1.09  ok
+    21.363 s     13 ms  ch1 470 Hz v4 (-0)  ch2 395 Hz v4 (-0)               level 1.03  ok
+    21.379 s     13 ms  ch1 507 Hz v4 (-)  ch2 492 Hz v4 (+0)                level 1.36  ok
+    21.395 s     13 ms  ch1 551 Hz v4 (-0)  ch2 395 Hz v4 (-0)               level 1.03  ok
+    21.430 s     12 ms  ch2 283 Hz v4 (+0)                                   level 1.01  ok
+    21.513 s     13 ms  ch1 410 Hz v4 (+5)  ch2 329 Hz v3 (-0)               level 0.98  ok
+    21.546 s     12 ms  ch4 248 Hz v4 (+0)  ch1 248 Hz v4 (-)                level 1.03  ok
+    21.630 s     12 ms  ch3 285 Hz v8 (+0)  ch4 285 Hz v8 (-)  ch1 285 Hz v8 (-) level 0.90  ok
+    21.663 s     12 ms  ch3 304 Hz v8 (+1)  ch4 304 Hz v8 (-)  ch1 304 Hz v8 (-) level 0.45  ok
+    21.696 s     13 ms  ch3 326 Hz v8 (+0)  ch4 326 Hz v8 (-)  ch1 326 Hz v8 (-) level 0.95  ok
+    21.730 s     13 ms  ch3 351 Hz v8 (-0)  ch4 351 Hz v8 (-)  ch1 351 Hz v8 (-) level 1.13  ok
+    21.763 s     13 ms  ch3 380 Hz v8 (+0)  ch4 380 Hz v8 (-)  ch1 380 Hz v8 (-) level 1.11  ok
+    21.796 s     13 ms  ch3 415 Hz v8 (-0)  ch4 415 Hz v8 (-)  ch1 415 Hz v8 (-) level 0.50  ok
+    21.829 s     13 ms  ch3 457 Hz v8 (+0)  ch4 457 Hz v8 (-)  ch1 457 Hz v8 (-) level 1.18  ok
+    21.862 s     14 ms  ch3 507 Hz v8 (-0)  ch4 507 Hz v8 (-)  ch1 507 Hz v8 (-) level 0.85  ok
+    21.895 s     14 ms  ch3 571 Hz v8 (+0)  ch4 571 Hz v8 (-)  ch1 571 Hz v8 (-) level 1.22  ok
+    21.929 s     14 ms  ch3 652 Hz v8 (-0)  ch4 652 Hz v8 (-)  ch1 652 Hz v8 (-) level 0.87  ok
+    21.962 s     14 ms  ch3 761 Hz v8 (-0)  ch4 761 Hz v8 (-)  ch1 761 Hz v8 (-) level 0.88  ok
+    21.995 s     14 ms  ch3 913 Hz v8 (-0)  ch4 913 Hz v8 (-)  ch1 913 Hz v8 (-) level 1.14  ok
+    22.014 s     12 ms  ch3 913 Hz v8 (+1)  ch4 1031 Hz v4 (-1)  ch1 1031 Hz v4 (-) level 1.08  ok
+    22.028 s     15 ms  ch3 1141 Hz v8 (-0)  ch4 1141 Hz v8 (-)  ch1 1141 Hz v8 (-) level 1.25  ok
+    22.047 s     12 ms  ch3 1141 Hz v8 (-0)  ch4 1332 Hz v4 (-1)  ch1 1332 Hz v4 (-) level 0.97  ok
+    22.061 s     15 ms  ch3 1522 Hz v8 (-0)  ch4 1522 Hz v8 (-)  ch1 1522 Hz v8 (-) level 1.00  ok
+    22.096 s     14 ms  ch1 363 Hz v4 (+0)  ch2 2283 Hz v4 (-1)              level 1.10  ok
+    22.114 s     12 ms  ch1 326 Hz v4 (-0)  ch2 2131 Hz v4 (-0)              level 1.02  ok
+    22.131 s     12 ms  ch1 296 Hz v4 (+0)  ch2 1998 Hz v4 (-0)              level 1.00  ok
+    22.148 s     12 ms  ch1 385 Hz v4 (-0)  ch2 1880 Hz v4 (+0)              level 1.05  ok
+    22.164 s     13 ms  ch1 410 Hz v4 (-0)  ch2 1776 Hz v4 (-0)              level 1.03  ok
+    22.180 s     13 ms  ch1 438 Hz v4 (-0)  ch2 1682 Hz v4 (+1)              level 1.02  ok
+    22.197 s     13 ms  ch1 470 Hz v4 (-0)  ch2 1598 Hz v4 (+0)              level 1.02  ok
+    22.213 s     13 ms  ch1 507 Hz v4 (-0)  ch2 1522 Hz v4 (-0)              level 0.92  ok
+    22.230 s     14 ms  ch1 551 Hz v4 (-0)  ch2 1453 Hz v4 (+1)              level 1.02  ok
+    22.262 s     15 ms  ch2 1332 Hz v4 (+0)                                  level 1.02  ok
+    22.278 s     15 ms  ch2 2283 Hz v4 (-0)                                  level 1.00  ok
+    22.295 s     15 ms  ch2 2131 Hz v4 (+0)                                  level 1.00  ok
+    22.313 s     14 ms  ch1 551 Hz v4 (-0)  ch2 1998 Hz v4 (-)               level 1.01  ok
+    22.330 s     13 ms  ch1 470 Hz v4 (+0)  ch2 1880 Hz v4 (-0)              level 1.03  ok
+    22.347 s     13 ms  ch1 410 Hz v4 (+0)  ch2 1776 Hz v4 (-0)              level 1.03  ok
+    22.364 s     13 ms  ch1 363 Hz v4 (+0)  ch2 1682 Hz v4 (-0)              level 1.03  ok
+    22.381 s     12 ms  ch1 326 Hz v4 (+0)  ch2 1598 Hz v4 (+1)              level 0.98  ok
+    22.398 s     12 ms  ch1 296 Hz v4 (+0)  ch2 1522 Hz v4 (+2)              level 0.96  ok
+    22.429 s     15 ms  ch2 1390 Hz v4 (+0)                                  level 1.02  ok
+    22.445 s     15 ms  ch2 1332 Hz v4 (+0)                                  level 1.02  ok
+    22.463 s     14 ms  ch1 385 Hz v4 (+0)  ch2 2283 Hz v4 (-)               level 1.01  ok
+    22.481 s     13 ms  ch1 410 Hz v4 (-0)  ch2 2131 Hz v4 (-0)              level 1.01  ok
+    22.497 s     13 ms  ch1 438 Hz v4 (+0)  ch2 1998 Hz v4 (+0)              level 1.01  ok
+    22.514 s     13 ms  ch1 470 Hz v4 (+0)  ch2 1880 Hz v4 (-0)              level 1.02  ok
+    22.530 s     13 ms  ch1 507 Hz v4 (-0)  ch2 1776 Hz v4 (-0)              level 1.01  ok
+    22.547 s     13 ms  ch1 551 Hz v4 (-0)  ch2 1682 Hz v4 (+2)              level 1.08  ok
+    22.579 s     15 ms  ch2 1522 Hz v4 (+0)                                  level 1.02  ok
+    22.596 s     15 ms  ch2 1453 Hz v4 (+0)                                  level 1.02  ok
+    22.612 s     15 ms  ch2 1390 Hz v4 (+0)                                  level 1.02  ok
+    22.630 s     14 ms  ch1 551 Hz v4 (-0)  ch2 1332 Hz v4 (-)               level 1.04  ok
+    22.647 s     13 ms  ch1 470 Hz v4 (+0)  ch2 2283 Hz v4 (-0)              level 1.01  ok
+    22.664 s     13 ms  ch1 410 Hz v4 (+0)  ch2 2131 Hz v4 (+0)              level 1.01  ok
+    22.681 s     13 ms  ch1 363 Hz v4 (-0)  ch2 1998 Hz v4 (-0)              level 1.02  ok
+    22.698 s     12 ms  ch1 326 Hz v4 (+0)  ch2 1880 Hz v4 (-1)              level 1.03  ok
+    22.715 s     12 ms  ch1 296 Hz v4 (+0)  ch2 1776 Hz v4 (-0)              level 1.01  ok
+    22.746 s     15 ms  ch2 1598 Hz v4 (+0)                                  level 1.02  ok
+    22.762 s     15 ms  ch2 1522 Hz v4 (+0)                                  level 1.02  ok
+    22.779 s     15 ms  ch2 1453 Hz v4 (+0)                                  level 1.02  ok
+    22.797 s     14 ms  ch1 385 Hz v4 (+0)  ch2 1390 Hz v4 (-)               level 1.03  ok
+    22.815 s     13 ms  ch1 410 Hz v4 (-0)  ch2 1332 Hz v4 (-1)              level 1.04  ok
+    22.831 s     13 ms  ch1 438 Hz v4 (+0)  ch2 2283 Hz v4 (-0)              level 1.01  ok
+    22.848 s     13 ms  ch1 470 Hz v4 (-0)  ch2 2131 Hz v4 (-0)              level 1.01  ok
+    22.864 s     13 ms  ch1 507 Hz v4 (+0)  ch2 1998 Hz v4 (+0)              level 1.02  ok
+    22.881 s     13 ms  ch1 551 Hz v4 (-0)  ch2 1880 Hz v4 (-0)              level 1.02  ok
+    22.913 s     15 ms  ch2 1682 Hz v4 (+0)                                  level 1.01  ok
+    22.929 s     15 ms  ch2 1598 Hz v4 (+0)                                  level 1.01  ok
+    22.946 s     15 ms  ch2 1522 Hz v4 (+0)                                  level 1.01  ok
+    22.964 s     14 ms  ch1 551 Hz v4 (-0)  ch2 1453 Hz v4 (-)               level 1.03  ok
+    22.981 s     13 ms  ch1 470 Hz v4 (-0)  ch2 1390 Hz v4 (+3)              level 0.91  ok
+    22.998 s     13 ms  ch1 410 Hz v4 (-0)  ch2 1332 Hz v4 (+1)              level 0.99  ok
+    23.015 s     13 ms  ch1 363 Hz v4 (-0)  ch2 2283 Hz v4 (-1)              level 1.01  ok
+    23.032 s     12 ms  ch1 326 Hz v4 (+0)  ch2 2131 Hz v4 (+0)              level 1.02  ok
+    23.049 s     12 ms  ch1 296 Hz v4 (+0)  ch2 1998 Hz v4 (-0)              level 1.00  ok
+    23.079 s     15 ms  ch2 1776 Hz v4 (+0)                                  level 1.01  ok
+    23.096 s     15 ms  ch2 1682 Hz v4 (+0)                                  level 1.01  ok
+    23.113 s     15 ms  ch2 1598 Hz v4 (+0)                                  level 1.01  ok
+    23.131 s     14 ms  ch1 385 Hz v4 (-0)  ch2 1522 Hz v4 (-)               level 1.03  ok
+    23.148 s     13 ms  ch1 410 Hz v4 (-0)  ch2 1453 Hz v4 (-0)              level 1.03  ok
+    23.165 s     13 ms  ch1 438 Hz v4 (-0)  ch2 1390 Hz v4 (-0)              level 1.03  ok
+    23.181 s     13 ms  ch1 470 Hz v4 (-0)  ch2 1332 Hz v4 (-0)              level 1.02  ok
+    23.198 s     13 ms  ch1 507 Hz v4 (+0)  ch2 2283 Hz v4 (-0)              level 1.02  ok
+    23.215 s     13 ms  ch1 551 Hz v4 (-0)  ch2 2131 Hz v4 (-0)              level 1.01  ok
+    23.246 s     15 ms  ch2 1880 Hz v4 (+0)                                  level 1.01  ok
+    23.263 s     15 ms  ch2 1776 Hz v4 (+0)                                  level 1.01  ok
+    23.280 s     15 ms  ch2 1682 Hz v4 (+0)                                  level 1.01  ok
+    23.297 s     14 ms  ch1 551 Hz v4 (+0)  ch2 1598 Hz v4 (-)               level 1.04  ok
+    23.315 s     13 ms  ch1 470 Hz v4 (+0)  ch2 1522 Hz v4 (-0)              level 0.99  ok
+    23.332 s     13 ms  ch1 410 Hz v4 (+0)  ch2 1453 Hz v4 (+0)              level 1.03  ok
+    23.349 s     13 ms  ch1 363 Hz v4 (+0)  ch2 1390 Hz v4 (+1)              level 1.02  ok
+    23.366 s     12 ms  ch1 326 Hz v4 (+0)  ch2 1332 Hz v4 (+0)              level 1.03  ok
+    23.383 s     12 ms  ch1 296 Hz v4 (+0)  ch2 2283 Hz v4 (-1)              level 1.02  ok
+    23.413 s     15 ms  ch2 1998 Hz v4 (+0)                                  level 1.01  ok
+    23.430 s     15 ms  ch2 1880 Hz v4 (+0)                                  level 1.01  ok
+    23.448 s     14 ms  ch1 385 Hz v4 (-0)  ch2 1776 Hz v4 (-)               level 1.03  ok
+    23.466 s     13 ms  ch1 410 Hz v4 (-0)  ch2 1682 Hz v4 (+0)              level 1.02  ok
+    23.482 s     13 ms  ch1 438 Hz v4 (+0)  ch2 1598 Hz v4 (+0)              level 1.02  ok
+    23.499 s     13 ms  ch1 470 Hz v4 (+0)  ch2 1522 Hz v4 (+0)              level 1.00  ok
+    23.515 s     13 ms  ch1 507 Hz v4 (-0)  ch2 1453 Hz v4 (+0)              level 1.02  ok
+    23.532 s     13 ms  ch1 551 Hz v4 (-0)  ch2 1390 Hz v4 (+0)              level 1.01  ok
+    23.563 s     15 ms  ch2 2283 Hz v4 (-0)                                  level 1.01  ok
+    23.580 s     15 ms  ch2 2131 Hz v4 (+0)                                  level 1.00  ok
+    23.597 s     15 ms  ch2 1998 Hz v4 (+0)                                  level 1.01  ok
+    23.614 s     14 ms  ch1 551 Hz v4 (-0)  ch2 1880 Hz v4 (-)               level 1.01  ok
+    23.632 s     13 ms  ch1 470 Hz v4 (-0)  ch2 1776 Hz v4 (-0)              level 1.02  ok
+    23.649 s     13 ms  ch1 410 Hz v4 (+0)  ch2 1682 Hz v4 (+0)              level 1.02  ok
+    23.666 s     13 ms  ch1 363 Hz v4 (-0)  ch2 1598 Hz v4 (-0)              level 1.01  ok
+    23.683 s     12 ms  ch1 326 Hz v4 (+0)  ch2 1522 Hz v4 (+1)              level 1.00  ok
+    23.700 s     12 ms  ch1 296 Hz v4 (+0)  ch2 1453 Hz v4 (+1)              level 1.00  ok
+    23.730 s     15 ms  ch2 1332 Hz v4 (-1)                                  level 1.02  ok
+    23.747 s     15 ms  ch2 2283 Hz v4 (-0)                                  level 1.00  ok
+    23.764 s     15 ms  ch2 2131 Hz v4 (+0)                                  level 1.01  ok
+    23.782 s     14 ms  ch1 385 Hz v4 (+0)  ch2 1998 Hz v4 (-)               level 1.01  ok
+    23.799 s     13 ms  ch1 410 Hz v4 (-0)  ch2 1880 Hz v4 (+0)              level 1.02  ok
+    23.816 s     13 ms  ch1 438 Hz v4 (+0)  ch2 1776 Hz v4 (-0)              level 1.02  ok
+    23.832 s     13 ms  ch1 470 Hz v4 (-0)  ch2 1682 Hz v4 (+0)              level 1.02  ok
+    23.849 s     13 ms  ch1 507 Hz v4 (-0)  ch2 1598 Hz v4 (-0)              level 1.02  ok
+    23.865 s     14 ms  ch1 551 Hz v4 (+0)  ch2 1522 Hz v4 (+0)              level 1.01  ok
+    23.899 s     13 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    23.916 s     13 ms  ch1 551 Hz v4 (+0)  ch2 395 Hz v3 (-)                level 1.03  ok
+    23.933 s     13 ms  ch1 470 Hz v4 (-0)  ch2 329 Hz v3 (-0)               level 1.03  ok
+    23.950 s     12 ms  ch1 410 Hz v4 (+0)  ch2 283 Hz v3 (+0)               level 0.94  ok
+    24.033 s     12 ms  ch2 329 Hz v4 (+0)                                   level 1.03  ok
+    24.050 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.03  ok
+    24.066 s     13 ms  ch2 492 Hz v4 (+0)                                   level 1.03  ok
+    24.083 s     13 ms  ch1 385 Hz v4 (-0)  ch2 395 Hz v4 (-)                level 1.27  ok
+    24.100 s     13 ms  ch1 410 Hz v4 (+6)  ch2 329 Hz v4 (+0)               level 1.02  ok
+    24.117 s     12 ms  ch1 438 Hz v4 (-3)  ch2 283 Hz v4 (+0)               level 0.99  ok
+    24.200 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    24.216 s     13 ms  ch2 395 Hz v3 (+0)                                   level 0.93  ok
+    24.232 s     14 ms  ch2 492 Hz v3 (-0)                                   level 0.93  ok
+    24.249 s     13 ms  ch1 551 Hz v4 (+0)  ch2 395 Hz v3 (-)                level 1.04  ok
+    24.266 s     13 ms  ch1 470 Hz v4 (-0)  ch2 329 Hz v3 (+0)               level 1.01  ok
+    24.283 s     12 ms  ch1 410 Hz v4 (+0)  ch2 283 Hz v3 (+0)               level 1.02  ok
+    24.301 s     12 ms  ch1 363 Hz v4 (+1)  ch2 248 Hz v3 (-0)               level 1.01  ok
+    24.367 s     13 ms  ch2 329 Hz v4 (-0)                                   level 1.02  ok
+    24.383 s     12 ms  ch2 395 Hz v4 (-0)                                   level 1.02  ok
+    24.399 s     13 ms  ch2 492 Hz v4 (-0)                                   level 1.03  ok
+    24.416 s     13 ms  ch1 385 Hz v4 (+0)  ch2 395 Hz v4 (-)                level 0.86  ok
+    24.433 s     13 ms  ch1 410 Hz v4 (+4)  ch2 329 Hz v4 (-0)               level 1.02  ok
+    24.534 s     12 ms  ch2 329 Hz v3 (+0)                                   level 0.93  ok
+    24.550 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    24.566 s     14 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    24.583 s     13 ms  ch1 551 Hz v4 (+0)  ch2 395 Hz v3 (-)                level 1.00  ok
+    24.600 s     13 ms  ch1 470 Hz v4 (-0)  ch2 329 Hz v3 (-0)               level 0.97  ok
+    24.617 s     12 ms  ch1 410 Hz v4 (+0)  ch2 283 Hz v3 (+0)               level 0.92  ok
+    24.634 s     12 ms  ch1 363 Hz v4 (+3)  ch2 248 Hz v3 (+0)               level 0.93  ok
+    24.701 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.03  ok
+    24.717 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.02  ok
+    24.733 s     13 ms  ch2 492 Hz v4 (-0)                                   level 1.03  ok
+    24.750 s     13 ms  ch1 385 Hz v4 (-0)  ch2 395 Hz v4 (-)                level 1.37  ok
+    24.767 s     13 ms  ch1 410 Hz v4 (+9)  ch2 329 Hz v4 (-0)               level 1.04  ok
+    24.867 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    24.884 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    24.900 s     14 ms  ch2 492 Hz v3 (+0)                                   level 0.93  ok
+    24.917 s     13 ms  ch1 551 Hz v4 (+0)  ch2 395 Hz v3 (-)                level 1.02  ok
+    24.934 s     13 ms  ch1 470 Hz v4 (-0)  ch2 329 Hz v3 (+0)               level 1.00  ok
+    24.951 s     12 ms  ch1 410 Hz v4 (+0)  ch2 283 Hz v3 (-0)               level 1.08  ok
+    24.968 s     12 ms  ch1 363 Hz v4 (+1)  ch2 248 Hz v3 (-0)               level 1.06  ok
+    25.034 s     13 ms  ch2 329 Hz v4 (-0)                                   level 1.02  ok
+    25.051 s     13 ms  ch2 395 Hz v4 (+0)                                   level 1.02  ok
+    25.067 s     13 ms  ch2 492 Hz v4 (-0)                                   level 1.03  ok
+    25.084 s     13 ms  ch1 385 Hz v4 (-0)  ch2 395 Hz v4 (-)                level 0.42  ok
+    25.101 s     13 ms  ch1 410 Hz v4 (+7)  ch2 329 Hz v4 (-0)               level 1.00  ok
+    25.201 s     12 ms  ch2 329 Hz v3 (+0)                                   level 0.93  ok
+    25.217 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    25.234 s     14 ms  ch2 492 Hz v3 (+0)                                   level 0.94  ok
+    25.251 s     13 ms  ch1 551 Hz v4 (+0)  ch2 395 Hz v3 (-)                level 1.02  ok
+    25.268 s     13 ms  ch1 470 Hz v4 (-0)  ch2 329 Hz v3 (-0)               level 0.97  ok
+    25.285 s     12 ms  ch1 410 Hz v4 (+0)  ch2 283 Hz v3 (+0)               level 1.05  ok
+    25.302 s     12 ms  ch1 363 Hz v4 (+2)  ch2 248 Hz v3 (+0)               level 1.04  ok
+    25.368 s     13 ms  ch2 329 Hz v4 (+0)                                   level 1.03  ok
+    25.385 s     13 ms  ch2 395 Hz v4 (-0)                                   level 1.02  ok
+    25.401 s     13 ms  ch1 385 Hz v4 (-0)  ch2 492 Hz v4 (-)                level 0.96  ok
+    25.418 s     13 ms  ch1 410 Hz v4 (-)  ch2 395 Hz v4 (+0)                level 1.32  ok
+    25.434 s     13 ms  ch1 438 Hz v4 (-3)  ch2 329 Hz v4 (-0)               level 0.93  ok
+    25.535 s     12 ms  ch2 329 Hz v3 (-0)                                   level 0.92  ok
+    25.551 s     13 ms  ch2 395 Hz v3 (-0)                                   level 0.93  ok
+    25.567 s     13 ms  ch1 551 Hz v4 (+0)  ch2 492 Hz v3 (-)                level 1.01  ok
+    25.584 s     13 ms  ch1 470 Hz v4 (+0)  ch2 395 Hz v3 (+0)               level 0.99  ok
+    25.618 s     13 ms  ch1 363 Hz v4 (+0)  ch2 581 Hz v1 (-29)              level 1.02  ok
+    25.635 s     13 ms  ch1 326 Hz v4 (-0)  ch2 603 Hz v1 (-12)              level 1.00  ok
+    25.652 s     12 ms  ch1 296 Hz v4 (+0)  ch2 627 Hz v1 (+27)              level 1.02  ok
+    25.683 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.90  ok
+    25.700 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    25.717 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    25.734 s     14 ms  ch1 385 Hz v4 (-0)  ch2 780 Hz v1 (-)                level 1.07  ok
+    25.751 s     13 ms  ch1 410 Hz v4 (-0)  ch2 819 Hz v1 (-0)               level 1.03  ok
+    25.768 s     13 ms  ch1 438 Hz v4 (-0)  ch2 780 Hz v1 (+11)              level 1.03  ok
+    25.784 s     13 ms  ch1 470 Hz v4 (-0)  ch2 743 Hz v1 (-7)               level 1.02  ok
+    25.801 s     14 ms  ch1 507 Hz v4 (-0)  ch2 710 Hz v1 (+0)               level 1.01  ok
+    25.817 s     14 ms  ch1 551 Hz v4 (-0)  ch2 680 Hz v1 (+64)              level 1.02  ok
+    25.850 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.90  ok
+    25.867 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    25.884 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    25.901 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.88  ok
+    25.917 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    25.934 s     14 ms  ch1 551 Hz v4 (+0)  ch2 524 Hz v1 (-)                level 1.08  ok
+    25.951 s     14 ms  ch1 470 Hz v4 (+0)  ch2 507 Hz v1 (+0)               level 1.07  ok
+    25.968 s     13 ms  ch1 410 Hz v4 (+0)  ch2 492 Hz v1 (-)                level 1.00  ok
+    25.985 s     13 ms  ch1 363 Hz v4 (+0)  ch2 507 Hz v1 (-)                level 1.01  ok
+    26.002 s     13 ms  ch1 326 Hz v4 (+0)  ch2 524 Hz v1 (-26)              level 1.00  ok
+    26.019 s     12 ms  ch1 296 Hz v4 (+0)  ch2 542 Hz v1 (-14)              level 1.01  ok
+    26.051 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.90  ok
+    26.067 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    26.084 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    26.101 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    26.117 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    26.134 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    26.151 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    26.167 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    26.184 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    26.200 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    26.217 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    26.234 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    26.251 s     14 ms  ch1 385 Hz v4 (-0)  ch2 680 Hz v1 (-)                level 1.05  ok
+    26.269 s     13 ms  ch1 410 Hz v4 (-0)  ch2 652 Hz v1 (-17)              level 1.03  ok
+    26.285 s     13 ms  ch1 438 Hz v4 (+0)  ch2 627 Hz v1 (-0)               level 1.02  ok
+    26.302 s     13 ms  ch1 470 Hz v4 (-0)  ch2 603 Hz v1 (+3)               level 1.00  ok
+    26.318 s     14 ms  ch1 507 Hz v4 (+0)  ch2 581 Hz v1 (-0)               level 1.01  ok
+    26.335 s     14 ms  ch1 551 Hz v4 (-9)  ch2 561 Hz v1 (-)                level 0.94  ok
+    26.368 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.90  ok
+    26.385 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    26.401 s     14 ms  ch2 492 Hz v1 (+0)                                   level 0.88  ok
+    26.418 s     14 ms  ch1 551 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.02  ok
+    26.435 s     14 ms  ch1 470 Hz v4 (-0)  ch2 524 Hz v1 (-0)               level 0.96  ok
+    26.452 s     13 ms  ch1 410 Hz v4 (-0)  ch2 542 Hz v1 (-47)              level 1.00  ok
+    26.469 s     13 ms  ch1 363 Hz v4 (-0)  ch2 561 Hz v1 (+20)              level 0.99  ok
+    26.486 s     13 ms  ch1 326 Hz v4 (+0)  ch2 581 Hz v1 (+16)              level 1.01  ok
+    26.503 s     12 ms  ch1 296 Hz v4 (+0)  ch2 603 Hz v1 (+0)               level 1.01  ok
+    26.535 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.90  ok
+    26.551 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.89  ok
+    26.568 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    26.585 s     14 ms  ch1 385 Hz v4 (-0)  ch2 743 Hz v1 (-)                level 1.04  ok
+    26.602 s     13 ms  ch1 410 Hz v4 (-0)  ch2 780 Hz v1 (-23)              level 1.01  ok
+    26.619 s     13 ms  ch1 438 Hz v4 (-0)  ch2 819 Hz v1 (-7)               level 1.02  ok
+    26.635 s     13 ms  ch1 470 Hz v4 (-0)  ch2 780 Hz v1 (-0)               level 1.01  ok
+    26.652 s     14 ms  ch1 507 Hz v4 (-0)  ch2 743 Hz v1 (+0)               level 1.03  ok
+    26.668 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-4)               level 1.02  ok
+    26.701 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.91  ok
+    26.718 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.89  ok
+    26.735 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    26.752 s     14 ms  ch1 551 Hz v4 (+0)  ch2 581 Hz v1 (-)                level 0.95  ok
+    26.769 s     14 ms  ch1 470 Hz v4 (-0)  ch2 561 Hz v1 (-0)               level 1.05  ok
+    26.786 s     13 ms  ch1 410 Hz v4 (+0)  ch2 542 Hz v1 (-35)              level 1.02  ok
+    26.803 s     13 ms  ch1 363 Hz v4 (-0)  ch2 524 Hz v1 (+0)               level 1.01  ok
+    26.820 s     13 ms  ch1 326 Hz v4 (+0)  ch2 507 Hz v1 (+12)              level 0.99  ok
+    26.837 s     12 ms  ch1 296 Hz v4 (-0)  ch2 492 Hz v1 (-79)              level 0.99  ok
+    26.869 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.89  ok
+    26.885 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    26.902 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    26.919 s     13 ms  ch1 385 Hz v4 (+0)  ch2 581 Hz v1 (-)                level 1.05  ok
+    26.936 s     13 ms  ch1 410 Hz v4 (-0)  ch2 603 Hz v1 (-0)               level 1.03  ok
+    26.953 s     13 ms  ch1 438 Hz v4 (+0)  ch2 627 Hz v1 (+0)               level 1.02  ok
+    26.969 s     13 ms  ch1 470 Hz v4 (-0)  ch2 652 Hz v1 (-0)               level 1.01  ok
+    26.986 s     14 ms  ch1 507 Hz v4 (-0)  ch2 680 Hz v1 (-65)              level 1.02  ok
+    27.002 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-4)               level 1.03  ok
+    27.035 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.91  ok
+    27.052 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.89  ok
+    27.068 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    27.085 s     14 ms  ch1 551 Hz v4 (-0)  ch2 743 Hz v1 (-)                level 1.03  ok
+    27.102 s     14 ms  ch1 470 Hz v4 (+0)  ch2 710 Hz v1 (+2)               level 1.02  ok
+    27.119 s     13 ms  ch1 410 Hz v4 (+0)  ch2 680 Hz v1 (+0)               level 1.00  ok
+    27.136 s     13 ms  ch1 363 Hz v4 (+0)  ch2 652 Hz v1 (+8)               level 1.02  ok
+    27.153 s     13 ms  ch1 326 Hz v4 (+0)  ch2 627 Hz v1 (-64)              level 1.02  ok
+    27.170 s     12 ms  ch1 296 Hz v4 (-0)  ch2 603 Hz v1 (-2)               level 1.01  ok
+    27.202 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.90  ok
+    27.219 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    27.236 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    27.253 s     13 ms  ch1 385 Hz v4 (+0)  ch2 507 Hz v1 (-)                level 1.04  ok
+    27.270 s     13 ms  ch1 410 Hz v4 (-0)  ch2 492 Hz v1 (-)                level 1.03  ok
+    27.286 s     13 ms  ch1 438 Hz v4 (-0)  ch2 507 Hz v1 (+0)               level 1.01  ok
+    27.303 s     13 ms  ch1 470 Hz v4 (-0)  ch2 524 Hz v1 (+0)               level 1.03  ok
+    27.319 s     14 ms  ch1 507 Hz v4 (-0)  ch2 542 Hz v1 (-0)               level 0.90  ok
+    27.336 s     14 ms  ch1 551 Hz v4 (-1)  ch2 561 Hz v1 (-)                level 1.19  ok
+    27.369 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.91  ok
+    27.386 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.89  ok
+    27.402 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    27.419 s     14 ms  ch1 551 Hz v4 (+0)  ch2 680 Hz v1 (-)                level 1.04  ok
+    27.436 s     14 ms  ch1 470 Hz v4 (-0)  ch2 710 Hz v1 (+0)               level 1.03  ok
+    27.453 s     13 ms  ch1 410 Hz v4 (+0)  ch2 743 Hz v1 (-1)               level 1.01  ok
+    27.470 s     13 ms  ch1 363 Hz v4 (+0)  ch2 780 Hz v1 (-1)               level 1.02  ok
+    27.487 s     13 ms  ch1 326 Hz v4 (+0)  ch2 819 Hz v1 (-6)               level 1.02  ok
+    27.504 s     12 ms  ch1 296 Hz v4 (+0)  ch2 780 Hz v1 (-7)               level 1.02  ok
+    27.536 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.90  ok
+    27.552 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    27.570 s     14 ms  ch1 385 Hz v4 (+0)  ch2 652 Hz v1 (-)                level 1.03  ok
+    27.587 s     13 ms  ch1 410 Hz v4 (-0)  ch2 627 Hz v1 (+41)              level 1.02  ok
+    27.603 s     13 ms  ch1 438 Hz v4 (-0)  ch2 603 Hz v1 (+0)               level 1.02  ok
+    27.620 s     13 ms  ch1 470 Hz v4 (+0)  ch2 581 Hz v1 (+57)              level 1.04  ok
+    27.637 s     14 ms  ch1 507 Hz v4 (+0)  ch2 561 Hz v1 (+0)               level 1.06  ok
+    27.653 s     14 ms  ch1 551 Hz v4 (-)  ch2 542 Hz v1 (+11)               level 0.89  ok
+    27.686 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.90  ok
+    27.703 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    27.720 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    27.737 s     14 ms  ch1 551 Hz v4 (+0)  ch2 524 Hz v1 (-)                level 1.17  ok
+    27.753 s     14 ms  ch1 470 Hz v4 (-0)  ch2 542 Hz v1 (+0)               level 1.02  ok
+    27.770 s     13 ms  ch1 410 Hz v4 (+0)  ch2 561 Hz v1 (-)                level 1.02  ok
+    27.787 s     13 ms  ch1 363 Hz v4 (+0)  ch2 581 Hz v1 (-23)              level 1.02  ok
+    27.804 s     13 ms  ch1 326 Hz v4 (+0)  ch2 603 Hz v1 (-25)              level 1.00  ok
+    27.821 s     12 ms  ch1 296 Hz v4 (+0)  ch2 627 Hz v1 (+22)              level 1.02  ok
+    27.853 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.90  ok
+    27.869 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.89  ok
+    27.887 s     14 ms  ch1 385 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.00  ok
+    27.904 s     13 ms  ch1 410 Hz v4 (-0)  ch2 780 Hz v1 (-22)              level 1.01  ok
+    27.921 s     13 ms  ch1 438 Hz v4 (+0)  ch2 819 Hz v1 (-12)              level 1.01  ok
+    27.937 s     13 ms  ch1 470 Hz v4 (-0)  ch2 780 Hz v1 (-0)               level 1.00  ok
+    27.954 s     14 ms  ch1 507 Hz v4 (+0)  ch2 743 Hz v1 (+0)               level 1.01  ok
+    27.970 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-3)               level 1.01  ok
+    28.003 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.90  ok
+    28.020 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    28.037 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    28.053 s     14 ms  ch1 551 Hz v4 (+0)  ch2 581 Hz v1 (-)                level 0.93  ok
+    28.070 s     14 ms  ch1 470 Hz v4 (+0)  ch2 561 Hz v1 (+0)               level 1.04  ok
+    28.087 s     13 ms  ch1 410 Hz v4 (+0)  ch2 542 Hz v1 (-39)              level 1.00  ok
+    28.104 s     13 ms  ch1 363 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.01  ok
+    28.121 s     13 ms  ch1 326 Hz v4 (+0)  ch2 507 Hz v1 (+12)              level 1.01  ok
+    28.138 s     12 ms  ch1 296 Hz v4 (+0)  ch2 492 Hz v1 (-)                level 0.99  ok
+    28.170 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.90  ok
+    28.187 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.89  ok
+    28.204 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.89  ok
+    28.221 s     13 ms  ch1 385 Hz v4 (-0)  ch2 581 Hz v1 (-)                level 1.08  ok
+    28.238 s     13 ms  ch1 410 Hz v4 (-0)  ch2 603 Hz v1 (+0)               level 1.02  ok
+    28.254 s     13 ms  ch1 438 Hz v4 (+0)  ch2 627 Hz v1 (-0)               level 0.99  ok
+    28.271 s     13 ms  ch1 470 Hz v4 (-0)  ch2 652 Hz v1 (-0)               level 1.00  ok
+    28.287 s     14 ms  ch1 507 Hz v4 (-0)  ch2 680 Hz v1 (-67)              level 1.00  ok
+    28.304 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-3)               level 1.02  ok
+    28.337 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.90  ok
+    28.353 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    28.370 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    28.387 s     14 ms  ch1 551 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.02  ok
+    28.404 s     14 ms  ch1 470 Hz v4 (-0)  ch2 710 Hz v1 (+0)               level 1.00  ok
+    28.421 s     13 ms  ch1 410 Hz v4 (+0)  ch2 680 Hz v1 (-0)               level 1.01  ok
+    28.438 s     13 ms  ch1 363 Hz v4 (+0)  ch2 652 Hz v1 (+3)               level 1.01  ok
+    28.455 s     13 ms  ch1 326 Hz v4 (+0)  ch2 627 Hz v1 (-66)              level 1.01  ok
+    28.472 s     12 ms  ch1 296 Hz v4 (+0)  ch2 603 Hz v1 (-2)               level 1.01  ok
+    28.504 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.90  ok
+    28.521 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.89  ok
+    28.537 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    28.555 s     13 ms  ch1 385 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.07  ok
+    28.571 s     13 ms  ch1 410 Hz v4 (-0)  ch2 492 Hz v1 (-)                level 1.04  ok
+    28.588 s     13 ms  ch1 438 Hz v4 (-0)  ch2 507 Hz v1 (+0)               level 1.02  ok
+    28.605 s     13 ms  ch1 470 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.07  ok
+    28.621 s     14 ms  ch1 507 Hz v4 (+0)  ch2 542 Hz v1 (-0)               level 0.97  ok
+    28.638 s     14 ms  ch1 551 Hz v4 (-2)  ch2 561 Hz v1 (-)                level 1.13  ok
+    28.671 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.89  ok
+    28.687 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    28.704 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    28.721 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    28.737 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    28.754 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    28.771 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    28.787 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    28.804 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    28.821 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    28.837 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    28.854 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    28.871 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    28.888 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    28.904 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    28.921 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    28.938 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    28.955 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    28.971 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    28.988 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    29.005 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    29.022 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    29.038 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    29.055 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    29.071 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    29.088 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    29.105 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    29.121 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    29.138 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    29.155 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    29.171 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    29.188 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    29.204 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    29.221 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    29.238 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    29.254 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    29.271 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    29.288 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    29.305 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    29.321 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    29.338 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    29.355 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    29.372 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    29.388 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    29.405 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    29.422 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    29.439 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    29.455 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    29.472 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    29.489 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    29.505 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.88  ok
+    29.522 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    29.539 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    29.555 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    29.572 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    29.588 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    29.605 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    29.622 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    29.638 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    29.655 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    29.672 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    29.688 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    29.705 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    29.722 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    29.739 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    29.755 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    29.772 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    29.789 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    29.806 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    29.822 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    29.839 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    29.856 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    29.873 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    29.889 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    29.906 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    29.923 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    29.939 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.88  ok
+    29.956 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    29.972 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    29.989 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    30.006 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    30.022 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    30.039 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    30.056 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    30.072 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    30.089 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    30.106 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    30.122 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    30.139 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    30.156 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    30.173 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    30.189 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    30.206 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    30.223 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    30.240 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    30.256 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    30.273 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    30.290 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    30.307 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    30.323 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    30.340 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    30.356 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    30.373 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    30.390 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    30.406 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    30.423 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    30.440 s     14 ms  ch1 551 Hz v4 (+0)  ch2 652 Hz v1 (-)                level 1.02  ok
+    30.457 s     14 ms  ch1 470 Hz v4 (+0)  ch2 680 Hz v1 (-0)               level 1.01  ok
+    30.474 s     13 ms  ch1 410 Hz v4 (+0)  ch2 710 Hz v1 (+59)              level 1.02  ok
+    30.491 s     13 ms  ch1 363 Hz v4 (+0)  ch2 743 Hz v1 (+0)               level 1.01  ok
+    30.508 s     13 ms  ch1 326 Hz v4 (-0)  ch2 780 Hz v1 (+15)              level 1.02  ok
+    30.525 s     12 ms  ch1 296 Hz v4 (+0)  ch2 819 Hz v1 (+133)             level 1.01  FAIL
+    30.556 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.90  ok
+    30.573 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.89  ok
+    30.590 s     14 ms  ch1 385 Hz v4 (+0)  ch2 680 Hz v1 (-)                level 1.03  ok
+    30.607 s     13 ms  ch1 410 Hz v4 (-0)  ch2 652 Hz v1 (-15)              level 1.01  ok
+    30.624 s     13 ms  ch1 438 Hz v4 (-0)  ch2 627 Hz v1 (+0)               level 1.00  ok
+    30.641 s     13 ms  ch1 470 Hz v4 (-0)  ch2 603 Hz v1 (+3)               level 1.01  ok
+    30.657 s     14 ms  ch1 507 Hz v4 (-0)  ch2 581 Hz v1 (-0)               level 1.02  ok
+    30.674 s     14 ms  ch1 551 Hz v4 (-2)  ch2 561 Hz v1 (-)                level 1.09  ok
+    30.707 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.90  ok
+    30.724 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.89  ok
+    30.740 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    30.757 s     14 ms  ch1 551 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.02  ok
+    30.774 s     14 ms  ch1 470 Hz v4 (-0)  ch2 524 Hz v1 (-0)               level 1.02  ok
+    30.791 s     13 ms  ch1 410 Hz v4 (-0)  ch2 542 Hz v1 (-43)              level 1.03  ok
+    30.808 s     13 ms  ch1 363 Hz v4 (+0)  ch2 561 Hz v1 (+20)              level 1.01  ok
+    30.825 s     13 ms  ch1 326 Hz v4 (+0)  ch2 581 Hz v1 (+33)              level 1.00  ok
+    30.842 s     12 ms  ch1 296 Hz v4 (+0)  ch2 603 Hz v1 (+1)               level 1.01  ok
+    30.873 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.90  ok
+    30.890 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.89  ok
+    30.907 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    30.924 s     14 ms  ch1 385 Hz v4 (-0)  ch2 743 Hz v1 (-)                level 1.07  ok
+    30.941 s     13 ms  ch1 410 Hz v4 (-0)  ch2 780 Hz v1 (-24)              level 1.02  ok
+    30.958 s     13 ms  ch1 438 Hz v4 (-0)  ch2 819 Hz v1 (-29)              level 1.02  ok
+    30.974 s     13 ms  ch1 470 Hz v4 (-0)  ch2 780 Hz v1 (+0)               level 1.02  ok
+    30.991 s     14 ms  ch1 507 Hz v4 (+0)  ch2 743 Hz v1 (-0)               level 1.01  ok
+    31.007 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-4)               level 1.00  ok
+    31.040 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.91  ok
+    31.057 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.89  ok
+    31.074 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    31.091 s     14 ms  ch1 551 Hz v4 (+0)  ch2 581 Hz v1 (-)                level 1.10  ok
+    31.108 s     14 ms  ch1 470 Hz v4 (+0)  ch2 561 Hz v1 (-0)               level 1.02  ok
+    31.125 s     13 ms  ch1 410 Hz v4 (-0)  ch2 542 Hz v1 (-44)              level 1.04  ok
+    31.142 s     13 ms  ch1 363 Hz v4 (-0)  ch2 524 Hz v1 (+0)               level 1.02  ok
+    31.159 s     13 ms  ch1 326 Hz v4 (+0)  ch2 507 Hz v1 (+13)              level 1.01  ok
+    31.176 s     12 ms  ch1 296 Hz v4 (+0)  ch2 492 Hz v1 (-)                level 1.03  ok
+    31.208 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.90  ok
+    31.225 s     13 ms  ch1 385 Hz v4 (-0)  ch2 542 Hz v1 (-)                level 1.05  ok
+    31.242 s     13 ms  ch1 410 Hz v4 (-0)  ch2 561 Hz v1 (-)                level 1.02  ok
+    31.258 s     13 ms  ch1 438 Hz v4 (-0)  ch2 581 Hz v1 (-46)              level 1.01  ok
+    31.275 s     13 ms  ch1 470 Hz v4 (-0)  ch2 603 Hz v1 (+3)               level 1.01  ok
+    31.291 s     14 ms  ch1 507 Hz v4 (-0)  ch2 627 Hz v1 (+60)              level 1.01  ok
+    31.308 s     14 ms  ch1 551 Hz v4 (-0)  ch2 652 Hz v1 (-0)               level 0.98  ok
+    31.341 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.90  ok
+    31.357 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    31.374 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    31.391 s     14 ms  ch1 551 Hz v4 (-0)  ch2 819 Hz v1 (-)                level 1.03  ok
+    31.408 s     14 ms  ch1 470 Hz v4 (+0)  ch2 780 Hz v1 (+0)               level 1.02  ok
+    31.425 s     13 ms  ch1 410 Hz v4 (+0)  ch2 743 Hz v1 (-6)               level 1.02  ok
+    31.442 s     13 ms  ch1 363 Hz v4 (-0)  ch2 710 Hz v1 (+0)               level 1.03  ok
+    31.459 s     13 ms  ch1 326 Hz v4 (+0)  ch2 680 Hz v1 (+19)              level 1.02  ok
+    31.476 s     12 ms  ch1 296 Hz v4 (+0)  ch2 652 Hz v1 (-22)              level 1.02  ok
+    31.508 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.91  ok
+    31.524 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.89  ok
+    31.541 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    31.558 s     13 ms  ch1 385 Hz v4 (-0)  ch2 542 Hz v1 (-)                level 1.06  ok
+    31.575 s     13 ms  ch1 410 Hz v4 (+0)  ch2 524 Hz v1 (+7)               level 1.00  ok
+    31.592 s     13 ms  ch1 438 Hz v4 (+0)  ch2 507 Hz v1 (-0)               level 1.00  ok
+    31.608 s     13 ms  ch1 470 Hz v4 (-30)  ch2 492 Hz v1 (-)               level 0.90  ok
+    31.625 s     14 ms  ch1 507 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 0.91  ok
+    31.642 s     14 ms  ch1 551 Hz v4 (-0)  ch2 524 Hz v1 (+0)               level 0.88  ok
+    31.675 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.91  ok
+    31.691 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.89  ok
+    31.708 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    31.725 s     14 ms  ch1 551 Hz v4 (-0)  ch2 627 Hz v1 (-)                level 1.04  ok
+    31.742 s     14 ms  ch1 470 Hz v4 (-0)  ch2 652 Hz v1 (+0)               level 1.04  ok
+    31.759 s     13 ms  ch1 410 Hz v4 (+0)  ch2 680 Hz v1 (+0)               level 1.02  ok
+    31.776 s     13 ms  ch1 363 Hz v4 (+0)  ch2 710 Hz v1 (-0)               level 1.00  ok
+    31.793 s     13 ms  ch1 326 Hz v4 (+0)  ch2 743 Hz v1 (-39)              level 1.01  ok
+    31.810 s     12 ms  ch1 296 Hz v4 (+0)  ch2 780 Hz v1 (-10)              level 1.02  ok
+    31.841 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.91  ok
+    31.858 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    31.875 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    31.892 s     14 ms  ch1 385 Hz v4 (+0)  ch2 680 Hz v1 (-)                level 1.04  ok
+    31.909 s     13 ms  ch1 410 Hz v4 (-0)  ch2 652 Hz v1 (-21)              level 1.02  ok
+    31.926 s     13 ms  ch1 438 Hz v4 (-0)  ch2 627 Hz v1 (+0)               level 1.04  ok
+    31.942 s     13 ms  ch1 470 Hz v4 (+0)  ch2 603 Hz v1 (+3)               level 1.02  ok
+    31.959 s     14 ms  ch1 507 Hz v4 (-0)  ch2 581 Hz v1 (-0)               level 1.02  ok
+    31.975 s     14 ms  ch1 551 Hz v4 (-13)  ch2 561 Hz v1 (-)               level 0.84  ok
+    32.009 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.90  ok
+    32.025 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    32.042 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    32.059 s     14 ms  ch1 551 Hz v4 (+0)  ch2 507 Hz v1 (-)                level 0.96  ok
+    32.076 s     14 ms  ch1 470 Hz v4 (-0)  ch2 524 Hz v1 (+0)               level 0.99  ok
+    32.092 s     13 ms  ch1 410 Hz v4 (+0)  ch2 542 Hz v1 (-36)              level 1.01  ok
+    32.109 s     13 ms  ch1 363 Hz v4 (+0)  ch2 561 Hz v1 (+23)              level 1.00  ok
+    32.127 s     13 ms  ch1 326 Hz v4 (+0)  ch2 581 Hz v1 (+15)              level 1.01  ok
+    32.143 s     12 ms  ch1 296 Hz v4 (+0)  ch2 603 Hz v1 (+2)               level 1.01  ok
+    32.175 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.90  ok
+    32.192 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    32.208 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    32.226 s     14 ms  ch1 385 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.05  ok
+    32.243 s     13 ms  ch1 410 Hz v4 (-0)  ch2 780 Hz v1 (-20)              level 1.01  ok
+    32.259 s     13 ms  ch1 438 Hz v4 (-0)  ch2 819 Hz v1 (-11)              level 1.01  ok
+    32.276 s     13 ms  ch1 470 Hz v4 (+0)  ch2 780 Hz v1 (+0)               level 1.01  ok
+    32.292 s     14 ms  ch1 507 Hz v4 (-0)  ch2 743 Hz v1 (-0)               level 1.01  ok
+    32.309 s     14 ms  ch1 551 Hz v4 (+0)  ch2 710 Hz v1 (-3)               level 1.01  ok
+    32.342 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.90  ok
+    32.359 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    32.375 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    32.392 s     14 ms  ch1 551 Hz v4 (+0)  ch2 581 Hz v1 (-)                level 0.93  ok
+    32.409 s     14 ms  ch1 470 Hz v4 (+0)  ch2 561 Hz v1 (+0)               level 1.03  ok
+    32.426 s     13 ms  ch1 410 Hz v4 (-0)  ch2 542 Hz v1 (-44)              level 1.00  ok
+    32.443 s     13 ms  ch1 363 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.00  ok
+    32.460 s     13 ms  ch1 326 Hz v4 (+0)  ch2 507 Hz v1 (+11)              level 1.02  ok
+    32.477 s     12 ms  ch1 296 Hz v4 (+0)  ch2 492 Hz v1 (-)                level 0.99  ok
+    32.509 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.90  ok
+    32.526 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.89  ok
+    32.543 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.89  ok
+    32.560 s     13 ms  ch1 385 Hz v4 (-0)  ch2 581 Hz v1 (-)                level 1.08  ok
+    32.577 s     13 ms  ch1 410 Hz v4 (-0)  ch2 603 Hz v1 (+0)               level 1.02  ok
+    32.593 s     13 ms  ch1 438 Hz v4 (-0)  ch2 627 Hz v1 (+0)               level 1.00  ok
+    32.610 s     13 ms  ch1 470 Hz v4 (-0)  ch2 652 Hz v1 (+0)               level 1.00  ok
+    32.626 s     14 ms  ch1 507 Hz v4 (-0)  ch2 680 Hz v1 (-66)              level 0.99  ok
+    32.643 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-4)               level 1.02  ok
+    32.676 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.90  ok
+    32.692 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    32.709 s     14 ms  ch1 551 Hz v4 (+0)  ch2 780 Hz v1 (-)                level 1.05  ok
+    32.726 s     14 ms  ch1 470 Hz v4 (-0)  ch2 743 Hz v1 (-7)               level 1.03  ok
+    32.743 s     13 ms  ch1 410 Hz v4 (-0)  ch2 710 Hz v1 (+47)              level 1.01  ok
+    32.760 s     13 ms  ch1 363 Hz v4 (+0)  ch2 680 Hz v1 (-16)              level 1.01  ok
+    32.777 s     13 ms  ch1 326 Hz v4 (-0)  ch2 652 Hz v1 (+0)               level 1.02  ok
+    32.794 s     12 ms  ch1 296 Hz v4 (+0)  ch2 627 Hz v1 (+15)              level 1.00  ok
+    32.826 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.90  ok
+    32.843 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.88  ok
+    32.860 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    32.877 s     13 ms  ch1 385 Hz v4 (+0)  ch2 524 Hz v1 (-)                level 1.05  ok
+    32.894 s     13 ms  ch1 410 Hz v4 (-0)  ch2 507 Hz v1 (+62)              level 1.05  ok
+    32.910 s     13 ms  ch1 438 Hz v4 (+0)  ch2 492 Hz v1 (-0)               level 1.06  ok
+    32.927 s     13 ms  ch1 470 Hz v4 (-0)  ch2 507 Hz v1 (-0)               level 0.99  ok
+    32.943 s     14 ms  ch1 507 Hz v4 (-6)  ch2 524 Hz v1 (-)                level 1.06  ok
+    32.960 s     14 ms  ch1 551 Hz v4 (-)  ch2 542 Hz v1 (+7)                level 0.96  ok
+    32.993 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.90  ok
+    33.010 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    33.026 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    33.043 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    33.060 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    33.076 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    33.093 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    33.109 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    33.126 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    33.143 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    33.159 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    33.176 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    33.193 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    33.210 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    33.227 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    33.243 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    33.260 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    33.277 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    33.294 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    33.310 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    33.327 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    33.344 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    33.360 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    33.377 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    33.394 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    33.410 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    33.427 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    33.444 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    33.460 s     14 ms  ch1 551 Hz v4 (+0)  ch2 627 Hz v1 (-)                level 1.04  ok
+    33.477 s     14 ms  ch1 470 Hz v4 (+0)  ch2 652 Hz v1 (+0)               level 1.04  ok
+    33.494 s     13 ms  ch1 410 Hz v4 (+0)  ch2 680 Hz v1 (+0)               level 1.04  ok
+    33.511 s     13 ms  ch1 363 Hz v4 (+0)  ch2 710 Hz v1 (+0)               level 1.00  ok
+    33.528 s     13 ms  ch1 326 Hz v4 (+0)  ch2 743 Hz v1 (-38)              level 1.01  ok
+    33.545 s     12 ms  ch1 296 Hz v4 (+0)  ch2 780 Hz v1 (-9)               level 1.01  ok
+    33.577 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.90  ok
+    33.593 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    33.610 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    33.627 s     14 ms  ch1 385 Hz v4 (+0)  ch2 680 Hz v1 (-)                level 1.06  ok
+    33.645 s     13 ms  ch1 410 Hz v4 (-0)  ch2 652 Hz v1 (-19)              level 1.02  ok
+    33.661 s     13 ms  ch1 438 Hz v4 (+0)  ch2 627 Hz v1 (-0)               level 1.03  ok
+    33.678 s     13 ms  ch1 470 Hz v4 (+0)  ch2 603 Hz v1 (+3)               level 1.01  ok
+    33.694 s     14 ms  ch1 507 Hz v4 (+0)  ch2 581 Hz v1 (-0)               level 1.01  ok
+    33.711 s     14 ms  ch1 551 Hz v4 (-13)  ch2 561 Hz v1 (-)               level 0.84  ok
+    33.744 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.90  ok
+    33.761 s     14 ms  ch1 551 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.06  ok
+    33.778 s     14 ms  ch1 470 Hz v4 (-3)  ch2 492 Hz v1 (-)                level 1.15  ok
+    33.795 s     13 ms  ch1 410 Hz v4 (-0)  ch2 507 Hz v1 (+63)              level 1.00  ok
+    33.812 s     13 ms  ch1 363 Hz v4 (+0)  ch2 524 Hz v1 (+0)               level 1.01  ok
+    33.829 s     13 ms  ch1 326 Hz v4 (+0)  ch2 542 Hz v1 (-)                level 1.02  ok
+    33.846 s     12 ms  ch1 296 Hz v4 (+0)  ch2 561 Hz v1 (-51)              level 1.01  ok
+    33.877 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.89  ok
+    33.894 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    33.911 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    33.928 s     14 ms  ch1 385 Hz v4 (+0)  ch2 680 Hz v1 (-)                level 1.05  ok
+    33.945 s     13 ms  ch1 410 Hz v4 (-0)  ch2 710 Hz v1 (+46)              level 1.01  ok
+    33.962 s     13 ms  ch1 438 Hz v4 (+0)  ch2 743 Hz v1 (+1)               level 1.02  ok
+    33.978 s     13 ms  ch1 470 Hz v4 (+0)  ch2 780 Hz v1 (-0)               level 1.02  ok
+    33.995 s     14 ms  ch1 507 Hz v4 (-0)  ch2 819 Hz v1 (-42)              level 1.03  ok
+    34.011 s     14 ms  ch1 551 Hz v4 (+0)  ch2 780 Hz v1 (+0)               level 1.02  ok
+    34.044 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.90  ok
+    34.061 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.89  ok
+    34.078 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    34.094 s     14 ms  ch1 551 Hz v4 (+0)  ch2 627 Hz v1 (-)                level 1.04  ok
+    34.111 s     14 ms  ch1 470 Hz v4 (+0)  ch2 603 Hz v1 (+3)               level 1.03  ok
+    34.128 s     13 ms  ch1 410 Hz v4 (+0)  ch2 581 Hz v1 (+0)               level 1.03  ok
+    34.145 s     13 ms  ch1 363 Hz v4 (+0)  ch2 561 Hz v1 (+21)              level 1.02  ok
+    34.162 s     13 ms  ch1 326 Hz v4 (+0)  ch2 542 Hz v1 (-)                level 1.01  ok
+    34.179 s     12 ms  ch1 296 Hz v4 (+0)  ch2 524 Hz v1 (+27)              level 1.02  ok
+    34.212 s     14 ms  ch2 492 Hz v1 (+0)                                   level 0.90  ok
+    34.228 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.89  ok
+    34.245 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    34.262 s     13 ms  ch1 385 Hz v4 (+0)  ch2 542 Hz v1 (-)                level 1.03  ok
+    34.279 s     13 ms  ch1 410 Hz v4 (-0)  ch2 561 Hz v1 (-)                level 1.02  ok
+    34.295 s     13 ms  ch1 438 Hz v4 (-0)  ch2 581 Hz v1 (-44)              level 1.01  ok
+    34.312 s     13 ms  ch1 470 Hz v4 (-0)  ch2 603 Hz v1 (+3)               level 1.02  ok
+    34.328 s     14 ms  ch1 507 Hz v4 (-0)  ch2 627 Hz v1 (+61)              level 1.03  ok
+    34.345 s     14 ms  ch1 551 Hz v4 (+0)  ch2 652 Hz v1 (+0)               level 1.01  ok
+    34.378 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.90  ok
+    34.394 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    34.411 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    34.428 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    34.444 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    34.461 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    34.478 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    34.495 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    34.511 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    34.528 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    34.545 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    34.562 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    34.578 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    34.595 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    34.612 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    34.629 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    34.645 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    34.662 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    34.679 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    34.695 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    34.712 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    34.729 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    34.745 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    34.762 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    34.778 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    34.795 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    34.812 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    34.828 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    34.845 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    34.862 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    34.878 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    34.895 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    34.912 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    34.929 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    34.945 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    34.962 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    34.979 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    34.996 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    35.012 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    35.029 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    35.046 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    35.063 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    35.079 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    35.096 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    35.113 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    35.129 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    35.146 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    35.163 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    35.179 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    35.196 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    35.212 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    35.229 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    35.246 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    35.262 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    35.279 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    35.296 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    35.312 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    35.329 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    35.346 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    35.362 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    35.379 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    35.396 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    35.413 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    35.429 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    35.446 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    35.463 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    35.480 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    35.496 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    35.515 s     12 ms  ch1 254 Hz v5 (+2)  ch2 492 Hz v1 (-)                level 0.97  ok
+    36.030 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.89  ok
+    36.047 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.89  ok
+    36.064 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    36.080 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    36.097 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    36.113 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    36.130 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    36.147 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    36.163 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    36.180 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    36.197 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    36.213 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    36.230 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    36.247 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    36.264 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    36.280 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    36.297 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    36.314 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    36.331 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    36.347 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    36.364 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    36.381 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    36.398 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    36.414 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    36.431 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    36.448 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    36.464 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    36.481 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    36.497 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    36.514 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    36.531 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    36.547 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    36.564 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    36.581 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    36.597 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    36.614 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    36.631 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    36.647 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    36.664 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    36.681 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    36.698 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    36.714 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    36.731 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    36.748 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    36.765 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    36.781 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    36.798 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    36.815 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    36.832 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    36.848 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    36.865 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    36.881 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.88  ok
+    36.898 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    36.915 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    36.931 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    36.948 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    36.965 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    36.981 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    36.998 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    37.014 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    37.031 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    37.048 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    37.065 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    37.081 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    37.098 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    37.115 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    37.132 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    37.148 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    37.165 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    37.182 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    37.199 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    37.215 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    37.232 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    37.249 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    37.265 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    37.282 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    37.299 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    37.315 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    37.332 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    37.349 s     14 ms  ch1 551 Hz v4 (+0)  ch2 603 Hz v1 (-)                level 0.97  ok
+    37.366 s     14 ms  ch1 470 Hz v4 (-0)  ch2 627 Hz v1 (-57)              level 1.03  ok
+    37.383 s     13 ms  ch1 410 Hz v4 (+0)  ch2 652 Hz v1 (-20)              level 1.01  ok
+    37.400 s     13 ms  ch1 363 Hz v4 (-0)  ch2 680 Hz v1 (-13)              level 1.02  ok
+    37.417 s     13 ms  ch1 326 Hz v4 (+0)  ch2 710 Hz v1 (+5)               level 1.00  ok
+    37.434 s     12 ms  ch1 296 Hz v4 (+0)  ch2 743 Hz v1 (+25)              level 1.01  ok
+    37.465 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.90  ok
+    37.482 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    37.498 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    37.515 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    37.532 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    37.549 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    37.565 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    37.582 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    37.599 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    37.616 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    37.632 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    37.649 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    37.666 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    37.683 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    37.699 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    37.716 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    37.733 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    37.749 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    37.766 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    37.782 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    37.799 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    37.816 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    37.832 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    37.849 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    37.866 s   1615 ms  silence                                              level 0.0002  ok
+    39.484 s     15 ms  ch1 592 Hz v8 (-2)                                   level 1.00  ok
+    39.501 s     14 ms  ch1 515 Hz v8 (-0)                                   level 1.03  ok
+    39.518 s     14 ms  ch1 457 Hz v8 (+0)                                   level 1.03  ok
+    39.535 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    39.552 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    39.569 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.03  ok
+    39.585 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    39.602 s     14 ms  ch1 515 Hz v8 (+0)                                   level 1.02  ok
+    39.618 s     14 ms  ch1 551 Hz v8 (+0)                                   level 1.03  ok
+    39.635 s     14 ms  ch1 484 Hz v8 (-0)                                   level 1.02  ok
+    39.652 s     13 ms  ch1 432 Hz v8 (+0)                                   level 1.03  ok
+    39.669 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    39.686 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.02  ok
+    39.702 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    39.719 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.02  ok
+    39.735 s     13 ms  ch1 484 Hz v8 (-0)                                   level 1.03  ok
+    39.752 s     14 ms  ch1 515 Hz v8 (-0)                                   level 1.03  ok
+    39.768 s     14 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    39.785 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    39.802 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    39.819 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    39.836 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    39.852 s     13 ms  ch1 410 Hz v8 (+0)                                   level 1.02  ok
+    39.869 s     13 ms  ch1 457 Hz v8 (+0)                                   level 1.02  ok
+    39.885 s     14 ms  ch1 484 Hz v8 (+0)                                   level 1.02  ok
+    39.902 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.03  ok
+    39.919 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    39.936 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    39.953 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.03  ok
+    39.970 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    39.986 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    40.002 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.02  ok
+    40.019 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.02  ok
+    40.036 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    40.053 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    40.070 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.01  ok
+    40.087 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    40.103 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    40.120 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    40.136 s     13 ms  ch1 410 Hz v8 (+0)                                   level 1.03  ok
+    40.153 s     13 ms  ch1 432 Hz v8 (+0)                                   level 1.02  ok
+    40.169 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    40.186 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.03  ok
+    40.203 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.03  ok
+    40.220 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.03  ok
+    40.237 s     12 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    40.253 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    40.270 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    40.286 s     13 ms  ch1 410 Hz v8 (+0)                                   level 1.02  ok
+    40.303 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    40.320 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    40.337 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.01  ok
+    40.354 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.01  ok
+    40.370 s     12 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    40.387 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.03  ok
+    40.403 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.03  ok
+    40.420 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    40.437 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    40.454 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.02  ok
+    40.470 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.01  ok
+    40.487 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    40.504 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.02  ok
+    40.521 s     13 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    40.537 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    40.553 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    40.570 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    40.587 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    40.604 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.01  ok
+    40.621 s     12 ms  ch1 271 Hz v8 (-0)                                   level 1.01  ok
+    40.638 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    40.654 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.01  ok
+    40.671 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    40.687 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    40.704 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.01  ok
+    40.721 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.02  ok
+    40.738 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    40.788 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.01  ok
+    40.804 s     12 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    40.821 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    40.837 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    40.854 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    40.871 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.03  ok
+    40.921 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    40.938 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.02  ok
+    40.954 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.02  ok
+    40.971 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.01  ok
+    40.988 s     12 ms  ch1 280 Hz v8 (-0)                                   level 1.02  ok
+    41.055 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    41.072 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.03  ok
+    41.088 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.03  ok
+    41.105 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    41.122 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.01  ok
+    41.205 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.02  ok
+    41.222 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.02  ok
+    41.238 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    41.355 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.02  ok
+    41.372 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.03  ok
+    41.489 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.02  ok
+    41.505 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.03  ok
+    41.522 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    41.538 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    41.555 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.03  ok
+    41.571 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    41.587 s     14 ms  ch1 515 Hz v8 (+0)                                   level 1.03  ok
+    41.604 s     14 ms  ch1 592 Hz v8 (+0)                                   level 1.03  ok
+    41.626 s   3246 ms  silence                                              level 0.0003  ok
+    44.874 s     15 ms  ch2 780 Hz v1 (-1)                                   level 0.86  ok
+    44.891 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    44.908 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    44.925 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    44.942 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    44.958 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    44.975 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    44.992 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    45.009 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    45.025 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    45.042 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    45.059 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    45.076 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    45.092 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    45.109 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    45.125 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    45.142 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    45.159 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    45.175 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    45.192 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    45.209 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    45.225 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    45.242 s     14 ms  ch1 551 Hz v4 (-0)  ch2 710 Hz v1 (-)                level 1.07  ok
+    45.259 s     14 ms  ch1 470 Hz v4 (-0)  ch2 743 Hz v1 (-9)               level 1.03  ok
+    45.276 s     13 ms  ch1 410 Hz v4 (-0)  ch2 780 Hz v1 (-20)              level 1.01  ok
+    45.293 s     13 ms  ch1 363 Hz v4 (+0)  ch2 819 Hz v1 (-26)              level 1.02  ok
+    45.310 s     13 ms  ch1 326 Hz v4 (+0)  ch2 780 Hz v1 (+15)              level 1.00  ok
+    45.327 s     12 ms  ch1 296 Hz v4 (+0)  ch2 743 Hz v1 (-4)               level 1.02  ok
+    45.359 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.90  ok
+    45.375 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.89  ok
+    45.392 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    45.409 s     14 ms  ch1 385 Hz v4 (-0)  ch2 603 Hz v1 (-)                level 1.05  ok
+    45.427 s     13 ms  ch1 410 Hz v4 (-0)  ch2 581 Hz v1 (-0)               level 1.03  ok
+    45.443 s     13 ms  ch1 438 Hz v4 (+0)  ch2 561 Hz v1 (+6)               level 1.04  ok
+    45.460 s     14 ms  ch1 470 Hz v4 (-0)  ch2 542 Hz v1 (+0)               level 1.01  ok
+    45.476 s     14 ms  ch1 507 Hz v4 (-7)  ch2 524 Hz v1 (-)                level 1.05  ok
+    45.493 s     14 ms  ch1 551 Hz v4 (-0)  ch2 507 Hz v1 (-0)               level 1.09  ok
+    45.526 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.90  ok
+    45.543 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.89  ok
+    45.559 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    45.576 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    45.593 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    45.609 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    45.626 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    45.643 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    45.659 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    45.676 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    45.692 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    45.709 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    45.726 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    45.742 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    45.759 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    45.776 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    45.793 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    45.809 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    45.826 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    45.843 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    45.860 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    45.876 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    45.893 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    45.910 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    45.927 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    45.943 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    45.960 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    45.977 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    45.993 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    46.010 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    46.027 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    46.043 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    46.060 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    46.076 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    46.093 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    46.110 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    46.126 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    46.143 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    46.160 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    46.176 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    46.193 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    46.210 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    46.226 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    46.243 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    46.260 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    46.277 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    46.293 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    46.310 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    46.327 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    46.344 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    46.360 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    46.377 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    46.394 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    46.411 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    46.427 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    46.444 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    46.460 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    46.477 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    46.494 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    46.510 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    46.527 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    46.544 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    46.560 s     14 ms  ch1 551 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.03  ok
+    46.577 s     14 ms  ch1 470 Hz v4 (-0)  ch2 780 Hz v1 (+0)               level 1.02  ok
+    46.594 s     13 ms  ch1 410 Hz v4 (+0)  ch2 819 Hz v1 (+0)               level 1.00  ok
+    46.611 s     13 ms  ch1 363 Hz v4 (-0)  ch2 780 Hz v1 (+14)              level 1.00  ok
+    46.628 s     13 ms  ch1 326 Hz v4 (+0)  ch2 743 Hz v1 (-60)              level 1.00  ok
+    46.645 s     12 ms  ch1 296 Hz v4 (+0)  ch2 710 Hz v1 (+11)              level 1.01  ok
+    46.677 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.89  ok
+    46.694 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    46.711 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    46.728 s     14 ms  ch1 385 Hz v4 (-0)  ch2 581 Hz v1 (-)                level 1.06  ok
+    46.745 s     13 ms  ch1 410 Hz v4 (-0)  ch2 561 Hz v1 (-)                level 1.02  ok
+    46.761 s     13 ms  ch1 438 Hz v4 (+0)  ch2 542 Hz v1 (+64)              level 1.04  ok
+    46.778 s     13 ms  ch1 470 Hz v4 (+0)  ch2 524 Hz v1 (+0)               level 1.02  ok
+    46.794 s     14 ms  ch1 507 Hz v4 (+0)  ch2 507 Hz v1 (-)                level 0.95  ok
+    46.811 s     14 ms  ch1 551 Hz v4 (-0)  ch2 492 Hz v1 (-0)               level 1.06  ok
+    46.844 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.90  ok
+    46.861 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.89  ok
+    46.878 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    46.894 s     14 ms  ch1 551 Hz v4 (+0)  ch2 581 Hz v1 (-)                level 0.94  ok
+    46.911 s     14 ms  ch1 470 Hz v4 (+0)  ch2 603 Hz v1 (+3)               level 1.04  ok
+    46.928 s     13 ms  ch1 410 Hz v4 (-0)  ch2 627 Hz v1 (+33)              level 1.02  ok
+    46.945 s     13 ms  ch1 363 Hz v4 (+0)  ch2 652 Hz v1 (+5)               level 1.03  ok
+    46.962 s     13 ms  ch1 326 Hz v4 (-0)  ch2 680 Hz v1 (-3)               level 1.00  ok
+    46.979 s     12 ms  ch1 296 Hz v4 (-0)  ch2 710 Hz v1 (+12)              level 1.01  ok
+    47.011 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.90  ok
+    47.027 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    47.044 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    47.061 s     14 ms  ch1 385 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.04  ok
+    47.079 s     13 ms  ch1 410 Hz v4 (-0)  ch2 710 Hz v1 (+55)              level 1.02  ok
+    47.095 s     13 ms  ch1 438 Hz v4 (-0)  ch2 680 Hz v1 (+16)              level 1.01  ok
+    47.112 s     13 ms  ch1 470 Hz v4 (-0)  ch2 652 Hz v1 (-0)               level 1.02  ok
+    47.128 s     14 ms  ch1 507 Hz v4 (-0)  ch2 627 Hz v1 (+61)              level 1.05  ok
+    47.145 s     14 ms  ch1 551 Hz v4 (-0)  ch2 603 Hz v1 (-0)               level 1.07  ok
+    47.178 s     14 ms  ch2 561 Hz v1 (-0)                                   level 0.90  ok
+    47.195 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.89  ok
+    47.211 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.89  ok
+    47.228 s     14 ms  ch1 551 Hz v4 (+0)  ch2 507 Hz v1 (-)                level 1.07  ok
+    47.245 s     14 ms  ch1 470 Hz v4 (-31)  ch2 492 Hz v1 (-)               level 0.88  ok
+    47.262 s     13 ms  ch1 410 Hz v4 (-0)  ch2 507 Hz v1 (+63)              level 1.02  ok
+    47.279 s     13 ms  ch1 363 Hz v4 (+0)  ch2 524 Hz v1 (-0)               level 1.02  ok
+    47.296 s     13 ms  ch1 326 Hz v4 (+0)  ch2 542 Hz v1 (-)                level 1.00  ok
+    47.313 s     12 ms  ch1 296 Hz v4 (+0)  ch2 561 Hz v1 (-50)              level 1.02  ok
+    47.345 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.89  ok
+    47.361 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    47.378 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    47.395 s     14 ms  ch1 385 Hz v4 (-0)  ch2 680 Hz v1 (-)                level 1.09  ok
+    47.412 s     13 ms  ch1 410 Hz v4 (-0)  ch2 710 Hz v1 (+45)              level 1.03  ok
+    47.429 s     13 ms  ch1 438 Hz v4 (-0)  ch2 743 Hz v1 (-0)               level 1.01  ok
+    47.445 s     13 ms  ch1 470 Hz v4 (-0)  ch2 780 Hz v1 (-0)               level 1.02  ok
+    47.462 s     14 ms  ch1 507 Hz v4 (-0)  ch2 819 Hz v1 (-40)              level 1.01  ok
+    47.479 s     14 ms  ch1 551 Hz v4 (+0)  ch2 780 Hz v1 (+0)               level 1.02  ok
+    47.511 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.90  ok
+    47.528 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    47.545 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    47.562 s     14 ms  ch1 551 Hz v4 (-0)  ch2 627 Hz v1 (-)                level 1.06  ok
+    47.579 s     14 ms  ch1 470 Hz v4 (-0)  ch2 603 Hz v1 (+3)               level 1.00  ok
+    47.596 s     13 ms  ch1 410 Hz v4 (-0)  ch2 581 Hz v1 (-0)               level 1.00  ok
+    47.613 s     13 ms  ch1 363 Hz v4 (-0)  ch2 561 Hz v1 (+27)              level 0.99  ok
+    47.630 s     13 ms  ch1 326 Hz v4 (+0)  ch2 542 Hz v1 (-)                level 1.02  ok
+    47.647 s     12 ms  ch1 296 Hz v4 (+0)  ch2 524 Hz v1 (+48)              level 1.01  ok
+    47.679 s     14 ms  ch2 492 Hz v1 (+0)                                   level 0.90  ok
+    47.696 s     13 ms  ch1 385 Hz v4 (-0)  ch2 507 Hz v1 (-)                level 1.04  ok
+    47.713 s     13 ms  ch1 410 Hz v4 (-0)  ch2 524 Hz v1 (+7)               level 0.99  ok
+    47.729 s     13 ms  ch1 438 Hz v4 (+0)  ch2 542 Hz v1 (+59)              level 0.99  ok
+    47.746 s     13 ms  ch1 470 Hz v4 (-0)  ch2 561 Hz v1 (-0)               level 1.05  ok
+    47.762 s     14 ms  ch1 507 Hz v4 (-0)  ch2 581 Hz v1 (+0)               level 1.02  ok
+    47.779 s     14 ms  ch1 551 Hz v4 (+0)  ch2 603 Hz v1 (-0)               level 1.08  ok
+    47.812 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.90  ok
+    47.829 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    47.845 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    47.862 s     14 ms  ch1 551 Hz v4 (+0)  ch2 743 Hz v1 (-)                level 1.02  ok
+    47.879 s     14 ms  ch1 470 Hz v4 (+0)  ch2 780 Hz v1 (-0)               level 1.00  ok
+    47.896 s     13 ms  ch1 410 Hz v4 (+0)  ch2 819 Hz v1 (-0)               level 1.02  ok
+    47.913 s     13 ms  ch1 363 Hz v4 (+0)  ch2 780 Hz v1 (+10)              level 1.01  ok
+    47.930 s     13 ms  ch1 326 Hz v4 (+0)  ch2 743 Hz v1 (-47)              level 1.01  ok
+    47.947 s     12 ms  ch1 296 Hz v4 (+0)  ch2 710 Hz v1 (+11)              level 1.01  ok
+    47.979 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.90  ok
+    47.996 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    48.012 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    48.029 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    48.046 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    48.063 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    48.079 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    48.096 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    48.113 s     13 ms  ch1 385 Hz v4 (-0)  ch2 492 Hz v1 (-)                level 1.03  ok
+    48.130 s     13 ms  ch1 410 Hz v4 (-0)  ch2 507 Hz v1 (+63)              level 1.01  ok
+    48.147 s     13 ms  ch1 438 Hz v4 (+0)  ch2 524 Hz v1 (-)                level 1.03  ok
+    48.163 s     13 ms  ch1 470 Hz v4 (-0)  ch2 542 Hz v1 (+0)               level 1.02  ok
+    48.180 s     14 ms  ch1 507 Hz v4 (-0)  ch2 561 Hz v1 (+0)               level 1.03  ok
+    48.196 s     14 ms  ch1 551 Hz v4 (+0)  ch2 581 Hz v1 (+0)               level 0.88  ok
+    48.229 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.90  ok
+    48.246 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.89  ok
+    48.262 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    48.279 s     14 ms  ch1 551 Hz v4 (+0)  ch2 710 Hz v1 (-)                level 1.05  ok
+    48.296 s     14 ms  ch1 470 Hz v4 (-0)  ch2 743 Hz v1 (-8)               level 1.02  ok
+    48.313 s     13 ms  ch1 410 Hz v4 (+0)  ch2 780 Hz v1 (-42)              level 1.01  ok
+    48.330 s     13 ms  ch1 363 Hz v4 (+0)  ch2 819 Hz v1 (-27)              level 1.02  ok
+    48.347 s     13 ms  ch1 326 Hz v4 (+0)  ch2 780 Hz v1 (+14)              level 1.01  ok
+    48.364 s     12 ms  ch1 296 Hz v4 (+0)  ch2 743 Hz v1 (+25)              level 1.03  ok
+    48.396 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.90  ok
+    48.413 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    48.429 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    48.446 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    48.463 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    48.480 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    48.496 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    48.513 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    48.530 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    48.547 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    48.563 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    48.580 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    48.597 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    48.613 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    48.630 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    48.646 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    48.663 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    48.680 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    48.696 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    48.713 s     14 ms  ch2 710 Hz v1 (-1)                                   level 0.88  ok
+    48.730 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    48.746 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    48.763 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    48.780 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    48.796 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    48.813 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    48.830 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    48.847 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    48.863 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    48.880 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    48.897 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    48.914 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    48.930 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    48.947 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    48.964 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    48.981 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    48.997 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    49.014 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    49.030 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    49.047 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    49.064 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    49.081 s     13 ms  ch1 385 Hz v4 (+0)  ch2 603 Hz v1 (-)                level 1.02  ok
+    49.098 s     13 ms  ch1 410 Hz v4 (-0)  ch2 627 Hz v1 (+41)              level 1.02  ok
+    49.114 s     13 ms  ch1 438 Hz v4 (+0)  ch2 652 Hz v1 (+0)               level 1.01  ok
+    49.131 s     13 ms  ch1 470 Hz v4 (+0)  ch2 680 Hz v1 (-0)               level 1.02  ok
+    49.148 s     14 ms  ch1 507 Hz v4 (-0)  ch2 710 Hz v1 (-0)               level 1.00  ok
+    49.164 s     14 ms  ch1 551 Hz v4 (-0)  ch2 743 Hz v1 (+0)               level 1.03  ok
+    49.197 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.90  ok
+    49.213 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    49.230 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    49.247 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    49.264 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    49.280 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    49.297 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    49.314 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    49.331 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    49.347 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    49.364 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    49.381 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    49.398 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    49.414 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    49.431 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    49.448 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    49.464 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    49.481 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    49.498 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    49.514 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    49.531 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    49.548 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    49.564 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    49.581 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    49.597 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    49.614 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    49.631 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    49.647 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    49.664 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    49.681 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    49.698 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    49.714 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    49.731 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    49.748 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    49.765 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    49.781 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    49.798 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    49.815 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    49.832 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    49.848 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    49.865 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    49.882 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    49.898 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    49.915 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    49.932 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    49.948 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    49.965 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    49.981 s     14 ms  ch2 652 Hz v1 (-0)                                   level 0.88  ok
+    49.998 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    50.015 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    50.031 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    50.048 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    50.065 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    50.081 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    50.098 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    50.115 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    50.131 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    50.148 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    50.165 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    50.182 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    50.198 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    50.215 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    50.232 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    50.249 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    50.265 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    50.282 s     14 ms  ch2 492 Hz v1 (+0)                                   level 0.88  ok
+    50.299 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    50.316 s   1615 ms  silence                                              level 0.0002  ok
+    51.933 s     15 ms  ch1 592 Hz v8 (-0)                                   level 1.04  ok
+    51.951 s     14 ms  ch1 515 Hz v8 (-0)                                   level 1.03  ok
+    51.967 s     14 ms  ch1 457 Hz v8 (+0)                                   level 1.03  ok
+    51.984 s     13 ms  ch1 410 Hz v8 (+0)                                   level 1.02  ok
+    52.001 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    52.018 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.03  ok
+    52.034 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    52.051 s     14 ms  ch1 515 Hz v8 (+0)                                   level 1.03  ok
+    52.067 s     14 ms  ch1 551 Hz v8 (+0)                                   level 1.03  ok
+    52.084 s     14 ms  ch1 484 Hz v8 (-0)                                   level 1.02  ok
+    52.101 s     13 ms  ch1 432 Hz v8 (+0)                                   level 1.03  ok
+    52.118 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    52.135 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.02  ok
+    52.152 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    52.168 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.02  ok
+    52.185 s     13 ms  ch1 484 Hz v8 (-0)                                   level 1.03  ok
+    52.201 s     14 ms  ch1 515 Hz v8 (-0)                                   level 1.03  ok
+    52.218 s     14 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    52.235 s     13 ms  ch1 410 Hz v8 (+0)                                   level 1.02  ok
+    52.252 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    52.269 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    52.285 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    52.302 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    52.318 s     13 ms  ch1 457 Hz v8 (+0)                                   level 1.02  ok
+    52.335 s     14 ms  ch1 484 Hz v8 (+0)                                   level 1.02  ok
+    52.351 s     13 ms  ch1 432 Hz v8 (+0)                                   level 1.03  ok
+    52.368 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    52.385 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.02  ok
+    52.402 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.03  ok
+    52.419 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    52.435 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    52.452 s     13 ms  ch1 432 Hz v8 (+0)                                   level 1.02  ok
+    52.468 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.02  ok
+    52.485 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    52.502 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    52.519 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.01  ok
+    52.536 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    52.553 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    52.569 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    52.585 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.03  ok
+    52.602 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.02  ok
+    52.619 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    52.636 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.03  ok
+    52.653 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.03  ok
+    52.670 s     13 ms  ch1 302 Hz v8 (+0)                                   level 1.03  ok
+    52.686 s     12 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    52.703 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    52.719 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    52.736 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    52.752 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.03  ok
+    52.769 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    52.786 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    52.803 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.01  ok
+    52.820 s     12 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    52.836 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.03  ok
+    52.853 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.03  ok
+    52.869 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    52.886 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    52.903 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.02  ok
+    52.920 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.01  ok
+    52.937 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    52.954 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.02  ok
+    52.970 s     12 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    52.986 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    53.003 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    53.020 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    53.037 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    53.053 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.01  ok
+    53.070 s     12 ms  ch1 271 Hz v8 (-0)                                   level 1.01  ok
+    53.087 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    53.104 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.01  ok
+    53.120 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    53.136 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    53.153 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.02  ok
+    53.170 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.02  ok
+    53.187 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.01  ok
+    53.204 s     12 ms  ch1 262 Hz v8 (+0)                                   level 1.01  ok
+    53.237 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.01  ok
+    53.254 s     12 ms  ch1 326 Hz v8 (+0)                                   level 1.02  ok
+    53.270 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    53.287 s     13 ms  ch1 313 Hz v8 (-0)                                   level 1.02  ok
+    53.304 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    53.321 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.02  ok
+    53.371 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    53.387 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.01  ok
+    53.404 s     13 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    53.420 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.01  ok
+    53.437 s     12 ms  ch1 280 Hz v8 (-0)                                   level 1.02  ok
+    53.521 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.03  ok
+    53.537 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.02  ok
+    53.554 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.01  ok
+    53.571 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.00  ok
+    53.654 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.02  ok
+    53.671 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.03  ok
+    53.688 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    53.805 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.02  ok
+    53.821 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.02  ok
+    53.938 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    53.955 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.02  ok
+    53.971 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.01  ok
+    53.988 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    54.004 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.03  ok
+    54.020 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    54.037 s     14 ms  ch1 515 Hz v8 (+0)                                   level 1.03  ok
+    54.053 s     14 ms  ch1 592 Hz v8 (-0)                                   level 1.03  ok
+    54.076 s   3246 ms  silence                                              level 0.0003  ok
+    57.323 s     15 ms  ch2 780 Hz v1 (-1)                                   level 0.86  ok
+    57.341 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    57.357 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    57.374 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    57.391 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    57.408 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    57.424 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    57.441 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    57.458 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    57.475 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    57.491 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    57.508 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    57.525 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    57.542 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    57.558 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    57.575 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    57.591 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    57.608 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    57.625 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    57.641 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    57.658 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    57.675 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    57.691 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    57.708 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    57.724 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    57.741 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    57.758 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    57.775 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    57.791 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    57.808 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    57.825 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    57.842 s     14 ms  ch2 627 Hz v1 (+0)                                   level 0.88  ok
+    57.858 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    57.875 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    57.892 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    57.909 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    57.925 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    57.942 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    57.959 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    57.975 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    57.992 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    58.009 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    58.025 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    58.042 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    58.059 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    58.075 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    58.092 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    58.108 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    58.125 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    58.142 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    58.158 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    58.175 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    58.192 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    58.208 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    58.225 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    58.242 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    58.259 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    58.275 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    58.292 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    58.309 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    58.326 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    58.342 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    58.359 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    58.376 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    58.393 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    58.409 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    58.426 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    58.443 s     14 ms  ch2 542 Hz v1 (-0)                                   level 0.88  ok
+    58.459 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    58.476 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    58.492 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    58.509 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    58.526 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    58.542 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    58.559 s     14 ms  ch2 710 Hz v1 (-0)                                   level 0.88  ok
+    58.576 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    58.592 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    58.609 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    58.626 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    58.642 s     14 ms  ch2 743 Hz v1 (+0)                                   level 0.88  ok
+    58.659 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    58.676 s     14 ms  ch2 680 Hz v1 (+0)                                   level 0.88  ok
+    58.693 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    58.709 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    58.726 s     14 ms  ch2 603 Hz v1 (-0)                                   level 0.88  ok
+    58.743 s     14 ms  ch2 581 Hz v1 (-0)                                   level 0.88  ok
+    58.760 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    58.776 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    58.793 s     14 ms  ch2 524 Hz v1 (-0)                                   level 0.88  ok
+    58.810 s     14 ms  ch2 507 Hz v1 (-0)                                   level 0.88  ok
+    58.827 s     14 ms  ch2 492 Hz v1 (-0)                                   level 0.88  ok
+    58.843 s     14 ms  ch2 507 Hz v1 (+0)                                   level 0.88  ok
+    58.860 s     14 ms  ch2 524 Hz v1 (+0)                                   level 0.88  ok
+    58.877 s     14 ms  ch2 542 Hz v1 (+0)                                   level 0.88  ok
+    58.893 s     14 ms  ch2 561 Hz v1 (+0)                                   level 0.88  ok
+    58.910 s     14 ms  ch2 581 Hz v1 (+0)                                   level 0.88  ok
+    58.926 s     14 ms  ch2 603 Hz v1 (+0)                                   level 0.88  ok
+    58.943 s     14 ms  ch2 627 Hz v1 (-0)                                   level 0.88  ok
+    58.960 s     14 ms  ch2 652 Hz v1 (+0)                                   level 0.88  ok
+    58.976 s     14 ms  ch2 680 Hz v1 (-0)                                   level 0.88  ok
+    58.993 s     14 ms  ch2 710 Hz v1 (+0)                                   level 0.88  ok
+    59.010 s     14 ms  ch2 743 Hz v1 (-0)                                   level 0.88  ok
+    59.026 s     14 ms  ch2 780 Hz v1 (-0)                                   level 0.88  ok
+    59.043 s     14 ms  ch2 819 Hz v1 (-0)                                   level 0.88  ok
+    59.059 s     14 ms  ch2 780 Hz v1 (+0)                                   level 0.88  ok
+    59.077 s   1616 ms  silence                                              level 0.0002  ok
+    60.694 s     15 ms  ch1 592 Hz v8 (-0)                                   level 1.04  ok
+    60.712 s     14 ms  ch1 515 Hz v8 (-0)                                   level 1.03  ok
+    60.729 s     14 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    60.746 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    60.763 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    60.779 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    60.796 s     13 ms  ch1 457 Hz v8 (+0)                                   level 1.03  ok
+    60.812 s     14 ms  ch1 515 Hz v8 (+0)                                   level 1.03  ok
+    60.829 s     14 ms  ch1 551 Hz v8 (+0)                                   level 1.03  ok
+    60.845 s     14 ms  ch1 484 Hz v8 (-0)                                   level 1.02  ok
+    60.862 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.03  ok
+    60.879 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    60.896 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.02  ok
+    60.913 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    60.929 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.02  ok
+    60.946 s     14 ms  ch1 484 Hz v8 (-0)                                   level 1.03  ok
+    60.962 s     14 ms  ch1 515 Hz v8 (-0)                                   level 1.03  ok
+    60.979 s     14 ms  ch1 457 Hz v8 (-0)                                   level 1.02  ok
+    60.996 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    61.013 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    61.030 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    61.047 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.03  ok
+    61.063 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    61.079 s     13 ms  ch1 457 Hz v8 (+0)                                   level 1.02  ok
+    61.096 s     14 ms  ch1 484 Hz v8 (+0)                                   level 1.02  ok
+    61.113 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.03  ok
+    61.130 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    61.147 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.02  ok
+    61.164 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.02  ok
+    61.180 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    61.197 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    61.213 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.03  ok
+    61.230 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.02  ok
+    61.246 s     13 ms  ch1 410 Hz v8 (+0)                                   level 1.02  ok
+    61.263 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    61.280 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.01  ok
+    61.297 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.02  ok
+    61.314 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    61.330 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    61.347 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.03  ok
+    61.363 s     13 ms  ch1 432 Hz v8 (-0)                                   level 1.03  ok
+    61.380 s     13 ms  ch1 390 Hz v8 (+0)                                   level 1.02  ok
+    61.397 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.02  ok
+    61.414 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.03  ok
+    61.431 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.03  ok
+    61.447 s     12 ms  ch1 326 Hz v8 (-0)                                   level 1.03  ok
+    61.464 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    61.480 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.02  ok
+    61.497 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.02  ok
+    61.514 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.03  ok
+    61.531 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    61.547 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.01  ok
+    61.564 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.01  ok
+    61.581 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.02  ok
+    61.598 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    61.614 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.03  ok
+    61.631 s     13 ms  ch1 390 Hz v8 (-0)                                   level 1.03  ok
+    61.647 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    61.664 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.02  ok
+    61.681 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.02  ok
+    61.698 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.01  ok
+    61.715 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.02  ok
+    61.731 s     12 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    61.748 s     13 ms  ch1 355 Hz v8 (+0)                                   level 1.02  ok
+    61.764 s     13 ms  ch1 372 Hz v8 (-0)                                   level 1.02  ok
+    61.781 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    61.798 s     13 ms  ch1 313 Hz v8 (+0)                                   level 1.01  ok
+    61.815 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.01  ok
+    61.832 s     12 ms  ch1 271 Hz v8 (-0)                                   level 1.01  ok
+    61.848 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    61.865 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.01  ok
+    61.881 s     13 ms  ch1 340 Hz v8 (+0)                                   level 1.02  ok
+    61.898 s     13 ms  ch1 355 Hz v8 (-0)                                   level 1.02  ok
+    61.915 s     13 ms  ch1 326 Hz v8 (+0)                                   level 1.01  ok
+    61.931 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.02  ok
+    61.948 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    61.998 s     12 ms  ch1 302 Hz v8 (+0)                                   level 1.01  ok
+    62.015 s     13 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    62.031 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    62.048 s     13 ms  ch1 313 Hz v8 (-0)                                   level 1.02  ok
+    62.065 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    62.082 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.03  ok
+    62.132 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    62.149 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.02  ok
+    62.165 s     13 ms  ch1 326 Hz v8 (-0)                                   level 1.02  ok
+    62.182 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.01  ok
+    62.199 s     12 ms  ch1 280 Hz v8 (-0)                                   level 1.02  ok
+    62.282 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.03  ok
+    62.299 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.03  ok
+    62.315 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    62.332 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.01  ok
+    62.416 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.02  ok
+    62.432 s     12 ms  ch1 302 Hz v8 (-0)                                   level 1.02  ok
+    62.449 s     12 ms  ch1 280 Hz v8 (+0)                                   level 1.02  ok
+    62.549 s     12 ms  ch1 280 Hz v8 (-0)                                   level 1.03  ok
+    62.566 s     12 ms  ch1 291 Hz v8 (-0)                                   level 1.02  ok
+    62.583 s     12 ms  ch1 271 Hz v8 (+0)                                   level 1.03  ok
+    62.699 s     12 ms  ch1 291 Hz v8 (+0)                                   level 1.02  ok
+    62.716 s     12 ms  ch1 313 Hz v8 (-0)                                   level 1.03  ok
+    62.732 s     13 ms  ch1 340 Hz v8 (-0)                                   level 1.02  ok
+    62.749 s     13 ms  ch1 372 Hz v8 (+0)                                   level 1.02  ok
+    62.765 s     13 ms  ch1 410 Hz v8 (-0)                                   level 1.03  ok
+    62.782 s     13 ms  ch1 457 Hz v8 (-0)                                   level 1.03  ok
+    62.798 s     14 ms  ch1 515 Hz v8 (+0)                                   level 1.03  ok
+    62.815 s     14 ms  ch1 592 Hz v8 (-0)                                   level 1.03  ok
+    62.837 s  10522 ms  silence                                              level 0.0002  ok
+
+Edge timing of the bonus-item sweep (channel 1, one call per frame; predicted toggle times from the AUDF history against the zero crossings of the recording, 120-400 Hz band):
+  frame 2465: 207 predicted edges, 212 recorded crossings, best constant shift +3.65 ms, median residual 0.076 ms, 100 % within 0.5 ms, worst 0.45 ms
+
+PROBLEMS: 
+  clock check: onsets deviate from the register writes by up to 2.55 ms
+  segment at 18.510 s (12 ms): level 0.0296 against 0.0430 expected (-31 %)
+  segment at 18.843 s (12 ms): level 0.0314 against 0.0430 expected (-27 %)
+  segment at 21.196 s (13 ms): level 0.0287 against 0.0430 expected (-33 %)
+  segment at 30.525 s (12 ms): channel 2 expected 819.5 Hz, measured 885.2 Hz (+133 cents, peak 25.5x)

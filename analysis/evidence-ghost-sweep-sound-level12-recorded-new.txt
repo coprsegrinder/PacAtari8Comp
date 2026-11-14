@@ -1,0 +1,44 @@
+Recording 151.93 s; level of one volume unit k = 0.00860; the first audible edge of the start tune is taken as the first fire after its write, at 15.1033 s.
+Mixer: Altirra's table indexed by the channels that are LOW (OV-13e).
+Ghost-eaten sweeps in this trace that can be compared: 9 (of 9 GHOST_EATEN events).
+Global time offset of the recording against the cycle timeline (median of the best lag of every sweep): +0.023 ms (spread +0.000..+0.023 ms).
+Event-order variant 0: median over sweeps of the best fit 0.9978
+Event-order variant 1: median over sweeps of the best fit 0.9990
+
+Per sweep at the global offset, variant 1: best of the 8 (c3, c4, high-pass polarity) assignments, the runner-up (best different assignment), and the best assignment with the other high-pass polarity:
+  f=  2023   28.071 s  best 0.9954 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.5480   other high-pass polarity 0.5480   scale/2k 1.035
+  f=  2923   43.090 s  best 0.9969 with (c3, c4, hp) = (0, 0, 1)   runner-up 0.6556   other high-pass polarity 0.6556   scale/2k 1.036
+  f=  3823   58.109 s  best 0.9978 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6479   other high-pass polarity 0.6479   scale/2k 1.037
+  f=  4723   73.129 s  best 0.9984 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6769   other high-pass polarity 0.6769   scale/2k 1.039
+  f=  5623   88.148 s  best 0.9990 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6576   other high-pass polarity 0.6576   scale/2k 1.038
+  f=  6523  103.167 s  best 0.9995 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6787   other high-pass polarity 0.6787   scale/2k 1.040
+  f=  7423  118.187 s  best 0.9998 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.5984   other high-pass polarity 0.5984   scale/2k 1.040
+  f=  8323  133.206 s  best 0.9999 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6325   other high-pass polarity 0.6325   scale/2k 1.040
+  f=  9223  148.225 s  best 0.9998 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6786   other high-pass polarity 0.6786   scale/2k 1.040
+
+Predicted start bits (tools/pokey_noise.py: the poly bit of the last gated fire before the tone starts; only the audio is compared): equal to the best-fit assignment in 9 of 9 sweeps; correlation >= 0.93 in 9 of 9; per sweep (frame, predicted (c3, c4), correlation, best-fit correlation):
+  f=  2023 predicted (1, 1)  corr 0.9954  (best fit (1, 1): 0.9954)
+  f=  2923 predicted (0, 0)  corr 0.9969  (best fit (0, 0): 0.9969)
+  f=  3823 predicted (1, 0)  corr 0.9978  (best fit (1, 0): 0.9978)
+  f=  4723 predicted (0, 1)  corr 0.9984  (best fit (0, 1): 0.9984)
+  f=  5623 predicted (1, 0)  corr 0.9990  (best fit (1, 0): 0.9990)
+  f=  6523 predicted (1, 0)  corr 0.9995  (best fit (1, 0): 0.9995)
+  f=  7423 predicted (0, 1)  corr 0.9998  (best fit (0, 1): 0.9998)
+  f=  8323 predicted (0, 1)  corr 0.9999  (best fit (0, 1): 0.9999)
+  f=  9223 predicted (1, 0)  corr 0.9998  (best fit (1, 0): 0.9998)
+
+Level (RMS, band 100 Hz-5 kHz): the four start-polarity candidates differ by a factor 1.02 (median; min 1.02, max 1.05) between the lowest and the highest; the candidate chosen by the waveform has a model RMS of 0.961 x the recording (median; min 0.961, max 0.962).
+
+Start polarities (c3, c4) of the best assignments over the sweeps: {(0, 0): 1, (0, 1): 3, (1, 0): 4, (1, 1): 1};  high-pass polarity bit = 1 in 9 of 9 sweeps.
+Correlation over the sweeps: min 0.9954, median 0.9990; margin to the runner-up: min 0.321; scale/2k: median 1.039 (min 1.035, max 1.040).
+
+PROBLEMS: 
+  sweep at frame 2023: scale 1.035 x 2k outside 0.70..1.00
+  sweep at frame 2923: scale 1.036 x 2k outside 0.70..1.00
+  sweep at frame 3823: scale 1.037 x 2k outside 0.70..1.00
+  sweep at frame 4723: scale 1.039 x 2k outside 0.70..1.00
+  sweep at frame 5623: scale 1.038 x 2k outside 0.70..1.00
+  sweep at frame 6523: scale 1.040 x 2k outside 0.70..1.00
+  sweep at frame 7423: scale 1.040 x 2k outside 0.70..1.00
+  sweep at frame 8323: scale 1.040 x 2k outside 0.70..1.00
+  sweep at frame 9223: scale 1.040 x 2k outside 0.70..1.00

@@ -1,0 +1,5 @@
+OV-51: PAL audio-path clock ratio, 2026-11-13
+PACMAN_VIDEO=pal python -I tools/analyze_full_waveform.py analysis/ov42-<n>-events.wav analysis/raw-logs/ov42-<n>-events.txt --dump-signals sig.npz ; python -I tools/probe_wave_drift.py sig.npz 30
+pal   (OS-B, 236.94 s): 4247/4247 windows >= 0.90 (median 0.9996, min 0.9981); 4 blocks, lag +0.165 samples, slope -0.00001 samples/s, residual 0.00, ratio 0.0002 ppm, anchor +0.16 sample
+palos (PAL OS ROM, 241.93 s): 4345/4345 windows >= 0.90 (median 0.9987, min 0.9932); 4 blocks, lag +0.320 samples, slope -0.00001 samples/s, residual 0.00, ratio 0.0003 ppm, anchor +0.32 sample
+For comparison the NTSC ratio is -0.1270 ppm = 1.3 samples over 237 s; the PAL slope is 0.0002 ppm, so the PAL clock of the model (1,773,447 Hz) is exact.

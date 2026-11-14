@@ -1,0 +1,104 @@
+Recording 221.92 s; level of one volume unit k = 0.00860; the first audible edge of the start tune is taken as the first fire after its write, at 15.1033 s.
+Mixer: the linear sum of the volumes scaled by the gain of Altirra's curve at the peak level (OV-13d).
+Ghost-eaten sweeps in this trace that can be compared: 32 (of 33 GHOST_EATEN events).
+Global time offset of the recording against the cycle timeline (median of the best lag of every sweep): +0.023 ms (spread +0.000..+0.023 ms).
+Event-order variant 0: median over sweeps of the best fit 0.9764
+Event-order variant 1: median over sweeps of the best fit 0.9781
+
+Per sweep at the global offset, variant 1: best of the 8 (c3, c4, high-pass polarity) assignments, the runner-up (best different assignment), and the best assignment with the other high-pass polarity:
+  f=  2023   28.071 s  best 0.9727 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6077   other high-pass polarity 0.6077   scale/2k 1.015
+  f=  2101   29.373 s  best 0.9735 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6409   other high-pass polarity 0.6409   scale/2k 1.040
+  f=  2143   30.074 s  best 0.9747 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6384   other high-pass polarity 0.6384   scale/2k 1.054
+  f=  2923   43.090 s  best 0.9760 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6371   other high-pass polarity 0.6371   scale/2k 1.054
+  f=  3015   44.626 s  best 0.9760 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6332   other high-pass polarity 0.6332   scale/2k 1.054
+  f=  3270   48.881 s  best 0.9751 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6348   other high-pass polarity 0.6348   scale/2k 1.038
+  f=  3822   58.093 s  best 0.9773 with (c3, c4, hp) = (0, 0, 1)   runner-up 0.6523   other high-pass polarity 0.6523   scale/2k 0.995
+  f=  3856   58.661 s  best 0.9758 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6352   other high-pass polarity 0.6352   scale/2k 1.040
+  f=  3892   59.262 s  best 0.9753 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6669   other high-pass polarity 0.6669   scale/2k 1.007
+  f=  4723   73.129 s  best 0.9764 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6500   other high-pass polarity 0.6500   scale/2k 0.996
+  f=  4757   73.697 s  best 0.9784 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6259   other high-pass polarity 0.6259   scale/2k 1.064
+  f=  4843   75.132 s  best 0.9787 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6531   other high-pass polarity 0.6531   scale/2k 1.000
+  f=  5623   88.148 s  best 0.9772 with (c3, c4, hp) = (0, 0, 1)   runner-up 0.6501   other high-pass polarity 0.6501   scale/2k 0.995
+  f=  5743   90.151 s  best 0.9774 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6517   other high-pass polarity 0.6517   scale/2k 0.996
+  f=  6453  101.999 s  best 0.9779 with (c3, c4, hp) = (0, 0, 1)   runner-up 0.6316   other high-pass polarity 0.6316   scale/2k 1.043
+  f=  6643  105.170 s  best 0.9790 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6377   other high-pass polarity 0.6377   scale/2k 1.057
+  f=  7423  118.187 s  best 0.9797 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6529   other high-pass polarity 0.6529   scale/2k 0.999
+  f=  7543  120.189 s  best 0.9792 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6447   other high-pass polarity 0.6447   scale/2k 1.059
+  f=  8323  133.206 s  best 0.9796 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6382   other high-pass polarity 0.6382   scale/2k 1.058
+  f=  8443  135.209 s  best 0.9797 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6353   other high-pass polarity 0.6353   scale/2k 1.060
+  f=  9223  148.225 s  best 0.9794 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.5733   other high-pass polarity 0.5733   scale/2k 1.038
+  f=  9343  150.228 s  best 0.9780 with (c3, c4, hp) = (0, 0, 1)   runner-up 0.6353   other high-pass polarity 0.6353   scale/2k 1.042
+  f=  9431  151.697 s  best 0.9780 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6689   other high-pass polarity 0.6689   scale/2k 1.011
+  f= 10090  162.694 s  best 0.9796 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.6390   other high-pass polarity 0.6390   scale/2k 1.059
+  f= 10124  163.262 s  best 0.9797 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6845   other high-pass polarity 0.6845   scale/2k 1.067
+  f= 10158  163.830 s  best 0.9783 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6515   other high-pass polarity 0.6515   scale/2k 0.998
+  f= 11023  178.264 s  best 0.9780 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6509   other high-pass polarity 0.6509   scale/2k 0.997
+  f= 11087  179.333 s  best 0.9813 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.5826   other high-pass polarity 0.5826   scale/2k 1.036
+  f= 11125  179.967 s  best 0.9782 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6400   other high-pass polarity 0.6400   scale/2k 1.043
+  f= 11923  193.283 s  best 0.9805 with (c3, c4, hp) = (0, 1, 1)   runner-up 0.6109   other high-pass polarity 0.6109   scale/2k 1.049
+  f= 12043  195.286 s  best 0.9784 with (c3, c4, hp) = (1, 0, 1)   runner-up 0.6525   other high-pass polarity 0.6525   scale/2k 0.997
+  f= 13525  220.018 s  best 0.9792 with (c3, c4, hp) = (1, 1, 1)   runner-up 0.5851   other high-pass polarity 0.5851   scale/2k 1.030
+
+Predicted start bits (tools/pokey_noise.py: the poly bit of the last gated fire before the tone starts; only the audio is compared): equal to the best-fit assignment in 32 of 32 sweeps; correlation >= 0.93 in 32 of 32; per sweep (frame, predicted (c3, c4), correlation, best-fit correlation):
+  f=  2023 predicted (1, 0)  corr 0.9727  (best fit (1, 0): 0.9727)
+  f=  2101 predicted (1, 1)  corr 0.9735  (best fit (1, 1): 0.9735)
+  f=  2143 predicted (0, 1)  corr 0.9747  (best fit (0, 1): 0.9747)
+  f=  2923 predicted (1, 1)  corr 0.9760  (best fit (1, 1): 0.9760)
+  f=  3015 predicted (1, 1)  corr 0.9760  (best fit (1, 1): 0.9760)
+  f=  3270 predicted (1, 1)  corr 0.9751  (best fit (1, 1): 0.9751)
+  f=  3822 predicted (0, 0)  corr 0.9773  (best fit (0, 0): 0.9773)
+  f=  3856 predicted (0, 1)  corr 0.9758  (best fit (0, 1): 0.9758)
+  f=  3892 predicted (1, 0)  corr 0.9753  (best fit (1, 0): 0.9753)
+  f=  4723 predicted (0, 1)  corr 0.9764  (best fit (0, 1): 0.9764)
+  f=  4757 predicted (0, 1)  corr 0.9784  (best fit (0, 1): 0.9784)
+  f=  4843 predicted (1, 0)  corr 0.9787  (best fit (1, 0): 0.9787)
+  f=  5623 predicted (0, 0)  corr 0.9772  (best fit (0, 0): 0.9772)
+  f=  5743 predicted (0, 1)  corr 0.9774  (best fit (0, 1): 0.9774)
+  f=  6453 predicted (0, 0)  corr 0.9779  (best fit (0, 0): 0.9779)
+  f=  6643 predicted (0, 1)  corr 0.9790  (best fit (0, 1): 0.9790)
+  f=  7423 predicted (1, 1)  corr 0.9797  (best fit (1, 1): 0.9797)
+  f=  7543 predicted (0, 1)  corr 0.9792  (best fit (0, 1): 0.9792)
+  f=  8323 predicted (1, 1)  corr 0.9796  (best fit (1, 1): 0.9796)
+  f=  8443 predicted (0, 1)  corr 0.9797  (best fit (0, 1): 0.9797)
+  f=  9223 predicted (0, 1)  corr 0.9794  (best fit (0, 1): 0.9794)
+  f=  9343 predicted (0, 0)  corr 0.9780  (best fit (0, 0): 0.9780)
+  f=  9431 predicted (1, 1)  corr 0.9780  (best fit (1, 1): 0.9780)
+  f= 10090 predicted (1, 1)  corr 0.9796  (best fit (1, 1): 0.9796)
+  f= 10124 predicted (0, 1)  corr 0.9797  (best fit (0, 1): 0.9797)
+  f= 10158 predicted (0, 1)  corr 0.9783  (best fit (0, 1): 0.9783)
+  f= 11023 predicted (1, 0)  corr 0.9780  (best fit (1, 0): 0.9780)
+  f= 11087 predicted (1, 1)  corr 0.9813  (best fit (1, 1): 0.9813)
+  f= 11125 predicted (0, 1)  corr 0.9782  (best fit (0, 1): 0.9782)
+  f= 11923 predicted (0, 1)  corr 0.9805  (best fit (0, 1): 0.9805)
+  f= 12043 predicted (1, 0)  corr 0.9784  (best fit (1, 0): 0.9784)
+  f= 13525 predicted (1, 1)  corr 0.9792  (best fit (1, 1): 0.9792)
+
+Level (RMS, band 100 Hz-5 kHz): the four start-polarity candidates differ by a factor 1.04 (median; min 1.02, max 1.06) between the lowest and the highest; the candidate chosen by the waveform has a model RMS of 0.939 x the recording (median; min 0.918, max 0.982).
+
+Start polarities (c3, c4) of the best assignments over the sweeps: {(0, 0): 4, (0, 1): 13, (1, 0): 5, (1, 1): 10};  high-pass polarity bit = 1 in 32 of 32 sweeps.
+Correlation over the sweeps: min 0.9727, median 0.9781; margin to the runner-up: min 0.295; scale/2k: median 1.039 (min 0.995, max 1.067).
+
+PROBLEMS: 
+  sweep at frame 2023: scale 1.015 x 2k outside 0.70..1.00
+  sweep at frame 2101: scale 1.040 x 2k outside 0.70..1.00
+  sweep at frame 2143: scale 1.054 x 2k outside 0.70..1.00
+  sweep at frame 2923: scale 1.054 x 2k outside 0.70..1.00
+  sweep at frame 3015: scale 1.054 x 2k outside 0.70..1.00
+  sweep at frame 3270: scale 1.038 x 2k outside 0.70..1.00
+  sweep at frame 3856: scale 1.040 x 2k outside 0.70..1.00
+  sweep at frame 3892: scale 1.007 x 2k outside 0.70..1.00
+  sweep at frame 4757: scale 1.064 x 2k outside 0.70..1.00
+  sweep at frame 6453: scale 1.043 x 2k outside 0.70..1.00
+  sweep at frame 6643: scale 1.057 x 2k outside 0.70..1.00
+  sweep at frame 7543: scale 1.059 x 2k outside 0.70..1.00
+  sweep at frame 8323: scale 1.058 x 2k outside 0.70..1.00
+  sweep at frame 8443: scale 1.060 x 2k outside 0.70..1.00
+  sweep at frame 9223: scale 1.038 x 2k outside 0.70..1.00
+  sweep at frame 9343: scale 1.042 x 2k outside 0.70..1.00
+  sweep at frame 9431: scale 1.011 x 2k outside 0.70..1.00
+  sweep at frame 10090: scale 1.059 x 2k outside 0.70..1.00
+  sweep at frame 10124: scale 1.067 x 2k outside 0.70..1.00
+  sweep at frame 11087: scale 1.036 x 2k outside 0.70..1.00
+  sweep at frame 11125: scale 1.043 x 2k outside 0.70..1.00
+  sweep at frame 11923: scale 1.049 x 2k outside 0.70..1.00
+  sweep at frame 13525: scale 1.030 x 2k outside 0.70..1.00

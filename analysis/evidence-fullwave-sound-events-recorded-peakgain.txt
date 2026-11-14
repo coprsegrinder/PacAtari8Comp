@@ -1,0 +1,75 @@
+Recording 175.79 s; one volume unit k = 0.00860; time anchor: first fire of the start tune at 15.1868 s; compared up to 175.49 s (end of the complete trace).
+Channel 2 tone runs (>= 4 windows, not inside a sweep): 15; the polarity predicted by the start-state rule is the better one in 10, the complement in 5 (channel 2: this start state is not derived, OV-14d).
+Channel 1 tone runs (>= 4 windows, not inside a sweep): 3; the polarity predicted by the start-state rule is the better one in 1, the complement in 2.
+Channel 3 tone runs (>= 4 windows, not inside a sweep): 0; the polarity predicted by the start-state rule is the better one in 0, the complement in 0.
+Channel 4 tone runs (>= 4 windows, not inside a sweep): 0; the polarity predicted by the start-state rule is the better one in 0, the complement in 0.
+Channel 2 tone runs (>= 4 windows, not inside a sweep): 15; the polarity predicted by the start-state rule is the better one in 10, the complement in 5 (channel 2: this start state is not derived, OV-14d).
+Channel 1 tone runs (>= 4 windows, not inside a sweep): 3; the polarity predicted by the start-state rule is the better one in 1, the complement in 2.
+Model: 521350 level breakpoints, 14 ghost-eaten sweeps use the high-pass model.
+
+Windows of 50 ms with sound in either signal: 3117.  Correlation at lag 0: median 0.9985, 5th percentile 0.9757, min -0.9000;  >= 0.90 in 3044 (97.7%), >= 0.80 in 3064 (98.3%).
+RMS ratio model / recording over the windows with correlation >= 0.90: median 0.960, 5-95%: 0.951..0.964.
+  whole-recording correlation at lag -2 samples (-0.045 ms): 0.9015
+  whole-recording correlation at lag -1 samples (-0.023 ms): 0.9457
+  whole-recording correlation at lag +0 samples (+0.000 ms): 0.9557
+  whole-recording correlation at lag +1 samples (+0.023 ms): 0.9298
+  whole-recording correlation at lag +2 samples (+0.045 ms): 0.8718
+
+Windows below 0.90: 73.  Worst 25 (time s, frame, correlation, rms ratio):
+   122.350 s  frame   7667  corr -0.900  ratio 1.00
+   123.300 s  frame   7724  corr -0.900  ratio 0.94
+   123.050 s  frame   7709  corr -0.898  ratio 0.94
+   122.700 s  frame   7688  corr -0.898  ratio 0.94
+    20.350 s  frame   1555  corr -0.897  ratio 0.94
+    20.050 s  frame   1537  corr -0.895  ratio 0.95
+    22.400 s  frame   1678  corr -0.895  ratio 0.94
+    20.400 s  frame   1558  corr -0.884  ratio 0.94
+   123.000 s  frame   7706  corr -0.880  ratio 0.95
+   122.400 s  frame   7670  corr -0.880  ratio 0.94
+    20.000 s  frame   1534  corr -0.880  ratio 0.92
+    22.350 s  frame   1675  corr -0.868  ratio 0.93
+    20.650 s  frame   1573  corr -0.858  ratio 0.95
+   122.750 s  frame   7691  corr -0.816  ratio 0.94
+   122.650 s  frame   7685  corr -0.812  ratio 0.90
+   123.350 s  frame   7727  corr -0.803  ratio 0.95
+    20.700 s  frame   1576  corr -0.800  ratio 0.96
+    22.450 s  frame   1681  corr -0.712  ratio 0.96
+    20.100 s  frame   1540  corr -0.648  ratio 0.96
+   123.400 s  frame   7730  corr -0.571  ratio 0.95
+   122.300 s  frame   7664  corr -0.538  ratio 0.88
+    20.600 s  frame   1570  corr -0.534  ratio 0.96
+    20.300 s  frame   1552  corr -0.459  ratio 0.97
+    20.950 s  frame   1591  corr -0.358  ratio 0.96
+    65.500 s  frame   4260  corr -0.333  ratio 0.90
+Single-channel windows (2765): |correlation| median 0.9988, 5th percentile 0.9906; >= 0.90 in 2742 (99.2%); signed >= 0.90 in 2742 (99.2%), inverted (<= -0.90) in 0 (0.0%).
+Single-channel windows with |correlation| < 0.90: 23; their RMS ratio median 0.95; first 12 (time s, frame, channels, correlation, rms ratio):
+    20.000 s  frame   1534  ch(2,)  corr -0.880  ratio 0.92
+    20.300 s  frame   1552  ch(2,)  corr -0.459  ratio 0.97
+    22.350 s  frame   1675  ch(2,)  corr -0.868  ratio 0.93
+    32.800 s  frame   2301  ch(2,)  corr +0.822  ratio 0.97
+    35.300 s  frame   2451  ch(2,)  corr +0.814  ratio 1.20
+    45.450 s  frame   3059  ch(2,)  corr +0.890  ratio 0.94
+    57.850 s  frame   3802  ch(2,)  corr +0.886  ratio 0.80
+    60.350 s  frame   3952  ch(2,)  corr +0.843  ratio 0.81
+    61.450 s  frame   4018  ch(2,)  corr +0.772  ratio 0.76
+    64.150 s  frame   4179  ch(2,)  corr +0.143  ratio 0.97
+    64.300 s  frame   4188  ch(2,)  corr +0.465  ratio 0.95
+    64.500 s  frame   4200  ch(2,)  corr -0.071  ratio 0.97
+
+By audible channels (tone mode with volume > 0): windows, of which below 0.90:
+  channels (2,)          2765 windows,   23 below
+  channels (1, 2)         192 windows,   35 below
+  channels (1, 3, 4)      145 windows,   11 below
+  channels ()              10 windows,    3 below
+  channels (1, 4)           5 windows,    1 below
+
+By game event (windows in the 1.5 s after the latest event): windows, with correlation >= 0.90:
+  (no event in the previous 1.5 s)    2293 windows,  98.8%
+  GHOST_EATEN                          397 windows,  95.7%
+  PELLET                               182 windows, 100.0%
+  BONUS_APPEAR                         121 windows,  81.0%
+  TUNE                                  79 windows, 100.0%
+  EXTRA_LIFE                            30 windows, 100.0%
+  START_PLAY                            13 windows,  69.2%
+  READY_DRAW                             1 windows,   0.0%
+  LEVEL_ADV                              1 windows, 100.0%

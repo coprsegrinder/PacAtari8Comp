@@ -1,0 +1,74 @@
+Trace: 35298 sound-register writes, 14017 frames (f=29..14045), 106 events.
+Events: {'NEWGAME': 1, 'INIT_BOARD': 3, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 3, 'BONUS_APPEAR': 5, 'PELLET': 9, 'GHOST_EATEN': 17, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 2}
+
+0. Start tune (the loop at $A7D3, PCs $A7E2 $A7E8 $A7ED $A7F2)
+  ok   64 tune steps for 1 game start(s)
+  ok   game 1: 64 steps from f=1234, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 0, StartLevel None)
+
+0b. Siren (LB508..LB54E, PCs $B546/$B54B; the step zp_9C comes from the dots eaten, Sub_B5C7)
+   (this trace has no dot counter in its state lines: the siren step cannot be derived, not judged; use a trace from tools/altirra_sound_levels.cmd)
+
+1. Bonus item eaten (Sub_ABC9, PCs $ABFE/$AC01)
+   port: 31 calls; AUDF1 ['0x7d', '0x82', '0x87', '...', '0x7d', '0x78', '0x0'] ... AUDC1 ['0x0', '0xa3', '0xa5']
+  ok   5 bonus sound episodes in the trace (BONUS_APPEAR events: 5)
+  ok   episode f=1550..1580: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=3050..3080: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=7702..7732: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=9202..9232: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=13854..13884: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+
+2. Ghost eaten (the code at $A8EC and $B049-$B088)
+   port: 34 frames (the collision frame, then 32 sweep calls; last = ClearPokeyRegisters and AUDCTL := 0); AUDF1 first 0x80 last 0x14
+  ok   A8EE (AUDC2 := 0) ran 17 times for 17 GHOST_EATEN events
+  ok   ghost eaten at f=2291 (ghost 0): 34 frames to f=2324, every write equals the port
+  ok   ghost eaten at f=2441 (ghost 1): 34 frames to f=2474, every write equals the port
+  ok   ghost eaten at f=3790 (ghost 1): 34 frames to f=3823, every write equals the port
+  ok   ghost eaten at f=3941 (ghost ?): 34 frames to f=3974, every write equals the port
+  ok   ghost eaten at f=5291 (ghost ?): 34 frames to f=5324, every write equals the port
+     (f=5329: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=5329 (ghost ?): 34 frames to f=5362, every write equals the port
+  ok   ghost eaten at f=6791 (ghost ?): 34 frames to f=6824, every write equals the port
+     (f=6941: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=6941 (ghost ?): 34 frames to f=6974, every write equals the port
+  ok   ghost eaten at f=8443 (ghost 0): 34 frames to f=8476, every write equals the port
+  ok   ghost eaten at f=8593 (ghost ?): 34 frames to f=8626, every write equals the port
+  ok   ghost eaten at f=9943 (ghost 1): 34 frames to f=9976, every write equals the port
+     (f=10056: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=10056 (ghost ?): 34 frames to f=10089, every write equals the port
+     (f=10093: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=10093 (ghost ?): 34 frames to f=10126, every write equals the port
+  ok   ghost eaten at f=11443 (ghost ?): 34 frames to f=11476, every write equals the port
+     (f=11593: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=11593 (ghost ?): 34 frames to f=11626, every write equals the port
+  ok   ghost eaten at f=12943 (ghost ?): 34 frames to f=12976, every write equals the port
+     (f=13093: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=13093 (ghost ?): 34 frames to f=13126, every write equals the port
+   the ghost-eaten sound is a sweep from 248 Hz up to 1522 Hz over 34 frames (0.57 s); the rest of the game does not run meanwhile (the main loop jumps to $B049 at $A840)
+
+3. Frightened phase (Sub_AFD7, PCs $B021/$B028) and eyes returning (Sub_B02C, PCs $B042/$B028)
+  ok   frightened: 2050 calls in 9 episodes, every (AUDF2, AUDC2) equals the port (0 mismatches)
+  ok   the frightened routine is called only while FrightenPhase <> 0 (at the start of the routine, or a pellet is eaten in it), no eaten ghost is returning (zp_F2 = 0 as recomputed in it) and no ghost-eaten sound runs (zp_E5 = 0): 0 exceptions []
+  ok   eyes: 1935 calls, every (AUDF2, AUDC2) equals the port (0 mismatches); values 13..23
+  ok   the eyes routine is called only while an eaten ghost is returning (zp_F2 <> 0 as recomputed in the routine) and no ghost-eaten sound runs (zp_E5 = 0 at its start): 0 exceptions []
+
+4. Who writes channel 2 (AUDC2) in each situation (frames, PCs)
+   normal                           {('B54B',): 7462, (): 500, ('B028',): 9, ('B0EA',): 2}
+   frightened (FrightenPhase)       {('B028',): 2045, ('A8EE',): 11}
+   ghost-eaten sound (zp_E5)        {(): 544, ('B0EA',): 17}
+   eaten ghost returning (zp_F2)    {('B028',): 1925, ('A8EE', 'B028'): 6, ('B54B',): 2}
+
+5. Extra life and board change: no sound routine exists (census of all POKEY write sites: 31, none for these)
+   EXTRA_LIFE f=5191: lives [2, 3] -> [3, 3]; sound writers in the next 90 frames: {'B021': 91, 'B028': 91}
+  ok   the extra life adds one life (player 1: 2 -> 3)
+  ok   no PC outside the known sound routines writes a sound register around the extra life
+   LEVEL_ADV f=7577: level counter 0 -> 1; sound writers f-200..f+120: {'B546': 69, 'B54B': 69, 'B0EA': 8, 'B0DD': 26, 'B0E2': 30}; start tune steps in f-200..f+300: 0
+  ok   the start tune does not play at a board change
+   LEVEL_ADV f=13729: level counter 1 -> 2; sound writers f-200..f+120: {'B546': 69, 'B54B': 69, 'B0EA': 8, 'B0DD': 26, 'B0E2': 30}; start tune steps in f-200..f+300: 0
+  ok   the start tune does not play at a board change
+
+PROBLEMS: none

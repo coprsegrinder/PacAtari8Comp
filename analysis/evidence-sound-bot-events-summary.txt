@@ -1,0 +1,37 @@
+Trace: 251592 sound-register writes, 47010 frames (f=39..47048), 251 events.
+Events: {'NEWGAME': 3, 'INIT_BOARD': 12, 'READY_DRAW': 3, 'TUNE': 192, 'START_PLAY': 12, 'DEATH_START': 12, 'DEATH_DONE': 12, 'PELLET': 1, 'GAME_OVER_TEXT': 4}
+
+0. Start tune (the loop at $A7D3, PCs $A7E2 $A7E8 $A7ED $A7F2)
+  ok   192 tune steps for 3 game start(s)
+  ok   game 1: 64 steps from f=465, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 0, StartLevel 0)
+  ok   game 2: 64 steps from f=7077, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 12, StartLevel 12)
+  ok   game 3: 64 steps from f=14873, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 6, StartLevel 6)
+
+0b. Siren (LB508..LB54E, PCs $B546/$B54B; the step zp_9C comes from the dots eaten, Sub_B5C7)
+  ok   siren: 5924 calls, every (AUDF2, AUDC2) equals the port with the step from the dot counter (0 mismatches); steps seen {0: 12, 2: 5912}
+   dots eaten reached 62 (siren steps 3 / 4 / 5 start at 176 / 224 / 240)
+
+1. Bonus item eaten (Sub_ABC9, PCs $ABFE/$AC01)
+   port: 31 calls; AUDF1 ['0x7d', '0x82', '0x87', '...', '0x7d', '0x78', '0x0'] ... AUDC1 ['0x0', '0xa3', '0xa5']
+  FAIL 0 bonus sound episodes in the trace (BONUS_APPEAR events: 0)
+
+2. Ghost eaten (the code at $A8EC and $B049-$B088)
+   port: 34 frames (the collision frame, then 32 sweep calls; last = ClearPokeyRegisters and AUDCTL := 0); AUDF1 first 0x80 last 0x14
+  ok   A8EE (AUDC2 := 0) ran 0 times for 0 GHOST_EATEN events
+   the ghost-eaten sound is a sweep from 248 Hz up to 1522 Hz over 34 frames (0.57 s); the rest of the game does not run meanwhile (the main loop jumps to $B049 at $A840)
+
+3. Frightened phase (Sub_AFD7, PCs $B021/$B028) and eyes returning (Sub_B02C, PCs $B042/$B028)
+  ok   frightened: 473 calls in 1 episodes, every (AUDF2, AUDC2) equals the port (0 mismatches)
+  ok   the frightened routine is called only while FrightenPhase <> 0 (at the start of the routine, or a pellet is eaten in it), no eaten ghost is returning (zp_F2 = 0 as recomputed in it) and no ghost-eaten sound runs (zp_E5 = 0): 0 exceptions []
+  FAIL eyes: 0 calls, every (AUDF2, AUDC2) equals the port (0 mismatches); values -
+  ok   the eyes routine is called only while an eaten ghost is returning (zp_F2 <> 0 as recomputed in the routine) and no ghost-eaten sound runs (zp_E5 = 0 at its start): 0 exceptions []
+
+4. Who writes channel 2 (AUDC2) in each situation (frames, PCs)
+   normal                           {('A617',): 28888, (): 10642, ('B54B',): 5360, ('A7F2',): 128}
+   frightened (FrightenPhase)       {('B028',): 472}
+
+5. Extra life and board change: no sound routine exists (census of all POKEY write sites: 31, none for these)
+
+PROBLEMS: 
+  0 bonus sound episodes in the trace (BONUS_APPEAR events: 0)
+  eyes: 0 calls, every (AUDF2, AUDC2) equals the port (0 mismatches); values -

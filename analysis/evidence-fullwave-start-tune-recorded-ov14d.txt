@@ -1,0 +1,34 @@
+Recording 171.94 s; one volume unit k = 0.00860; time anchor: first fire of the start tune at 15.0366 s; compared up to 171.94 s (end of the complete trace).
+Channel 2 tone runs (>= 4 windows, not inside a sweep): 6; the polarity predicted by the start-state rule is the better one in 6, the complement in 0 (channel 2: this start state is not derived, OV-14d).
+Channel 1 tone runs (>= 4 windows, not inside a sweep): 7; the polarity predicted by the start-state rule is the better one in 7, the complement in 0.
+Channel 3 tone runs (>= 4 windows, not inside a sweep): 0; the polarity predicted by the start-state rule is the better one in 0, the complement in 0.
+Channel 4 tone runs (>= 4 windows, not inside a sweep): 0; the polarity predicted by the start-state rule is the better one in 0, the complement in 0.
+Channel 2 tone runs (>= 4 windows, not inside a sweep): 6; the polarity predicted by the start-state rule is the better one in 6, the complement in 0 (channel 2: this start state is not derived, OV-14d).
+Channel 1 tone runs (>= 4 windows, not inside a sweep): 7; the polarity predicted by the start-state rule is the better one in 7, the complement in 0.
+Model: 565076 level breakpoints, 0 ghost-eaten sweeps use the high-pass model.
+
+Windows of 50 ms with sound in either signal: 1750.  Correlation at lag 0: median 0.9988, 5th percentile 0.9963, min 0.9949;  >= 0.90 in 1750 (100.0%), >= 0.80 in 1750 (100.0%).
+RMS ratio model / recording over the windows with correlation >= 0.90: median 0.959, 5-95%: 0.959..0.960.
+  whole-recording correlation at lag -2 samples (-0.045 ms): 0.9750
+  whole-recording correlation at lag -1 samples (-0.023 ms): 0.9942
+  whole-recording correlation at lag +0 samples (+0.000 ms): 0.9988
+  whole-recording correlation at lag +1 samples (+0.023 ms): 0.9879
+  whole-recording correlation at lag +2 samples (+0.045 ms): 0.9630
+
+Windows below 0.90: 0.  Worst 25 (time s, frame, correlation, rms ratio):
+Single-channel windows (1529): |correlation| median 0.9988, 5th percentile 0.9964; >= 0.90 in 1529 (100.0%); signed >= 0.90 in 1529 (100.0%), inverted (<= -0.90) in 0 (0.0%).
+Single-channel windows with |correlation| < 0.90: 0; their RMS ratio median 0.00; first 12 (time s, frame, channels, correlation, rms ratio):
+
+By audible channels (tone mode with volume > 0): windows, of which below 0.90:
+  channels (2,)          1316 windows,    0 below
+  channels (1,)           213 windows,    0 below
+  channels (1, 2)         209 windows,    0 below
+  channels ()              12 windows,    0 below
+
+By game event (windows in the 1.5 s after the latest event): windows, with correlation >= 0.90:
+  (no event in the previous 1.5 s)    1402 windows, 100.0%
+  START_PLAY                           183 windows, 100.0%
+  TUNE                                 161 windows, 100.0%
+  INITBOARD_CALL                         2 windows, 100.0%
+  READY_DRAW                             1 windows, 100.0%
+  DEATH_START                            1 windows, 100.0%

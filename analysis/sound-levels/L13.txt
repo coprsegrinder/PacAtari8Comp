@@ -1,0 +1,125 @@
+Trace: 52617 sound-register writes, 21722 frames (f=39..21760), 168 events.
+Events: {'NEWGAME': 1, 'INIT_BOARD': 3, 'READY_DRAW': 1, 'TUNE': 64, 'START_PLAY': 3, 'BONUS_APPEAR': 6, 'PELLET': 37, 'GHOST_EATEN': 49, 'BONUS_EATEN': 1, 'EXTRA_LIFE': 1, 'LEVEL_ADV': 2}
+
+0. Start tune (the loop at $A7D3, PCs $A7E2 $A7E8 $A7ED $A7F2)
+  ok   64 tune steps for 1 game start(s)
+  ok   game 1: 64 steps from f=793, every (AUDF1, AUDF2, AUDC1, AUDC2) equals the ROM tables and AUDC $A8/$A4, one step every 4 frames (level counter 13, StartLevel 0)
+
+0b. Siren (LB508..LB54E, PCs $B546/$B54B; the step zp_9C comes from the dots eaten, Sub_B5C7)
+  ok   siren: 11594 calls, every (AUDF2, AUDC2) equals the port with the step from the dot counter (0 mismatches); steps seen {0: 3, 2: 3245, 3: 977, 4: 1026, 5: 6343}
+   dots eaten reached 260 (siren steps 3 / 4 / 5 start at 176 / 224 / 240)
+
+1. Bonus item eaten (Sub_ABC9, PCs $ABFE/$AC01)
+   port: 31 calls; AUDF1 ['0x7d', '0x82', '0x87', '...', '0x7d', '0x78', '0x0'] ... AUDC1 ['0x0', '0xa3', '0xa5']
+  ok   6 bonus sound episodes in the trace (BONUS_APPEAR events: 6)
+  ok   episode f=1109..1139: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=2004..2034: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=9960..9990: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=10860..10890: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=20195..20225: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+  ok   episode f=21095..21125: 31 calls, every (AUDF1, AUDC1) equals the port
+     zp_F7 in the frame of the first call: 0
+
+2. Ghost eaten (the code at $A8EC and $B049-$B088)
+   port: 34 frames (the collision frame, then 32 sweep calls; last = ClearPokeyRegisters and AUDCTL := 0); AUDF1 first 0x80 last 0x14
+  ok   A8EE (AUDC2 := 0) ran 49 times for 49 GHOST_EATEN events
+  ok   ghost eaten at f=1570 (ghost 0): 34 frames to f=1603, every write equals the port
+     (f=1608: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=1608 (ghost ?): 34 frames to f=1641, every write equals the port
+  ok   ghost eaten at f=2470 (ghost 1): 34 frames to f=2503, every write equals the port
+     (f=2507: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=2507 (ghost ?): 34 frames to f=2540, every write equals the port
+     (f=2588: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=2588 (ghost ?): 34 frames to f=2621, every write equals the port
+     (f=2622: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=2622 (ghost ?): 34 frames to f=2655, every write equals the port
+  ok   ghost eaten at f=3370 (ghost 2): 34 frames to f=3403, every write equals the port
+     (f=3475: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=3475 (ghost ?): 34 frames to f=3508, every write equals the port
+     (f=3509: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=3509 (ghost ?): 34 frames to f=3542, every write equals the port
+  ok   ghost eaten at f=4270 (ghost 3): 34 frames to f=4303, every write equals the port
+     (f=4390: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=4390 (ghost ?): 34 frames to f=4423, every write equals the port
+  ok   ghost eaten at f=5169 (ghost 1): 34 frames to f=5202, every write equals the port
+     (f=5203: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=5203 (ghost ?): 34 frames to f=5236, every write equals the port
+  ok   ghost eaten at f=6070 (ghost 1): 34 frames to f=6103, every write equals the port
+     (f=6104: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=6104 (ghost ?): 34 frames to f=6137, every write equals the port
+  ok   ghost eaten at f=6970 (ghost 2): 34 frames to f=7003, every write equals the port
+     (f=7090: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=7090 (ghost ?): 34 frames to f=7123, every write equals the port
+  ok   ghost eaten at f=7870 (ghost 3): 34 frames to f=7903, every write equals the port
+     (f=7990: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=7990 (ghost ?): 34 frames to f=8023, every write equals the port
+  ok   ghost eaten at f=8770 (ghost 0): 34 frames to f=8803, every write equals the port
+     (f=8890: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=8890 (ghost ?): 34 frames to f=8923, every write equals the port
+  ok   ghost eaten at f=10421 (ghost 0): 34 frames to f=10454, every write equals the port
+     (f=10541: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=10541 (ghost ?): 34 frames to f=10574, every write equals the port
+     (f=10591: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=10591 (ghost ?): 34 frames to f=10624, every write equals the port
+  ok   ghost eaten at f=11321 (ghost 1): 34 frames to f=11354, every write equals the port
+     (f=11441: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=11441 (ghost ?): 34 frames to f=11474, every write equals the port
+  ok   ghost eaten at f=12221 (ghost 2): 34 frames to f=12254, every write equals the port
+  ok   ghost eaten at f=12341 (ghost ?): 34 frames to f=12374, every write equals the port
+  ok   ghost eaten at f=13121 (ghost 3): 34 frames to f=13154, every write equals the port
+     (f=13240: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=13240 (ghost ?): 34 frames to f=13273, every write equals the port
+  ok   ghost eaten at f=14021 (ghost 0): 34 frames to f=14054, every write equals the port
+     (f=14072: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=14072 (ghost ?): 34 frames to f=14105, every write equals the port
+     (f=14114: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=14114 (ghost ?): 34 frames to f=14147, every write equals the port
+     (f=14220: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=14220 (ghost ?): 34 frames to f=14253, every write equals the port
+  ok   ghost eaten at f=14921 (ghost 1): 34 frames to f=14954, every write equals the port
+  ok   ghost eaten at f=15041 (ghost ?): 34 frames to f=15074, every write equals the port
+  ok   ghost eaten at f=15291 (ghost 3): 34 frames to f=15324, every write equals the port
+  ok   ghost eaten at f=15821 (ghost 2): 34 frames to f=15854, every write equals the port
+     (f=15868: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=15868 (ghost ?): 34 frames to f=15901, every write equals the port
+  ok   ghost eaten at f=16721 (ghost 3): 34 frames to f=16754, every write equals the port
+  ok   ghost eaten at f=16841 (ghost ?): 34 frames to f=16874, every write equals the port
+  ok   ghost eaten at f=17621 (ghost 0): 34 frames to f=17654, every write equals the port
+     (f=17741: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=17741 (ghost ?): 34 frames to f=17774, every write equals the port
+  ok   ghost eaten at f=18521 (ghost 1): 34 frames to f=18554, every write equals the port
+     (f=18641: 2 write(s) before the collision in the same routine, from PCs ['B028', 'B042'], are the normal routines')
+  ok   ghost eaten at f=18641 (ghost ?): 34 frames to f=18674, every write equals the port
+  ok   ghost eaten at f=19421 (ghost 2): 34 frames to f=19454, every write equals the port
+  ok   ghost eaten at f=19541 (ghost ?): 34 frames to f=19574, every write equals the port
+  ok   ghost eaten at f=20656 (ghost 0): 34 frames to f=20689, every write equals the port
+  ok   ghost eaten at f=21556 (ghost 1): 34 frames to f=21589, every write equals the port
+   the ghost-eaten sound is a sweep from 248 Hz up to 1522 Hz over 34 frames (0.57 s); the rest of the game does not run meanwhile (the main loop jumps to $B049 at $A840)
+
+3. Frightened phase (Sub_AFD7, PCs $B021/$B028) and eyes returning (Sub_B02C, PCs $B042/$B028)
+  ok   frightened: 2260 calls in 28 episodes, every (AUDF2, AUDC2) equals the port (0 mismatches)
+  ok   the frightened routine is called only while FrightenPhase <> 0 (at the start of the routine, or a pellet is eaten in it), no eaten ghost is returning (zp_F2 = 0 as recomputed in it) and no ghost-eaten sound runs (zp_E5 = 0): 0 exceptions []
+  ok   eyes: 4709 calls, every (AUDF2, AUDC2) equals the port (0 mismatches); values 13..23
+  ok   the eyes routine is called only while an eaten ghost is returning (zp_F2 <> 0 as recomputed in the routine) and no ghost-eaten sound runs (zp_E5 = 0 at its start): 0 exceptions []
+
+4. Who writes channel 2 (AUDC2) in each situation (frames, PCs)
+   frightened (FrightenPhase)       {('B028',): 2230, (): 370, ('A8EE',): 27, ('A8EE', 'B028'): 2}
+   ghost-eaten sound (zp_E5)        {(): 1568, ('B0EA',): 49}
+   eaten ghost returning (zp_F2)    {('B028',): 4671, ('A8EE', 'B028'): 20, ('B54B',): 18}
+   normal                           {('B54B',): 11126, (): 130, ('B028',): 25}
+
+5. Extra life and board change: no sound routine exists (census of all POKEY write sites: 31, none for these)
+   EXTRA_LIFE f=2005: lives [2, 3] -> [3, 3]; sound writers in the next 90 frames: {'B546': 91, 'B54B': 91, 'ABFE': 31, 'AC01': 31}
+  ok   the extra life adds one life (player 1: 2 -> 3)
+  ok   no PC outside the known sound routines writes a sound register around the extra life
+   LEVEL_ADV f=9835: level counter 13 -> 14; sound writers f-200..f+120: {'B021': 14, 'B028': 14, 'B0EA': 8, 'B546': 55, 'B54B': 55, 'B0DD': 40, 'B0E2': 46}; start tune steps in f-200..f+300: 0
+  ok   the start tune does not play at a board change
+   LEVEL_ADV f=20070: level counter 14 -> 15; sound writers f-200..f+120: {'B546': 68, 'B54B': 68, 'B021': 1, 'B028': 1, 'B0EA': 8, 'B0DD': 40, 'B0E2': 46}; start tune steps in f-200..f+300: 0
+  ok   the start tune does not play at a board change
+
+PROBLEMS: none

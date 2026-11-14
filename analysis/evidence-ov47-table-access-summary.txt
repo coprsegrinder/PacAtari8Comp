@@ -1,0 +1,2 @@
+Accesses to $5000-$76FF: boot (frames < 100) reads 10012 writes 10006; harness loads 110000 writes (11 games x 10,000 bytes = 110000); every other access: 0
+RESULT: the game and the OS never read or wrote the table after the boot
