@@ -1,0 +1,30 @@
+Title_1P: 34560 pixels rendered, 33733 exactly the colour of their register value, 0 the clean colour of a value expected nowhere nearby
+   screen RAM text: $1C54 '1'  $1C56 'PLAYER GAME' | $1C90 '2'  $1C92 'PLAYER GAME' | 'PRESS SELECT FOR' | 'PRESS OPTION TO ' | 'PRESS START TO  ' | 'CHANGE DIFFICULTY'
+   status line: '    1UP        HIGH SCORE               ' / '      00                                '  (labels: $2004 113530, $2021 000000)
+   label 1UP cells 113530 (shown): 65 ink pixels expected, 43 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+   label 2UP cells 000000 (blank): 0 ink pixels expected, 0 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+Title_2P: 34560 pixels rendered, 33635 exactly the colour of their register value, 0 the clean colour of a value expected nowhere nearby
+   screen RAM text: $1C54 '2'  $1C56 'PLAYER GAME' | $1C90 '1'  $1C92 'PLAYER GAME' | 'PRESS SELECT FOR' | 'PRESS OPTION TO ' | 'PRESS START TO  ' | 'CHANGE DIFFICULTY'
+   status line: '    1UP        HIGH SCORE        2UP    ' / '      00                           00   '  (labels: $2004 113530, $2021 123530)
+   label 1UP cells 113530 (shown): 65 ink pixels expected, 43 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+   label 2UP cells 123530 (shown): 68 ink pixels expected, 64 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+Game2P_cp0_shown: 5120 pixels rendered, 4730 exactly the colour of their register value, 0 the clean colour of a value expected nowhere nearby
+   status line: '    1UP        HIGH SCORE        2UP    ' / '      00                           00   '  (labels: $2004 113530, $2021 123530)
+   label 1UP cells 113530 (shown): 65 ink pixels expected, 43 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+   label 2UP cells 123530 (shown): 68 ink pixels expected, 64 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+Game2P_cp0_blank: 5120 pixels rendered, 4801 exactly the colour of their register value, 0 the clean colour of a value expected nowhere nearby
+   status line: '               HIGH SCORE        2UP    ' / '      10                           00   '  (labels: $2004 000000, $2021 123530)
+   label 1UP cells 000000 (blank): 0 ink pixels expected, 0 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+   label 2UP cells 123530 (shown): 68 ink pixels expected, 64 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+Game2P_cp1_shown: 5120 pixels rendered, 4703 exactly the colour of their register value, 0 the clean colour of a value expected nowhere nearby
+   status line: '    1UP        HIGH SCORE        2UP    ' / '     380                           10   '  (labels: $2004 113530, $2021 123530)
+   label 1UP cells 113530 (shown): 65 ink pixels expected, 43 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+   label 2UP cells 123530 (shown): 68 ink pixels expected, 64 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+Game2P_cp1_blank: 5120 pixels rendered, 4752 exactly the colour of their register value, 0 the clean colour of a value expected nowhere nearby
+   status line: '    1UP        HIGH SCORE               ' / '     380                           00   '  (labels: $2004 113530, $2021 000000)
+   label 1UP cells 113530 (shown): 65 ink pixels expected, 43 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+   label 2UP cells 000000 (blank): 0 ink pixels expected, 0 pixels with the ink colour ((205, 198, 210)) on the screen in the three cells
+
+Register value -> clean RGB over all captures: $00 (0, 0, 0), $0C (205, 198, 210), $2A (210, 163, 58), $3A (240, 147, 101), $44 (144, 24, 41), $DA (101, 193, 70)
+
+PROBLEMS: none

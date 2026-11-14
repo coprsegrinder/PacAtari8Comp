@@ -1,0 +1,10 @@
+Overlap_A: ghosts at x [112, 116, 120, 124], y [118, 118, 118, 118]; PCOLR ['$44', '$4A', '$D8', '$28']; GPRIOR bit 5 clear = lowest player wins
+  clean colours on the screen (from the pixels that only one ghost covers): ghost 0 (144, 24, 41), ghost 1 (254, 135, 155), ghost 2 (49, 156, 13), ghost 3 (170, 126, 0); registration offset 0 scanline
+  overlap pixels (two or more ghosts cover them): 56; shows the winner's colour: 56
+  by the set of ghosts: ghosts [0, 1]: 14, ghosts [1, 2]: 21, ghosts [2, 3]: 21
+Overlap_B: ghosts at x [124, 120, 116, 112], y [118, 118, 118, 118]; PCOLR ['$44', '$4A', '$D8', '$28']; GPRIOR bit 5 clear = lowest player wins
+  clean colours on the screen (from the pixels that only one ghost covers): ghost 0 (144, 24, 41), ghost 1 (254, 135, 155), ghost 2 (49, 156, 13), ghost 3 (170, 126, 0); registration offset 0 scanline
+  overlap pixels (two or more ghosts cover them): 65; shows the winner's colour: 65
+  by the set of ghosts: ghosts [0, 1]: 23, ghosts [1, 2]: 21, ghosts [2, 3]: 21
+
+PROBLEMS: none
