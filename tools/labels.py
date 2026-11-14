@@ -73,7 +73,12 @@ GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 
            0x85: "EntityY", 0x8A: "EntityX", 0x8F: "EntityDir", 0xB0: "MoveDelayCycle", 0xB5: "MoveDelayCount",
            0xBA: "PatrolRoute", 0xBE: "PatrolStep", 0xD2: "StartRouteStep", 0xCE: "GhostState",
            0xFB: "FrightenFlashTimer", 0xFC: "FrightenPhase", 0xFD: "FrightenCountdown",
-           0xAD: "ChaseTimer", 0xC2: "TargetX", 0xC6: "TargetY", 0xCA: "GhostTimer", 0xD6: "WantVert", 0xDA: "WantHoriz",
+           0xAD: "ChaseTimer",   # ONE byte for all four ghosts: $50 (ghost 0 ends its start route), $A0 (a sighting, or the end of the frightened time), $82 (a frightened ghost leaves the house), $FF (late board); falls one step per 8 frames (docs/17, OV-30)
+           0xC2: "TargetX", 0xC6: "TargetY", 0xCA: "GhostTimer", 0xD6: "WantVert", 0xDA: "WantHoriz",
+           # per-player dot counter (index = CurrentPlayer): 16 bits, DotsEatenLo $34/$35 and DotsEatenHi $36/$37, incremented at $B388 for every dot and power pellet, cleared at $AE26; the bonus items appear at 80 and 160 (docs/17, docs/14)
+           0x34: "DotsEatenLo", 0x36: "DotsEatenHi",
+           # siren pitch step 2..5 chosen at $B5FF from the dots eaten (>= $B0: 3, >= $E0: 4, >= $F0 or high byte non-zero: 5) and added to / subtracted from the siren tone zp_DE (docs/22-sound.md)
+           0x9C: "SirenStep",
            0xED: "DeathState", 0xAF: "LegPhase", 0x5E: "DliColors", 0xA0: "ItemColor", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
 
 
