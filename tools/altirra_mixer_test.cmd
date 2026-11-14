@@ -1,0 +1,21 @@
+# Altirra debugger commands for the mixer test (tools/mixer_test.py, OPEN-VERIFICATION.md OV-13b): injects a 6502 program that holds 18 tone configurations on POKEY channels 1, 3, 4.
+# Use with tools/record_tune.ps1 -Cmd altirra_mixer_test.cmd -Out analysis/mixer-test-recorded.wav -Trace analysis/raw-logs/mixer-test.txt -Seconds 45, then  python -I tools/mixer_test.py --analyze analysis/mixer-test-recorded.wav
+# The ROM is never changed; the program is written into emulated RAM and run from emulation frame 900 on. No game code runs afterwards.
+bp -n a5fd "eb $0600 $78 $A9 $00 $8D $0E $D4 $8D $0E $D2 $A2 $00 $BD $00 $07 $F0 $26"
+bp -n a5fd "eb $0610 $85 $FE $E8 $A0 $00 $BD $00 $07 $99 $00 $D2 $E8 $C8 $C0 $09 $D0"
+bp -n a5fd "eb $0620 $F4 $AD $0B $D4 $C9 $40 $D0 $F9 $AD $0B $D4 $C9 $40 $F0 $F9 $C6"
+bp -n a5fd "eb $0630 $FE $D0 $EE $4C $0B $06 $A9 $00 $A2 $08 $9D $00 $D2 $CA $10 $FA"
+bp -n a5fd "eb $0640 $4C $40 $06"
+bp -n a5fd "eb $0700 $48 $78 $A0 $00 $00 $60 $A0 $50 $A0 $00 $48 $78 $A8 $00 $00 $60"
+bp -n a5fd "eb $0710 $A0 $50 $A0 $00 $48 $78 $A0 $00 $00 $60 $A8 $50 $A0 $00 $48 $78"
+bp -n a5fd "eb $0720 $A0 $00 $00 $60 $A0 $50 $A8 $00 $48 $78 $A8 $00 $00 $60 $A8 $50"
+bp -n a5fd "eb $0730 $A0 $00 $48 $78 $A8 $00 $00 $60 $A0 $50 $A8 $00 $48 $78 $A0 $00"
+bp -n a5fd "eb $0740 $00 $60 $A8 $50 $A8 $00 $48 $78 $A8 $00 $00 $60 $A8 $50 $A8 $00"
+bp -n a5fd "eb $0750 $48 $78 $AF $00 $00 $60 $A0 $50 $A0 $00 $48 $78 $AF $00 $00 $60"
+bp -n a5fd "eb $0760 $AF $50 $A0 $00 $48 $78 $AF $00 $00 $60 $AF $50 $AF $00 $48 $78"
+bp -n a5fd "eb $0770 $A4 $00 $00 $60 $A0 $50 $A0 $00 $48 $78 $A4 $00 $00 $60 $A4 $50"
+bp -n a5fd "eb $0780 $A4 $00 $48 $78 $A1 $00 $00 $60 $A0 $50 $A0 $00 $48 $78 $AF $00"
+bp -n a5fd "eb $0790 $00 $60 $A1 $50 $A0 $00 $48 $78 $AF $00 $00 $60 $A0 $50 $A1 $00"
+bp -n a5fd "eb $07A0 $48 $78 $A7 $00 $00 $60 $A0 $50 $A0 $00 $48 $78 $A0 $00 $00 $60"
+bp -n a5fd "eb $07B0 $A0 $50 $AF $00 $00"
+bp -n a5fd "r pc $a5fd+($0600-$a5fd)*(@frame>=900)"
