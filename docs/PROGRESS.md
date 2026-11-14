@@ -5,6 +5,8 @@ approval units; each maps to one or more checklist stages.
 
 Legend: DONE, NEXT, TODO, N/A (not applicable, with reason).
 
+Everything that still needs verification (partial checks, aids, unexplained results, unreached cases) is kept in one place: [OPEN-VERIFICATION.md](OPEN-VERIFICATION.md). Update it whenever a check is skipped, partial or closed.
+
 ## Project steps
 
 | Step | Description | Checklist stages | Status |

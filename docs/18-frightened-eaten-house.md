@@ -37,9 +37,9 @@ From then on a ghost moving up or down when a pellet was eaten got direction 0, 
 
 ## Not covered
 - A frightened ghost still **inside the house** (`$80`): verified live, see "Frightened ghosts inside the house" below.
-- Frightened ghosts in the start route (`$81`): one case seen, behaving like the others.
-- The frightened time and the flashing are in `14-levels.md`; the siren and sound are not covered.
-- The eaten ghost when Pac-Man moves onto the door square, and two ghosts eaten in one frame, were not provoked separately.
+- ~~Frightened ghosts in the start route (`$81`)~~ verified live (OV-35): see `17-ghost-transitions.md` (43 pellets on a start-route ghost; the ghost flees by the chase handler, `StartRouteStep` frozen, `$81 → $20` in 41 of 41 time ends, `$81 → $42` in 2 of 2 eatings).
+- The frightened time and the flashing are in `14-levels.md`; the sounds of the frightened phase, of an eaten ghost returning and of a ghost being eaten are in `22-sound.md` (code ports equal to the live registers, audio measured).
+- ~~The eaten ghost when Pac-Man moves onto the door square, and two ghosts eaten in one frame~~ provoked (OV-35, `tools/altirra_frightened_cases.cmd`, `tools/analyze_frightened_cases.py`, `tests/test_frightened_cases.py`, `analysis/evidence-frightened-cases-summary.txt`; 87 boards, test aids: Pac-Man cannot die, positions written to `$85-$8E`): **two ghosts cannot be eaten in one frame** - the contact loop (`$A851-$A87A`) leaves through `jmp AddToScore` (`$A920`) after the first one and the pop-up freezes the game (`zp_E5`); on 29 boards where up to four frightened ghosts were put on Pac-Man's square (at least two within 4 pixels of him in the first eating frame on 19 of them) the ghosts were eaten one after the other, never two in a frame, 34-38 frames apart, with `GhostsEaten` 0, 1, 2 (200, 400, 800 points). **The eyes ignore Pac-Man on the door square:** eaten ghosts are skipped by the contact test (bit 6); on 29 boards Pac-Man stood on the door square (124,100) while ghost 0 came back: `$42 → $44` at (124,100) with Pac-Man there in 29 of 29, then `$44 → $04` inside in 29 of 29, no ghost eaten twice.
 
 ## Catches while the frightened phase runs (verified 2026-11-11)
 Question from the board-71 human session: Pac-Man was caught while the (endless) frightened phase was running. **Cause: a ghost that was eaten earlier in the same frightened episode and has come home is an ordinary, non-frightened ghost until the next power pellet.**

@@ -85,7 +85,7 @@ On the title screen `DliHandler2` writes `COLPF1` = `$44` (the red "1 PLAYER GAM
 
 ## Not covered
 - The colours of the frightened and eaten ghosts are written by code, not from these tables; they are **verified live and explained** in `16-ghost-frames.md` ("Colours of frightened and eaten ghosts").
-- Colour of the bottom-row items other than by the rule above (identified from the code and the scanline log; no pixel-by-pixel check of every item).
+- ~~Colour of the bottom-row items~~ checked on the screen (OV-32, 2026-11-14): see "Colours on the screen: every item" below.
 - The sight test while a ghost is frightened or eaten (it is only called from the patrol states).
 
 ## The sight test while a ghost is frightened or eaten (verified 2026-11-11)
@@ -108,3 +108,9 @@ Why `$90` was rare: a ghost is in patrol `$10` only for a short stretch, and any
 - Control in the same log: patrol `$08` ghosts: 65,916 ghost-frames, 65,916 calls, 33 sightings, equal to the model in every frame (0 violations).
 - Because the aid eats the pellet in the first frame a ghost is in `$10`, this run has no unfrightened `$10` frames; the positive control for `$10` itself (178 ghost-frames, all called) is in the first run above.
 
+## Colours on the screen: every item (OV-32, 2026-11-14)
+`tools/run_item_shots.ps1` + `tools/altirra_itemshots.cmd` freeze the game at 30 states and capture Altirra's own window (`analysis/shots/item-shots`, local evidence only); `tools/check_item_shots.py` (`tests/test_item_shots.py`, 5 tests; `analysis/evidence-item-shots-summary.txt`) renders the whole maze area (screen RAM `$0C00-$0F97`, 23 rows x 40, charset `$3000`) pixel by pixel from the dumped RAM and the colour-register writes that the DLIs made with their scanline, and compares it with the capture. The first mode-4 row starts at scanline 40; sprites are left out; the four power-pellet cells blink and are left out.
+- **Result, 26 playfield captures** (the level's bonus item and indicator for levels 0-20, 25 and 30; lives after 0, 1 and 2 deaths): 482,764 pixels compared, 423,111 (87.6 %) show exactly the colour of their register value (the picture is scaled and the scanlines are dimmed, so the rest are blends), **0 show the clean colour of a register value that is not expected anywhere in their 3x3 neighbourhood**; the register values map to six clean colours, all different: `$00` black, `$86` (76,98,218) blue, `$3A` (240,147,101) peach, `$44` (144,24,41) red, `$2A` (210,163,58) gold, `$DA` (101,193,70) green.
+- **The bonus item in the maze** (`$0DF3/$0DF4`, row 12, band 1): its `COLPF1` pixels are `ItemColor` - red `$44` on levels 0-5 and 10-30, green `$DA` on levels 6-9 - and its `COLPF2` pixels peach `$3A`, in every capture.
+- **The bottom row** (screen RAM row 22, scanlines 216-223, band 3: `COLPF0` = `$DA` green, `COLPF3` = `$2A` gold, `COLPF1` = `$44` red from scanline 208, `COLPF2` = `$3A`): the **lives icons** (code `$9B`, bit 7 set, pixel value 3 = `COLPF3`) are gold `$2A`, 2, 1 and 0 icons after 0, 1 and 2 deaths; the **level-indicator items** use `COLPF1` red `$44` (not `ItemColor`: the indicator is red on levels 6-9 too), `COLPF2` peach `$3A` and, for the glyphs that have pixel value 1, `COLPF0` green `$DA`. So on levels 6-9 the item in the maze is green and the same item in the indicator is red; the stated rule (ItemColor in band 1 only) holds.
+- Not covered: the status line (mode 2 text), the title screen colours (`16`, `21`) and pixel-exact black in empty cells beyond the check that no wrong clean colour appears.

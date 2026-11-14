@@ -29,7 +29,7 @@ junction where it starts and ends.
 entry for the chosen route and `GhostTimer` was `$96` every time.
 
 `GhostTimer` and `ChaseTimer` are decremented every 8th jiffy (code at `$A9DD` and `$B5C7`), so `$96` = 150 × 8 = 1,200 frames =
-**20 seconds at 60 Hz, including the walk to the start junction** (computed from the code, not measured against a wall clock).
+**20 seconds at 60 Hz, including the walk to the start junction**: measured on the transitions log, 7 patrol and 5 patrol-travel time-ups came 1,194-1201 frames after the selection (1,200 = 20.03 s at the NTSC frame rate of 59.92 Hz; **24.07 s on PAL**, 49.86 Hz, computed) (`tools/analyze_timer_budgets.py`, `analysis/evidence-timer-budgets-summary.txt`, OV-30).
 
 **Sight (`GhostSeesPacMan`, `$BA19`):** a ghost on the same row or column as Pac-Man, facing him, with no blocking entry in the
 `$FF`-terminated lists between them (`SightListsX` for rows, `SightListsY` for columns, see `15-small-tables.md`) switches to `$02` and sets
@@ -81,4 +81,3 @@ be forced. Run 1 covered about 30 minutes of game time (200 selections), run 2 a
 - Levels above 1: **covered in `14-levels.md`**: the ghost state machine, routes and timers contain no read of the level counter, so they are identical on every board (verified over levels 0–50 and beyond); only speed, frightened time, bonus items and the house release timers change.
 - Every write to the state, including frightened and eaten ghosts and the house release, is now logged and checked: **`17-ghost-transitions.md`**. The frightened-mode steering, the eaten-ghost return and the house release are traced in **`18-frightened-eaten-house.md`**.
 - (The sight lists are now decoded: `15-small-tables.md`.)
-- The wall-clock length of the 20-second patrol budget.
