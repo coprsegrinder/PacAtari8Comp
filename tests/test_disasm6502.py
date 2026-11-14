@@ -13,7 +13,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "tools"))
 import disasm6502 as D  # noqa: E402
 
-BIN = os.environ.get("CC65_BIN", r"F:\Ports\Pac-Man-tools\cc65\bin")
+BIN = os.environ.get("CC65_BIN", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "external-tools", "cc65", "bin"))
 
 
 class Basics(unittest.TestCase):

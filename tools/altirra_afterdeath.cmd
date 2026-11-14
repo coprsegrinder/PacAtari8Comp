@@ -1,7 +1,7 @@
 # Altirra debugger commands: what happens AFTER the death - the turn/board restart and the 'get ready' display, frame by frame (docs/20, 'After the death').
 # TEST AIDS (emulated machine only): as altirra_death.cmd - the game really kills Pac-Man; a joystick bot pokes STICK0; at every death start both life counters are refilled to 3 so that the game goes on.
 # One line per frame of the per-frame routine ($A78C): all main-loop state variables, ghost/Pac-Man state and positions, the 14 screen bytes of the READY text row ($0DED), the colour registers.
-# Run: powershell -File tools\run_patrol_trace.ps1 -Log F:\Ports\afterdeath.txt -Seconds 120 -Cmd altirra_afterdeath.cmd   then   python -I tools/analyze_afterdeath_log.py F:/Ports/afterdeath.txt
+# Run: powershell -File tools\run_patrol_trace.ps1 -Log analysis\raw-logs\afterdeath.txt -Seconds 120 -Cmd altirra_afterdeath.cmd   then   python -I tools/analyze_afterdeath_log.py analysis/raw-logs/afterdeath.txt
 bp -n a504 "r pc $a537; bc 0"
 bp -n a923 "eb $2c 3; eb $2d 3"
 bp -n a82f "r @t5 ((@frame/$30)%4); eb $278 ($0E*(@t5=0))+($07*(@t5=1))+($0D*(@t5=2))+($0B*(@t5=3))"

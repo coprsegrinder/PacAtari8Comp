@@ -2,8 +2,8 @@
 # Code facts: the only caller is the loop at $B603 (in Sub_B5C7, once per frame); it calls GhostSeesPacMan only for a ghost whose state is EXACTLY $08 or $10 (patrol travel / patrol).
 # TEST AIDS (emulated RAM/PC only): Pac-Man cannot die ($A923 skipped); from 32 frames after each board set-up Pac-Man is kept on the line of sight of one ghost at a time (target changes every 16 frames):
 # same row 24 px in front of a horizontally moving ghost standing on a junction row, or same column 24 px in front of a vertically moving ghost on a junction column; power pellets are eaten 160, 528, 768, 960, 1152, 560, 1088 and 1312 frames after the set-up, and also whenever a ghost is in patrol state $10 and no frightened period is running (so that frightened patrol ghosts $90 occur) (the patrol states $08/$10 only occur from about frame 500 on);
-# the level-complete flag is set 1520 frames after the set-up (the game advances the level itself). Run:  powershell -File tools\run_patrol_trace.ps1 -Log F:\Ports\sightstates.txt -Seconds 110 -Cmd altirra_sight_states.cmd
-#   then  python -I tools/analyze_sight_states_log.py F:/Ports/sightstates.txt
+# the level-complete flag is set 1520 frames after the set-up (the game advances the level itself). Run:  powershell -File tools\run_patrol_trace.ps1 -Log analysis\raw-logs\sightstates.txt -Seconds 110 -Cmd altirra_sight_states.cmd
+#   then  python -I tools/analyze_sight_states_log.py analysis/raw-logs/sightstates.txt
 bp -n a504 "r pc $a537; bc 0"
 bp -n a923 "r pc $a936"
 bp -n adaf "r @t1 @frame"

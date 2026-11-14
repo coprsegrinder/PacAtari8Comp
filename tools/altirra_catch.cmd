@@ -2,7 +2,7 @@
 # Level counter 70 (the first endless-frightened level) is poked right after the start levels ($ADFD). Aids as in altirra_transitions.cmd (emulated RAM/PC only): Pac-Man cannot die ($A923 skipped),
 # every 2048 frames the power-pellet flags are refilled and Pac-Man is moved onto a power pellet (frightened) and later onto ghost (cycle mod 4), which eats it. No dot-count pokes.
 # Extra evidence line CAUGHT at $A923 (reached only for a ghost that is not eaten and has bit 7 clear): the four ghost states, the phase FC, FD, frame. Run:
-#   powershell -File tools\run_patrol_trace.ps1 -Log F:\Ports\catch.txt -Seconds 150 -Cmd altirra_catch.cmd   then  python -I tools/analyze_catch_log.py F:/Ports/catch.txt
+#   powershell -File tools\run_patrol_trace.ps1 -Log analysis\raw-logs\catch.txt -Seconds 150 -Cmd altirra_catch.cmd   then  python -I tools/analyze_catch_log.py analysis/raw-logs/catch.txt
 bp -n a504 "r pc $a537; bc 0"
 bp -n adfd "eb $30 $46; eb $31 $46"
 bp -n a923 "r pc $a936"

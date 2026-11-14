@@ -9,7 +9,7 @@ For every capture:
   3. once the ghosts are hidden (death animation, end) no ghost-coloured pixel is on the playfield; in the freeze the four frozen ghosts are on the screen as the pictures in their player memory;
   4. the colours seen are listed (colour register $02C7 = Pac-Man).
 The pixel scale (colour clock -> window pixel, scanline -> window pixel) is the one fitted from the ghost screenshots (analysis/evidence-ghost-screenshots-summary.txt); its residual is printed.
-Usage: python -I tools\\check_pacman_screenshots.py F:\\Ports\\pac-shots [--summary-file analysis\\evidence-pacman-screenshots-summary.txt]
+Usage: python -I tools\\check_pacman_screenshots.py analysis\\shots\\pac-shots [--summary-file analysis\\evidence-pacman-screenshots-summary.txt]
 """
 import collections
 import os

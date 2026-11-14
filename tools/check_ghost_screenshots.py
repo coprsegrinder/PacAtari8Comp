@@ -8,7 +8,7 @@ For every ghost on every screenshot:
      The row is the player-memory row where the picture was found; the column is found by trying HPOSP = EntityX +-8 (the game moves the ghost-house ghosts after drawing them).
   3. the colours seen on the screen are listed per picture kind (and compared with the status-text colour, colour register $0C).
 Pixel scale (colour clock -> window pixel, scanline -> window pixel) is fitted from the normal ghosts' exact-colour bounding boxes; its residual is printed.
-Usage: python -I tools\\check_ghost_screenshots.py F:\\Ports\\ghost-shots [--summary-file analysis\\evidence-ghost-screenshots-summary.txt]
+Usage: python -I tools\\check_ghost_screenshots.py analysis\\shots\\ghost-shots [--summary-file analysis\\evidence-ghost-screenshots-summary.txt]
 """
 import collections
 import os

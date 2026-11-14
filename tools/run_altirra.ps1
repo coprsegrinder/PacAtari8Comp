@@ -3,7 +3,7 @@
 param([string]$Cart = '', [Parameter(ValueFromRemainingArguments)]$Extra)
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $Cart) { $Cart = Join-Path $root '..\original\Pac-Man.rom' }
-$alt = 'F:\Ports\Pac-Man-tools\Altirra\Altirra64.exe'
+$alt = (Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra64.exe')
 $cart = (Resolve-Path $Cart).Path
 # The Rev B OS ROM and 48K memory are set in Altirra's own configuration (Altirra.ini, portable mode).
 & $alt /portable /hardware:800 /ntsc $cart @Extra

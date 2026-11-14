@@ -1,6 +1,6 @@
 Patrol-route live evidence, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K, game speed 800% via a private settings copy (tools/run_patrol_trace.ps1).
 Test aids (emulated PC only): a ghost touching Pac-Man does not kill him; in run 2 (-Complete) a ghost that sees Pac-Man does not switch to chase and the patrol timer of routes 3, 12, 15 is refilled once when their patrol starts.
-Route choice is always the game's own (RANDOM AND $0F). Full logs (12.8 MB and 16.8 MB) stay in F:\Ports.
+Route choice is always the game's own (RANDOM AND $0F). Full logs (12.8 MB and 16.8 MB) stay in analysis\raw-logs.
 
 === RUN 1 (about 30 min of game time, no extra aids besides the no-kill aid) ===
 244846 lines, 200 route selections

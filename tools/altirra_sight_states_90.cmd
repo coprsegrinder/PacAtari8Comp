@@ -3,8 +3,8 @@
 # TEST AIDS (emulated RAM/PC only): Pac-Man cannot die ($A923 skipped). ONE LONG BOARD at level 0 (no level-complete flag, no level poke) so that the ghosts go through chase, corner and patrol many times.
 # Pac-Man is placed in line of sight (24 px in front, on a junction row/column) ONLY of a ghost that is frightened patrol ($88/$90, $90 first); a ghost in $08/$10 is left alone (otherwise it would sight Pac-Man and turn to chase).
 # A power pellet is eaten whenever a ghost is in $10 and no frightened period runs (so that $90 occurs). The dot counter is reset when it passes $60 (keeps the late-board permanent chase away).
-# Run: powershell -File tools\run_patrol_trace.ps1 -Log F:\Ports\sightstates90.txt -Seconds 300 -Cmd altirra_sight_states_90.cmd   then   python -I tools/analyze_sight_states_log.py F:/Ports/sightstates90.txt
-un_patrol_trace.ps1 -Log F:\Ports\sightstates90.txt -Seconds 300 -Cmd altirra_sight_states_90.cmd   then  python -I tools/analyze_sight_states_log.py F:/Ports/sightstates90.txt
+# Run: powershell -File tools\run_patrol_trace.ps1 -Log analysis\raw-logs\sightstates90.txt -Seconds 300 -Cmd altirra_sight_states_90.cmd   then   python -I tools/analyze_sight_states_log.py analysis/raw-logs/sightstates90.txt
+un_patrol_trace.ps1 -Log analysis\raw-logs\sightstates90.txt -Seconds 300 -Cmd altirra_sight_states_90.cmd   then  python -I tools/analyze_sight_states_log.py analysis/raw-logs/sightstates90.txt
 bp -n a504 "r pc $a537; bc 0"
 bp -n a923 "r pc $a936"
 bp -n adaf "r @t1 @frame"

@@ -2,7 +2,7 @@
 # TEST AIDS (emulated machine only, ROM untouched): start level poked right after the start levels ($ADFD); the death routine is skipped ($A923 -> $A936, same invulnerability as the sweeps).
 # Extra evidence for the catch question (docs/18, 'Catches while the frightened phase runs'): CAUGHT (all four ghost states, phase), GHOST_EATEN, PELLET and every GhostState write (ST), so  python -I tools/analyze_catch_log.py <log>  works on a human game.
 # NOTHING else is changed: no level-complete flag, no teleports, no dot or pellet pokes - you eat all dots yourself, the game advances levels by its own code.
-# Run:  powershell -ExecutionPolicy Bypass -File tools\play_level_test.ps1 -StartLevel 15     then  python -I tools/analyze_levels_log.py F:\Ports\play-level.txt
+# Run:  powershell -ExecutionPolicy Bypass -File tools\play_level_test.ps1 -StartLevel 15     then  python -I tools/analyze_levels_log.py analysis\raw-logs\play-level.txt
 bp -n a504 "r pc $a537; bc 0"
 bp -n adfd "eb $30 @@HEX@@; eb $31 @@HEX@@"
 bp -n a923 "r pc $a936"

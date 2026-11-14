@@ -1,7 +1,7 @@
 # Altirra debugger commands: Pac-Man's own pictures and the death sequence (Pac-Man frames, the ghosts during the death) - docs/12 'DeathPlotBytes', docs/20.
 # TEST AIDS (emulated machine only; the death routine is NOT skipped here - the game really kills Pac-Man): a joystick 'bot' pokes STICK0 ($0278) every frame, changing direction every 48 frames (up, right, down, left, ...),
 # so that Pac-Man moves, stops at walls and eats dots by himself and is caught by the ghosts; at every death start both life counters are refilled to 3 so that the game never ends.
-# Run: powershell -File tools\run_patrol_trace.ps1 -Log F:\Ports\death.txt -Seconds 150 -Cmd altirra_death.cmd   then   python -I tools/analyze_death_log.py F:/Ports/death.txt
+# Run: powershell -File tools\run_patrol_trace.ps1 -Log analysis\raw-logs\death.txt -Seconds 150 -Cmd altirra_death.cmd   then   python -I tools/analyze_death_log.py analysis/raw-logs/death.txt
 bp -n a504 "r pc $a537; bc 0"
 bp -n a923 "eb $2c 3; eb $2d 3"
 bp -n a82f "r @t5 ((@frame/$30)%4); eb $278 ($0E*(@t5=0))+($07*(@t5=1))+($0D*(@t5=2))+($0B*(@t5=3))"

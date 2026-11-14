@@ -1,13 +1,19 @@
 # Unattended test harness (patrol routes by default; -Cmd altirra_levels.cmd for the level sweep): starts Altirra with tools\altirra_patrol.cmd, presses Start (F2) by itself, runs for -Seconds, then stops it.
+# -Video ntsc|pal and -Kernel hle select the video standard and Altirra's built-in OS (OV-42).
 # Usage: powershell -ExecutionPolicy Bypass -File tools\run_patrol_trace.ps1 -Log <logfile> [-Seconds 300]
+# -Drop <regex>: command lines matching it are left out (used to drop an injected input and press the key for real with -PressStart $true).
 # -Ini: a private settings copy (same folder as Altirra.ini) whose 'Speed: Frame rate modifier' is 800 (about 7.5x real time), so the user's own settings stay untouched.
 # The log flushes in 4 KB chunks, so the last few lines may be missing after the process is stopped.
-param([Parameter(Mandatory)][string]$Log, [int]$Seconds = 300, [string]$Ini = 'F:\Ports\Pac-Man-tools\Altirra\Altirra_fast.ini', [switch]$Complete, [string]$Cmd = 'altirra_patrol.cmd', [bool]$PressStart = $false)
+param([Parameter(Mandatory)][string]$Log, [int]$Seconds = 300, [string]$Ini = '', [switch]$Complete, [string]$Cmd = 'altirra_patrol.cmd', [bool]$PressStart = $false, [string]$Drop = '', [string]$Video = 'ntsc', [string]$Kernel = '')
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$alt  = 'F:\Ports\Pac-Man-tools\Altirra\Altirra64.exe'
+# Logs live in analysis\raw-logs (gitignored); relative paths resolve against the project root, and the folder is created if missing.
+$Log = if ([IO.Path]::IsPathRooted($Log)) { $Log } else { Join-Path (Split-Path -Parent $root) $Log }
+[void](New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Log))
+if (-not $Ini) { $Ini = Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra_fast.ini' }
+$alt  = (Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra64.exe')
 $cart = (Resolve-Path (Join-Path $root '..\original\Pac-Man.rom')).Path
 $batch = Join-Path ([IO.Path]::GetTempPath()) 'pacman_patrol.batch'
-$lines = @(".logopen $Log") + (Get-Content (Join-Path $root $Cmd) | ForEach-Object { if ($Complete -and $_ -match '^#COMPLETE (.*)$') { $Matches[1] } else { $_ } } | Where-Object { $_ -notmatch '^\s*(#|$)' }) + @('.restart', 'g')
+$lines = @(".logopen `"$Log`"") + (Get-Content (Join-Path $root $Cmd) | ForEach-Object { if ($Complete -and $_ -match '^#COMPLETE (.*)$') { $Matches[1] } else { $_ } } | Where-Object { $_ -notmatch '^\s*(#|$)' -and ($Drop -eq '' -or $_ -notmatch $Drop) }) + @('.restart', 'g')
 Set-Content -Path $batch -Value $lines -Encoding ascii
 Add-Type @"
 using System; using System.Runtime.InteropServices;
@@ -16,7 +22,7 @@ public class Kb { [DllImport("user32.dll")] public static extern void keybd_even
                   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
                   [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l); }
 "@
-$line = '/portablealt:' + $Ini + ' /hardware:800 /ntsc /nofastboot /cartmapper:1 /debug /debugcmd:".batch ' + $batch + '" "' + $cart + '"'
+$line = '/portablealt:"' + $Ini + '" /hardware:800 /' + $Video + ' ' + $(if ($Kernel) { '/kernel:' + $Kernel + ' ' } else { '' }) + '/nofastboot /cartmapper:1 /debug /debugcmd:".batch ' + $batch + '" "' + $cart + '"'
 $p = Start-Process -FilePath $alt -ArgumentList $line -PassThru
 Start-Sleep 10                                     # boot, copyright screen, menu
 # Start the game by posting F2 (Start) straight to Altirra's own window: no focus needed, and no other program can receive it.

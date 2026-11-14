@@ -1,11 +1,12 @@
 # Step C11 (ghost frames, screenshot check): for each ghost picture, run the game in Altirra (private 800 % settings copy) until that picture is on screen,
 # freeze the emulated machine there (tools\altirra_ghostshots.cmd), save screenshots of ALTIRRA'S OWN WINDOW ONLY (PrintWindow: never reads other windows)
 # and the debugger log (GTIA registers, the ghost's player memory), then stop Altirra.
-# Usage: powershell -ExecutionPolicy Bypass -File tools\run_ghost_shots.ps1 -OutDir F:\Ports\ghost-shots [-Only name1,name2] [-TimeoutSec 240]
+# Usage: powershell -ExecutionPolicy Bypass -File tools\run_ghost_shots.ps1 -OutDir analysis\shots\ghost-shots [-Only name1,name2] [-TimeoutSec 240]
 # Output per picture: <name>.log, <name>_0.png .. _2.png. The pictures are local evidence only (game images are not committed).
-param([Parameter(Mandatory)][string]$OutDir, [string[]]$Only, [int]$TimeoutSec = 240, [string]$CondOverride, [switch]$Diag, [string]$Ini = 'F:\Ports\Pac-Man-tools\Altirra\Altirra_fast.ini')
+param([Parameter(Mandatory)][string]$OutDir, [string[]]$Only, [int]$TimeoutSec = 240, [string]$CondOverride, [switch]$Diag, [string]$Ini = '')
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$alt  = 'F:\Ports\Pac-Man-tools\Altirra\Altirra64.exe'
+if (-not $Ini) { $Ini = Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra_fast.ini' }
+$alt  = (Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra64.exe')
 $cart = (Resolve-Path (Join-Path $root '..\original\Pac-Man.rom')).Path
 Add-Type -AssemblyName System.Drawing
 Add-Type @"
@@ -37,7 +38,7 @@ foreach ($t in @($targets)) {
   $lines = @(".logopen $log") + $base + ($tpl | ForEach-Object { $_.Replace('@COND@', $cond) }) + @('.restart', 'g')
   $batch = Join-Path ([IO.Path]::GetTempPath()) 'pacman_ghostshot.batch'
   Set-Content -Path $batch -Value $lines -Encoding ascii
-  $line = '/portablealt:' + $Ini + ' /hardware:800 /ntsc /nofastboot /cartmapper:1 /debug /debugcmd:".batch ' + $batch + '" "' + $cart + '"'
+  $line = '/portablealt:"' + $Ini + '" /hardware:800 /ntsc /nofastboot /cartmapper:1 /debug /debugcmd:".batch ' + $batch + '" "' + $cart + '"'
   $p = Start-Process -FilePath $alt -ArgumentList $line -PassThru
   $t0 = Get-Date; $done = $false
   while (((Get-Date) - $t0).TotalSeconds -lt $TimeoutSec) {

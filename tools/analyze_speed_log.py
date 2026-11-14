@@ -1,7 +1,7 @@
 """Step C11: how often a ghost acts (GhostBehaviour, $B7F5), by level and by kind (normal / frightened / tunnel). Log from tools\altirra_speed.cmd.
 From the code ($AA04-$AA26): a ghost acts when its move-delay counter runs out; a FRIGHTENED ghost, and any ghost in the tunnel row (y = $74, x < $52 or x >= $A7),
 acts only on every SECOND time the counter runs out, i.e. at half speed. Eaten ghosts are moved by Sub_B69E once per frame instead (docs/18).
-Usage: python -I tools\analyze_speed_log.py F:\Ports\speed.txt [--summary-file analysis\evidence-ghost-speed-summary.txt]
+Usage: python -I tools\analyze_speed_log.py analysis\raw-logs\speed.txt [--summary-file analysis\evidence-ghost-speed-summary.txt]
 """
 import collections
 import re

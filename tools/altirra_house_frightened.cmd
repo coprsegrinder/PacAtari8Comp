@@ -1,7 +1,7 @@
 # Altirra debugger commands: a frightened ghost that is still INSIDE the ghost house ($00 -> $80 at the power pellet, back to $00 when the time ends, $AF9A). Not seen before (docs/18, "Not covered").
 # TEST AIDS (emulated RAM/PC only): Pac-Man cannot die ($A923 skipped); on every board a power pellet is eaten at a different delay after the board set-up (28 + 20*(level mod 8) frames, so that the ghosts are in
 # different house states at that moment); the level-complete flag ($26) is set 1520 frames after the set-up. Level counter starts at 0 and the game advances it itself.
-# Run:  powershell -File tools\run_patrol_trace.ps1 -Log F:\Ports\house.txt -Seconds 130 -Cmd altirra_house_frightened.cmd   then  python -I tools/analyze_house_frightened_log.py F:/Ports/house.txt
+# Run:  powershell -File tools\run_patrol_trace.ps1 -Log analysis\raw-logs\house.txt -Seconds 130 -Cmd altirra_house_frightened.cmd   then  python -I tools/analyze_house_frightened_log.py analysis/raw-logs/house.txt
 bp -n a504 "r pc $a537; bc 0"
 bp -n a923 "r pc $a936"
 bp -n adaf "r @t1 @frame"

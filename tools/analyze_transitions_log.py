@@ -5,7 +5,7 @@ The log has one line per store with the old value, the new value, and the game's
   ST site=B853 ghost=1 old=$01 dots=12 chase=0 gtimer=0 x=124 y=100 fright=0 frame=1234
 Checks: (1) per site, the rule the code implies (old value and the condition that makes the store run; the new value is derived from the code); (2) continuity: for each ghost, the old value of
 each store equals the value the previous store wrote (derived per site), except after a board start, so nothing else changes the state (no hidden writer); (3) a table of (old -> new, site) with counts.
-Usage: python -I tools\\analyze_transitions_log.py F:\\Ports\\transitions.txt [--summary-file analysis\\evidence-ghost-transitions-summary.txt]
+Usage: python -I tools\\analyze_transitions_log.py analysis\\raw-logs\\transitions.txt [--summary-file analysis\\evidence-ghost-transitions-summary.txt]
 """
 import collections
 import re

@@ -4,7 +4,7 @@ Usage (project root):  python -I tools/build_rom.py [--source FILE]
 Assembles with ca65, links with ld65 (layout: src/asm/pacman.cfg) into build/pacman.rom, then compares
 size and SHA-256 with original/Pac-Man.rom and reports the first differing offset if any.
 Exit code 0 = byte-identical, 1 = build error or difference. Never modifies original/.
-Toolchain location: env CC65_BIN, default F:/Ports/Pac-Man-tools/cc65/bin.
+Toolchain location: env CC65_BIN, default external-tools/cc65/bin inside the project.
 """
 import argparse
 import hashlib
@@ -13,7 +13,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BIN = os.environ.get("CC65_BIN", r"F:\Ports\Pac-Man-tools\cc65\bin")
+BIN = os.environ.get("CC65_BIN", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "external-tools", "cc65", "bin"))
 
 
 def build(source, outdir):

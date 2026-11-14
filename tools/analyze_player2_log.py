@@ -6,7 +6,7 @@ and the other player has lives left.
 Checks: (1) every table read logged with `level=` has the level of the player that was playing; (2) a level advance changes the playing player's level by +1 and nothing else's;
 (3) between two switches the player who is not playing keeps every variable (lives, level, flags, dots, counters, score digits); (4) switches alternate, only with zp_1A = 1, and only when the
 other player has lives; (5) score additions use the playing player's digits; (6) all the table checks of tools/analyze_levels_log.py (expected values from the ROM tables) on the same log.
-Usage: python -I tools/analyze_player2_log.py F:/Ports/player2.txt [--summary-file analysis/evidence-two-players-summary.txt]
+Usage: python -I tools/analyze_player2_log.py analysis/raw-logs/player2.txt [--summary-file analysis/evidence-two-players-summary.txt]
 """
 import collections
 import os

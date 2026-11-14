@@ -1,6 +1,6 @@
 Nibble-map live evidence, Altirra 4.40, Atari 800 NTSC, Rev B OS, 48K, level 1 (tools/trace_altirra.ps1 + tools/altirra_trace.cmd).
 Sessions: play-trace3.txt (positions, FC counts, start routes; its accumulator-based fields were invalid, see below) and play-trace4.txt (corrected, 14,425 lines).
-Full logs kept locally in F:\Ports. Note: Altirra expressions have no accumulator variable; "a" is the number $A. Fields read through "a" in session 3 are discarded.
+Full logs kept locally in analysis\raw-logs. Note: Altirra expressions have no accumulator variable; "a" is the number $A. Fields read through "a" in session 3 are discarded.
 
 JunctionExits : 631 lookups by Pac-Man and all 4 ghosts; 0 inconsistent (row/col from position, mask == table[row][col]).
                session 3: 307 more lookups, row/col from position all consistent.

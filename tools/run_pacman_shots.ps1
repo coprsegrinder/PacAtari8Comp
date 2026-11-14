@@ -1,10 +1,11 @@
 # Pac-Man pictures and the death sequence, screenshot check: for each target, run the game in Altirra (private 800 % settings copy) until the picture is on screen, freeze the emulated machine
 # (tools\altirra_pacshots.cmd), save screenshots of ALTIRRA'S OWN WINDOW ONLY (PrintWindow: never reads other windows) and the debugger log (RAM dump), then stop Altirra.
-# Usage: powershell -ExecutionPolicy Bypass -File tools\run_pacman_shots.ps1 -OutDir F:\Ports\pac-shots [-Only name1,name2] [-TimeoutSec 200]
+# Usage: powershell -ExecutionPolicy Bypass -File tools\run_pacman_shots.ps1 -OutDir analysis\shots\pac-shots [-Only name1,name2] [-TimeoutSec 200]
 # Output per target: <name>.log, <name>_0.png .. _2.png. The pictures are local evidence only (game images are not committed).
-param([Parameter(Mandatory)][string]$OutDir, [string[]]$Only, [int]$TimeoutSec = 200, [string]$Ini = 'F:\Ports\Pac-Man-tools\Altirra\Altirra_fast.ini')
+param([Parameter(Mandatory)][string]$OutDir, [string[]]$Only, [int]$TimeoutSec = 200, [string]$Ini = '')
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$alt  = 'F:\Ports\Pac-Man-tools\Altirra\Altirra64.exe'
+if (-not $Ini) { $Ini = Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra_fast.ini' }
+$alt  = (Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra64.exe')
 $cart = (Resolve-Path (Join-Path $root '..\original\Pac-Man.rom')).Path
 Add-Type -AssemblyName System.Drawing
 Add-Type @"
@@ -55,7 +56,7 @@ foreach ($t in @($targets)) {
   $lines = @(".logopen $log") + ($tpl | ForEach-Object { if ($_ -eq '@MODELINES@') { $ml } else { $_.Replace('@MODE@', $mode) } }) + @('.restart', 'g')
   $batch = Join-Path ([IO.Path]::GetTempPath()) 'pacman_pacshot.batch'
   Set-Content -Path $batch -Value $lines -Encoding ascii
-  $line = '/portablealt:' + $Ini + ' /hardware:800 /ntsc /nofastboot /cartmapper:1 /debug /debugcmd:".batch ' + $batch + '" "' + $cart + '"'
+  $line = '/portablealt:"' + $Ini + '" /hardware:800 /ntsc /nofastboot /cartmapper:1 /debug /debugcmd:".batch ' + $batch + '" "' + $cart + '"'
   $p = Start-Process -FilePath $alt -ArgumentList $line -PassThru
   $t0 = Get-Date; $done = $false
   while (((Get-Date) - $t0).TotalSeconds -lt $TimeoutSec) {

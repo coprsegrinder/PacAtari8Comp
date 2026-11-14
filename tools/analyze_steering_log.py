@@ -7,7 +7,7 @@ SteerToTarget ($B999) rule (exact, from the ROM bytes; tests/test_frightened_hou
   V available (V & M) and H available -> V or H (RANDOM bit 7 decides); V available only -> V; H available only -> H;
   neither -> the lowest set bit of (RANDOM & M), or of M if that is 0 (a random exit); M = 0 -> right (8).
   Special squares (x = $76 or $82, y = $64, beside the door): normal ghosts lose the 'up' exit (M & $0E); frightened ghosts get M = 1 (up only).
-Usage: python -I tools\\analyze_steering_log.py F:\\Ports\\steering.txt [--summary-file analysis\\evidence-frightened-house-summary.txt]
+Usage: python -I tools\\analyze_steering_log.py analysis\\raw-logs\\steering.txt [--summary-file analysis\\evidence-frightened-house-summary.txt]
 """
 import collections
 import re

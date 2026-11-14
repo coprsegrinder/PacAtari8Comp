@@ -7,7 +7,7 @@
 # Read-only tracing otherwise: nothing here changes the ROM or the project.
 param([Parameter(Mandatory)][string]$Log, [switch]$TestFlush, [switch]$InfinitePowerPill)
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$alt  = 'F:\Ports\Pac-Man-tools\Altirra\Altirra64.exe'
+$alt  = (Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra64.exe')
 $cart = (Resolve-Path (Join-Path $root '..\original\Pac-Man.rom')).Path
 $batch = Join-Path ([IO.Path]::GetTempPath()) 'pacman_trace.batch'
 $lines = @(".logopen $Log") + (Get-Content (Join-Path $root 'altirra_trace.cmd') | Where-Object { $_ -notmatch '^\s*(#|$)' })

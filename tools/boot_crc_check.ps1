@@ -2,7 +2,7 @@
 # vertical-blank interrupt. Used to show that bytes of the ROM are irrelevant (same CRCs with different contents).
 # Usage: powershell -ExecutionPolicy Bypass -File tools\boot_crc_check.ps1 -Rom <image> -Log <logfile>
 param([Parameter(Mandatory)][string]$Rom, [Parameter(Mandatory)][string]$Log)
-$alt   = 'F:\Ports\Pac-Man-tools\Altirra\Altirra64.exe'
+$alt   = (Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra64.exe')
 $batch = Join-Path ([IO.Path]::GetTempPath()) 'pacman_crc.batch'
 Set-Content -Path $batch -Encoding ascii -Value @(
   ".logopen $Log",
