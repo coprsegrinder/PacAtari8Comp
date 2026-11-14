@@ -1,0 +1,21 @@
+Log: 23322 state stores, frames 305..131090.
+
+ChaseTimer between consecutive log frames (16998 pairs):
+   14995  ok: 1 step per 8 frames
+    1366  timer at 0 (stays 0)
+     370  permanent chase ($FF, late board)
+     219  reset (a setter store, a rise, or a board start $A800)
+      29  ghost-eaten freeze (no decrement for ~32 frames)
+      19  reached 0 between the two frames
+  ghost-eaten freeze: 29 cases, 29..36 frames missing (mean 32.1; the phase of RTCLOK2 allows +-7)
+
+Budgets (frames from the store that set the timer to the store that ends the state; allowed 8*N-7 .. 8*N + 4; the game decrements only when it runs, so a ghost-eaten freeze would add ~32):
+  patrol  ($B8C7, old $10, GhostTimer $96 = 150 steps): 7 cases, frames (1195, 1200), allowed 1192..1204, outside: 0
+  travel  ($B8C7, old $08, GhostTimer $96 = 150 steps): 5 cases, frames (1194, 1201), allowed 1192..1204, outside: 0
+  ChaseTimer right after $BAB9: 28 cases, value written $A0 (160 steps = 1280 frames); value seen after 0..50 frames: 28 of 28 within one step of $A0 - frames/8
+  ChaseTimer right after $B8ED: 5 cases, value written $50 (80 steps = 640 frames); value seen after 0..43 frames: 5 of 5 within one step of $50 - frames/8
+  chase time-ups ($B8C7, old $02): 16, ChaseTimer = 0 in 16 of them
+
+In seconds (frames / frame rate of the machine): $96 = 1,200 frames = 20.03 s NTSC (59.9228 Hz), 24.07 s PAL (49.8607 Hz);  $A0 = 1,280 frames = 21.36 s / 25.67 s;  $50 = 640 frames = 10.68 s / 12.84 s.
+
+PROBLEMS: none

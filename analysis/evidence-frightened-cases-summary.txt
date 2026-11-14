@@ -1,0 +1,19 @@
+Log: 47627 state stores, 148393 frames, 87 boards (kind 0: 29, kind 1: 29, kind 2: 29), 121 ghosts eaten.
+
+A. Frightened ghosts on the start route ($01 -> $81 at the pellet):
+  pellet stores with old state $01: 43 (ghosts {0: 19, 1: 9, 2: 7, 3: 8})
+  frames in which a ghost held $81 (frame pairs): 13656; the ghost moved in 2986 of them (half speed or frozen in the others); StartRouteStep changed in 0 of them
+  how the $81 ended: $81 -> $20: 41, $81 -> $42: 2
+  stores that replaced an $81 (site, old state): A888 $81: 2, AFA0 $81: 41, B40A $81: 639
+  start-route-end stores ($B853 / $B8ED) on an $81 ghost: 0
+  the frightened time ended while a ghost held $81: 41 times; that ghost's next logged state: {'$20': 41}
+
+B. Several ghosts touching Pac-Man at once (kind 1 boards, ghosts 1, 2 and Pac-Man put on ghost 0):
+  boards with ghosts eaten: 29; ghosts eaten per board: {2: 2, 3: 22, 4: 5}; two ghosts eaten in the same frame: 0
+  frames between two eatings on one board: min 34, max 38 (the pop-up freeze); GhostsEaten counter at each eating: {(255, 0, 1): 22, (255, 0, 1, 2): 5, (255, 0): 2}
+  boards where at least two ghosts were within 4 pixels of Pac-Man in the frame of the first eating: 19 of 29
+
+C. The eaten ghost on the door square while Pac-Man stands on it (kind 2 boards):
+  boards with a ghost eaten: 29; the eyes reached the door square (124,100) with Pac-Man on it ($42 -> $44): 29; then went home ($44 -> $04): 29; the same ghost eaten twice: 0
+
+PROBLEMS: none
