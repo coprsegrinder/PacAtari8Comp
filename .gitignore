@@ -32,3 +32,17 @@ desktop.ini
 
 # Emulator screenshots (game imagery, local evidence only)
 /analysis/*.png
+
+# Raw emulator debugger logs (large; regenerate with the tools\ harnesses)
+/analysis/raw-logs/
+
+# Third-party tools (cc65, Altirra, downloads) and emulator screenshots: local only
+/external-tools/
+/analysis/shots/
+
+# Audio recordings of the game (Altirra output; large and derived from the copyrighted ROM): local evidence only, regenerate with the harnesses named in docs/OPEN-VERIFICATION.md
+/analysis/*.wav
+!/analysis/start-tune.wav
+
+# Emulator OS ROM sets (copyrighted)
+/a800.zip
