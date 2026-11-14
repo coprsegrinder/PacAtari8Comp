@@ -1,0 +1,37 @@
+Trace: 94707 frames (f=40..94746), events {'NEWGAME': 4, 'LIFE_LOST': 12, 'EXTRA_LIFE': 4, 'GAME_OVER_TEXT': 2}, games started 4
+
+N. New game clears the flags
+  ok   NEWGAME g=1 f=458: flags before [0, 0], after [[0, 0]]
+  ok   NEWGAME g=2 f=1073: flags before [1, 0], after [[0, 0]]
+  ok   NEWGAME g=3 f=1890: flags before [1, 0], after [[0, 0]]
+  ok   NEWGAME g=4 f=5770: flags before [0, 1], after [[0, 0]]
+
+EXTRA_LIFE events: [(734, 'g=1', 'cur=0', 'lives=2,3'), (1350, 'g=2', 'cur=0', 'lives=2,3'), (5211, 'g=3', 'cur=1', 'lives=2,2'), (7283, 'g=4', 'cur=1', 'lives=2,2')]
+
+A. One player (g=1, g=2)
+  ok   g=1: player 1's score crossed 10,000 1 time(s)
+  ok   g=1: EXTRA_LIFE events: 1 (one expected, player 1)
+  ok   g=1: player 1's lives 2 -> 3, flags after [1, 0]
+  ok   g=2: player 1's score crossed 10,000 1 time(s)
+  ok   g=2: EXTRA_LIFE events: 1 (one expected, player 1)
+  ok   g=2: player 1's lives 2 -> 3, flags after [1, 0]
+
+B. Two players, player 2 (g=3, g=4)
+  g=3: player 2's score crossed 10,000 at [5211]
+  ok   g=3: player 2 crossed 10,000
+  ok   g=3: EXTRA_LIFE events 1, all for player 2, exactly one
+  ok   g=3: lives [2, 2] -> [2, 3], flags [0, 0] -> [0, 1]
+  ok   g=3: 1 crossing(s) of 20000 by player 2 (at [5231]): no award and constant lives (bad [])
+  ok   g=3: threshold 20000 was reached
+  ok   g=3: 1 crossing(s) of 100000 by player 2 (at [5241]): no award and constant lives (bad [])
+  ok   g=3: threshold 100000 was reached
+  g=4: player 2's score crossed 10,000 at [7283]
+  ok   g=4: player 2 crossed 10,000
+  ok   g=4: EXTRA_LIFE events 1, all for player 2, exactly one
+  ok   g=4: lives [2, 2] -> [2, 3], flags [0, 0] -> [0, 1]
+  ok   g=4: 1 crossing(s) of 20000 by player 2 (at [7303]): no award and constant lives (bad [])
+  ok   g=4: threshold 20000 was reached
+  ok   g=4: 1 crossing(s) of 100000 by player 2 (at [7313]): no award and constant lives (bad [])
+  ok   g=4: threshold 100000 was reached
+
+PROBLEMS: none

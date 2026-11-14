@@ -1,0 +1,24 @@
+Segments of the audit's list compared in the waveform domain: 1935 (silence skipped); recording sound-natural-recorded.wav
+  all segments                        1935 segs  correlation >= 0.90 in  1935 (100.0%), min 0.998, median 0.9999;  drift: median 0.01 cents, 95% within 0.1, max 0.3
+  segments of 12-40 ms                1893 segs  correlation >= 0.90 in  1893 (100.0%), min 0.999, median 0.9999;  drift: median 0.01 cents, 95% within 0.1, max 0.3
+  segments of 40 ms or more             42 segs  correlation >= 0.90 in    42 (100.0%), min 0.998, median 0.9997;  drift: median 0.00 cents, 95% within 0.0, max 0.1
+  pitch not resolved by the audit      122 segs  correlation >= 0.90 in   122 (100.0%), min 1.000, median 0.9999;  drift: median 0.02 cents, 95% within 0.1, max 0.2
+  flagged by the audit (FAIL)            4 segs  correlation >= 0.90 in     4 (100.0%), min 1.000, median 0.9998;  drift: median 0.08 cents, 95% within 0.2, max 0.2
+
+Weakest 8 segments by correlation (time s, length ms, correlation, drift cents, audit state):
+     13.040 s  60.0 ms  corr 0.998  drift   -0.1 cents  ok  silence
+      9.634 s 128.0 ms  corr 0.999  drift   -0.0 cents  ok  ch2 131 Hz v4 (+0)
+     10.309 s  54.0 ms  corr 0.999  drift   +0.0 cents  ok  ch2 131 Hz v4 (-0)
+     11.770 s 128.0 ms  corr 0.999  drift   -0.0 cents  ok  ch2 131 Hz v4 (+0)
+     12.445 s  54.0 ms  corr 0.999  drift   +0.0 cents  ok  ch2 131 Hz v4 (-0)
+     11.377 s  54.0 ms  corr 0.999  drift   -0.0 cents  ok  ch2 138 Hz v4 (+0)
+     10.702 s 128.0 ms  corr 0.999  drift   +0.0 cents  ok  ch2 138 Hz v4 (-0)
+     59.043 s  16.0 ms  corr 0.999  drift   +0.0 cents  ok  ch2 819 Hz v1 (-0)
+
+Shift test (the true model against the model with one channel's tone stretched by +-c cents; positive = the recording prefers the true model):
+  unresolved tones             122 tested, 0 not testable;  prefers the true model at  5 cents: 122/122 (min +0.0002);  10 cents: 122/122 (min +0.0009);  20 cents: 122/122 (min +0.0031);  40 cents: 122/122 (min +0.0076)
+  tones of flagged segments      1 tested, 0 not testable;  prefers the true model at  5 cents: 1/1 (min +0.0006);  10 cents: 1/1 (min +0.0022);  20 cents: 1/1 (min +0.0075);  40 cents: 1/1 (min +0.0187)
+
+Unresolved or flagged segments outside the limits (correlation >= 0.90, drift <= 20 cents): 0
+
+PROBLEMS: none

@@ -1,0 +1,20 @@
+Set 'uneq': per row, correlation / fitted scale (1e-3) with linear, altirra, cfggain, invtable.
+  ch1 8 + ch4 0    linear 0.9998 / 17.89 | altirr 0.9998 / 17.89 | cfggai 0.9998 / 17.89 | invtab 0.9998 / 17.89
+  ch1 0 + ch4 8    linear 0.9998 / 17.89 | altirr 0.9998 / 17.89 | cfggai 0.9998 / 17.89 | invtab 0.9998 / 17.89
+  ch1 15 + ch4 0   linear 0.9998 / 16.46 | altirr 0.9998 / 17.89 | cfggai 0.9998 / 17.89 | invtab 0.9998 / 17.89
+  ch1 0 + ch4 15   linear 0.9998 / 16.46 | altirr 0.9998 / 17.89 | cfggai 0.9998 / 17.89 | invtab 0.9998 / 17.89
+  ch1 8 + ch4 8    linear 0.9985 / 16.45 | altirr 0.9947 / 17.80 | cfggai 0.9985 / 17.89 | invtab 0.9998 / 17.89
+  ch1 15 + ch4 15  linear 0.9868 / 12.81 | altirr 0.9480 / 16.96 | cfggai 0.9868 / 17.89 | invtab 0.9998 / 17.89
+  ch1 15 + ch4 8   linear 0.9955 / 14.53 | altirr 0.9828 / 17.59 | cfggai 0.9955 / 17.89 | invtab 0.9998 / 17.89
+  ch1 8 + ch4 15   linear 0.9955 / 14.53 | altirr 0.9828 / 17.59 | cfggai 0.9955 / 17.89 | invtab 0.9998 / 17.89
+  ch1 15 + ch4 4   linear 0.9989 / 15.61 | altirr 0.9966 / 17.84 | cfggai 0.9990 / 17.89 | invtab 0.9998 / 17.89
+  ch1 4 + ch4 15   linear 0.9989 / 15.61 | altirr 0.9966 / 17.84 | cfggai 0.9990 / 17.89 | invtab 0.9998 / 17.89
+  ch1 15 + ch4 1   linear 0.9997 / 16.30 | altirr 0.9997 / 17.89 | cfggai 0.9998 / 17.90 | invtab 0.9998 / 17.90
+  ch1 1 + ch4 15   linear 0.9997 / 16.30 | altirr 0.9997 / 17.89 | cfggai 0.9998 / 17.89 | invtab 0.9998 / 17.89
+  ch1 8 + ch4 4    linear 0.9997 / 17.46 | altirr 0.9994 / 17.89 | cfggai 0.9997 / 17.89 | invtab 0.9998 / 17.89
+  ch1 4 + ch4 8    linear 0.9997 / 17.46 | altirr 0.9993 / 17.89 | cfggai 0.9997 / 17.89 | invtab 0.9998 / 17.89
+  ch1 12 + ch4 12  linear 0.9925 / 14.36 | altirr 0.9705 / 17.37 | cfggai 0.9925 / 17.89 | invtab 0.9998 / 17.89
+  ch1 4 + ch4 4    linear 0.9998 / 17.89 | altirr 0.9998 / 17.89 | cfggai 0.9998 / 17.89 | invtab 0.9998 / 17.89
+  ch1 15 + ch4 2   linear 0.9995 / 16.09 | altirr 0.9992 / 17.89 | cfggai 0.9997 / 17.89 | invtab 0.9998 / 17.89
+  ch1 2 + ch4 15   linear 0.9995 / 16.09 | altirr 0.9992 / 17.88 | cfggai 0.9997 / 17.89 | invtab 0.9998 / 17.89
+Spread of the fitted scale over the 18 rows (max / min - 1): linear 39.7%, altirra 5.5%, cfggain 0.0%, invtable 0.0%

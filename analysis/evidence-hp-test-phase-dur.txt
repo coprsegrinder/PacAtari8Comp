@@ -1,0 +1,15 @@
+Phase of the high-pass pulse ends against the model's channel-3 fires, set 'dur' (12 configurations, rows of at least 12 frames); cycle of sample 0 = 10213404.9.
+  dur 20 frames, AUDF3=118           AUDF3   - -> 118: offset median +0.88 ticks, spread 0.16 (91 edges)
+  dur 20 frames, AUDF3=122           AUDF3 118 -> 122: offset median +0.88 ticks, spread 0.08 (82 edges)
+  dur 40 frames, AUDF3=118           AUDF3 122 -> 118: offset median +0.88 ticks, spread 0.18 (180 edges)
+  dur 40 frames, AUDF3=122           AUDF3 118 -> 122: offset median +0.89 ticks, spread 0.13 (170 edges)
+  dur 60 frames, AUDF3=118           AUDF3 122 -> 118: offset median +0.89 ticks, spread 0.19 (271 edges)
+  dur 60 frames, AUDF3=122           AUDF3 118 -> 122: offset median +0.91 ticks, spread 0.10 (254 edges)
+  dur 66 frames, AUDF3=118           AUDF3 122 -> 118: offset median +0.91 ticks, spread 0.21 (297 edges)
+  dur 66 frames, AUDF3=122           AUDF3 118 -> 122: offset median +0.93 ticks, spread 0.12 (279 edges)
+  dur 72 frames, AUDF3=118           AUDF3 122 -> 118: offset median +0.93 ticks, spread 0.18 (326 edges)
+  dur 72 frames, AUDF3=122           AUDF3 118 -> 122: offset median +0.92 ticks, spread 0.12 (301 edges)
+  dur 80 frames, AUDF3=118           AUDF3 122 -> 118: offset median +0.95 ticks, spread 0.23 (363 edges)
+  dur 80 frames, AUDF3=122           AUDF3 118 -> 122: offset median +0.97 ticks, spread 0.11 (338 edges)
+
+Over 12 rows: offsets from +0.88 to +0.97 ticks (median +0.91); largest deviation from the median 0.05 ticks (a model error of one tick would show as a different offset in some rows).

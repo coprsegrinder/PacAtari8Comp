@@ -1,0 +1,11 @@
+Phase of the high-pass pulse ends against the model's channel-3 fires, set 'hold' (18 configurations, rows of at least 12 frames); cycle of sample 0 = 10123781.2.
+  hold 12 frames, AUDF3=118          AUDF3 122 -> 118: offset median +0.04 ticks, spread 0.16 (56 edges)
+  hold 12 frames, AUDF3=122          AUDF3 118 -> 122: offset median +0.04 ticks, spread 0.08 (50 edges)
+  hold 18 frames, AUDF3=118          AUDF3 122 -> 118: offset median +0.04 ticks, spread 0.11 (81 edges)
+  hold 18 frames, AUDF3=122          AUDF3 118 -> 122: offset median +0.05 ticks, spread 0.11 (76 edges)
+  hold 30 frames, AUDF3=118          AUDF3 122 -> 118: offset median +0.05 ticks, spread 0.24 (136 edges)
+  hold 30 frames, AUDF3=122          AUDF3 118 -> 122: offset median +0.04 ticks, spread 0.14 (128 edges)
+  hold 60 frames, AUDF3=118          AUDF3 122 -> 118: offset median +0.06 ticks, spread 0.23 (272 edges)
+  hold 60 frames, AUDF3=122          AUDF3 118 -> 122: offset median +0.05 ticks, spread 0.14 (253 edges)
+
+Over 8 rows: offsets from +0.04 to +0.06 ticks (median +0.04); largest deviation from the median 0.01 ticks (a model error of one tick would show as a different offset in some rows).

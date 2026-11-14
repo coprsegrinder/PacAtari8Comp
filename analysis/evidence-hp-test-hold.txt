@@ -1,0 +1,19 @@
+Hold test (channel 1 alone, AUDF1 = 114, AUDF3 alternating 118 / 122): correlation with the model whose high-pass latch is at channel 3's fire (dt = 0) and with the latch (AUDF3 - AUDF1) ticks earlier.
+  held  1 frames, AUDF3 = 118 (diff +4): dt = 0: 0.998   latch 4 ticks earlier: 0.968
+  held  1 frames, AUDF3 = 122 (diff +8): dt = 0: 0.998   latch 8 ticks earlier: 0.926
+  held  2 frames, AUDF3 = 118 (diff +4): dt = 0: 0.992   latch 4 ticks earlier: 0.957
+  held  2 frames, AUDF3 = 122 (diff +8): dt = 0: 0.995   latch 8 ticks earlier: 0.500
+  held  3 frames, AUDF3 = 118 (diff +4): dt = 0: 0.998   latch 4 ticks earlier: 0.836
+  held  3 frames, AUDF3 = 122 (diff +8): dt = 0: 0.993   latch 8 ticks earlier: 0.870
+  held  5 frames, AUDF3 = 118 (diff +4): dt = 0: 1.000   latch 4 ticks earlier: 0.926
+  held  5 frames, AUDF3 = 122 (diff +8): dt = 0: 1.000   latch 8 ticks earlier: 0.772
+  held  8 frames, AUDF3 = 118 (diff +4): dt = 0: 0.999   latch 4 ticks earlier: 0.927
+  held  8 frames, AUDF3 = 122 (diff +8): dt = 0: 1.000   latch 8 ticks earlier: 0.770
+  held 12 frames, AUDF3 = 118 (diff +4): dt = 0: 1.000   latch 4 ticks earlier: 0.904
+  held 12 frames, AUDF3 = 122 (diff +8): dt = 0: 0.999   latch 8 ticks earlier: 0.766
+  held 18 frames, AUDF3 = 118 (diff +4): dt = 0: 1.000   latch 4 ticks earlier: 0.907
+  held 18 frames, AUDF3 = 122 (diff +8): dt = 0: 1.000   latch 8 ticks earlier: 0.805
+  held 30 frames, AUDF3 = 118 (diff +4): dt = 0: 1.000   latch 4 ticks earlier: 0.918
+  held 30 frames, AUDF3 = 122 (diff +8): dt = 0: 1.000   latch 8 ticks earlier: 0.776
+  held 60 frames, AUDF3 = 118 (diff +4): dt = 0: 1.000   latch 4 ticks earlier: 0.920
+  held 60 frames, AUDF3 = 122 (diff +8): dt = 0: 1.000   latch 8 ticks earlier: 0.784

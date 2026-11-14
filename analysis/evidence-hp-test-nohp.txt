@@ -1,0 +1,27 @@
+Configurations found in the trace: 10 (expected 9).
+Recording 41.89 s; model clock 1789772.727 Hz; cycle of sample 0 = 10153592.8.
+  ch4 only (reference)                         AUDF (114, 114, 114) vol (0, 0, 8) best corr 0.9988 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=114 (diff +0) AUDF (114, 114, 114) vol (8, 0, 8) best corr 0.9987 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=116 (diff +2) AUDF (114, 116, 116) vol (8, 0, 8) best corr 0.9938 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=118 (diff +4) AUDF (114, 118, 118) vol (8, 0, 8) best corr 0.9938 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=122 (diff +8) AUDF (114, 122, 122) vol (8, 0, 8) best corr 0.9939 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=110 (diff -4) AUDF (114, 110, 110) vol (8, 0, 8) best corr 0.9939 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=106 (diff -8) AUDF (114, 106, 106) vol (8, 0, 8) best corr 0.9940 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=118 (diff +4) AUDF (114, 118, 118) vol (8, 0, 8) best corr 0.9940 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=114 (diff +0) AUDF (114, 114, 114) vol (8, 0, 8) best corr 0.9952 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+
+Mixer altirra: correlation over the 9 configurations: min 0.9938, median 0.9940.
+
+Configurations found in the trace: 10 (expected 9).
+Recording 41.89 s; model clock 1789772.727 Hz; cycle of sample 0 = 10153592.8.
+  ch4 only (reference)                         AUDF (114, 114, 114) vol (0, 0, 8) best corr 0.9988 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=114 (diff +0) AUDF (114, 114, 114) vol (8, 0, 8) best corr 0.9989 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=116 (diff +2) AUDF (114, 116, 116) vol (8, 0, 8) best corr 0.9976 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=118 (diff +4) AUDF (114, 118, 118) vol (8, 0, 8) best corr 0.9976 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=122 (diff +8) AUDF (114, 122, 122) vol (8, 0, 8) best corr 0.9976 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=110 (diff -4) AUDF (114, 110, 110) vol (8, 0, 8) best corr 0.9977 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=106 (diff -8) AUDF (114, 106, 106) vol (8, 0, 8) best corr 0.9978 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=118 (diff +4) AUDF (114, 118, 118) vol (8, 0, 8) best corr 0.9978 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+  ch1 + ch4, no high-pass, AUDF4=114 (diff +0) AUDF (114, 114, 114) vol (8, 0, 8) best corr 0.9982 (lag +0, order 0, bits c1,c3,c4,hpc = (1, 0, 1, 0))
+
+Mixer linear: correlation over the 9 configurations: min 0.9976, median 0.9978.

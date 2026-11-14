@@ -1,0 +1,19 @@
+Configurations found in the trace: 15 (expected 15).
+Recording 41.92 s; model clock 1789772.727 Hz; cycle of sample 0 = 10183529.8.
+  AUDF3=114 (diff +0)                          AUDF (114, 114, 114) vol (8, 0, 0) best corr 0.9982 (lag -1, order 0, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=116 (diff +2)                          AUDF (114, 116, 116) vol (8, 0, 0) best corr 0.9996 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=118 (diff +4)                          AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9996 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=122 (diff +8)                          AUDF (114, 122, 122) vol (8, 0, 0) best corr 0.9995 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=118 (diff +4)                          AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9995 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=122 (diff +8)                          AUDF (114, 122, 122) vol (8, 0, 0) best corr 0.9994 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=116 (diff +2)                          AUDF (114, 116, 116) vol (8, 0, 0) best corr 0.9994 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=118 (diff +4)                          AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9994 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=114 (diff +0)                          AUDF (114, 114, 114) vol (8, 0, 0) best corr 0.9977 (lag -1, order 0, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=118 (diff +4)                          AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9994 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=122 (diff +8)                          AUDF (114, 122, 122) vol (8, 0, 0) best corr 0.9994 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=118 (diff +4)                          AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9993 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=122 (diff +8)                          AUDF (114, 122, 122) vol (8, 0, 0) best corr 0.9992 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=118 (diff +4)                          AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9992 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  AUDF3=122 (diff +8)                          AUDF (114, 122, 122) vol (8, 0, 0) best corr 0.9991 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+
+Mixer altirra: correlation over the 15 configurations: min 0.9977, median 0.9994.

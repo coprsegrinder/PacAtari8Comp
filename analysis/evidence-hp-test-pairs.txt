@@ -1,0 +1,16 @@
+Configurations found in the trace: 12 (expected 12).
+Recording 41.92 s; model clock 1789772.727 Hz; cycle of sample 0 = 10153653.7.
+  ch1 only, AUDF1=114 AUDF3=114 (diff +0)      AUDF (114, 114, 114) vol (8, 0, 0) best corr 0.9983 (lag -1, order 0, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=114 AUDF3=116 (diff +2)      AUDF (114, 116, 116) vol (8, 0, 0) best corr 0.9996 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=114 AUDF3=118 (diff +4)      AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9996 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=114 AUDF3=122 (diff +8)      AUDF (114, 122, 122) vol (8, 0, 0) best corr 0.9995 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=114 AUDF3=110 (diff -4)      AUDF (114, 110, 110) vol (8, 0, 0) best corr 0.9995 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=114 AUDF3=106 (diff -8)      AUDF (114, 106, 106) vol (8, 0, 0) best corr 0.9994 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=72 AUDF3=72 (diff +0)        AUDF (72, 72, 72)    vol (8, 0, 0) best corr 0.9993 (lag -1, order 0, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=72 AUDF3=76 (diff +4)        AUDF (72, 76, 76)    vol (8, 0, 0) best corr 0.9990 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=72 AUDF3=80 (diff +8)        AUDF (72, 80, 80)    vol (8, 0, 0) best corr 0.9992 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=72 AUDF3=68 (diff -4)        AUDF (72, 68, 68)    vol (8, 0, 0) best corr 0.9990 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=44 AUDF3=48 (diff +4)        AUDF (44, 48, 48)    vol (8, 0, 0) best corr 0.9985 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch1 only, AUDF1=200 AUDF3=204 (diff +4)      AUDF (200, 204, 204) vol (8, 0, 0) best corr 0.9996 (lag -1, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+
+Mixer invtable: correlation over the 12 configurations: min 0.9983, median 0.9994.

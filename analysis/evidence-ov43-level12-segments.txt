@@ -1,0 +1,25 @@
+Segments of the audit's list compared in the waveform domain: 7472 (silence skipped); recording sound-level12-recorded.wav
+  all segments                        7472 segs  correlation >= 0.90 in  7472 (100.0%), min 0.936, median 0.9922;  drift: median 0.01 cents, 95% within 0.0, max 2.8
+  segments of 12-40 ms                7430 segs  correlation >= 0.90 in  7430 (100.0%), min 0.936, median 0.9922;  drift: median 0.01 cents, 95% within 0.0, max 2.8
+  segments of 40 ms or more             42 segs  correlation >= 0.90 in    42 (100.0%), min 0.998, median 0.9990;  drift: median 0.00 cents, 95% within 0.0, max 0.1
+  pitch not resolved by the audit       53 segs  correlation >= 0.90 in    53 (100.0%), min 0.972, median 0.9986;  drift: median 0.02 cents, 95% within 0.1, max 2.8
+  flagged by the audit (FAIL)        none
+
+Weakest 8 segments by correlation (time s, length ms, correlation, drift cents, audit state):
+    151.545 s  16.0 ms  corr 0.936  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+    150.627 s  17.0 ms  corr 0.936  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+    150.994 s  17.0 ms  corr 0.936  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+    149.893 s  16.0 ms  corr 0.936  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+    151.178 s  16.0 ms  corr 0.936  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+    151.361 s  17.0 ms  corr 0.937  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+    149.709 s  17.0 ms  corr 0.937  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+    148.791 s  17.0 ms  corr 0.937  drift   +0.0 cents  ok  ch2 2283 Hz v4 (-0)
+
+Shift test (the true model against the model with one channel's tone stretched by +-c cents; positive = the recording prefers the true model):
+  unresolved tones              53 tested, 0 not testable;  prefers the true model at  5 cents: 44/53 (min -0.0129);  10 cents: 52/53 (min -0.0003);  20 cents: 53/53 (min +0.0034);  40 cents: 53/53 (min +0.0088)
+    of which inside ghost-eaten sweeps: 6;  5 cents: 6/6 (min +0.0085, median +0.0353);  10 cents: 6/6 (min +0.0430, median +0.1637);  20 cents: 6/6 (min +0.1338, median +0.3605);  40 cents: 6/6 (min +0.2787, median +0.5592)
+  tones of flagged segments    none tested (0 inside sweeps)
+
+Unresolved or flagged segments outside the limits (correlation >= 0.90, drift <= 20 cents): 0
+
+PROBLEMS: none

@@ -1,0 +1,16 @@
+Configurations found in the trace: 12 (expected 12).
+Recording 41.92 s; model clock 1789772.727 Hz; cycle of sample 0 = 10093885.7.
+  even-1                                       AUDF (114, 118, 118) vol (8, 8, 8) best corr 0.9999 (lag +0, order 1, bits c1,c3,c4,hpc = (0, 1, 1, 1))
+  odd-1                                        AUDF (111, 118, 114) vol (4, 8, 4) best corr 0.9998 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 1, 1, 1))
+  even-2                                       AUDF (72, 76, 76)    vol (8, 8, 8) best corr 0.9999 (lag +0, order 1, bits c1,c3,c4,hpc = (0, 1, 1, 1))
+  odd-2                                        AUDF (69, 76, 72)    vol (4, 8, 4) best corr 0.9999 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 1, 1, 1))
+  even-3                                       AUDF (44, 48, 48)    vol (8, 8, 8) best corr 0.9997 (lag +0, order 1, bits c1,c3,c4,hpc = (0, 1, 1, 1))
+  odd-3                                        AUDF (41, 48, 44)    vol (4, 8, 4) best corr 0.9997 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 1, 1, 1))
+  ch1 only (ch3 silent, still the HP clock)    AUDF (114, 118, 118) vol (8, 0, 0) best corr 0.9998 (lag +0, order 1, bits c1,c3,c4,hpc = (0, 0, 0, 1))
+  ch3 only                                     AUDF (114, 118, 118) vol (0, 8, 0) best corr 0.9998 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 1, 0, 0))
+  ch4 only                                     AUDF (114, 118, 118) vol (0, 0, 8) best corr 0.9998 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 0, 1, 0))
+  ch1+ch3                                      AUDF (114, 118, 118) vol (8, 8, 0) best corr 0.9997 (lag +0, order 1, bits c1,c3,c4,hpc = (0, 1, 0, 1))
+  ch1+ch4                                      AUDF (114, 118, 118) vol (8, 0, 8) best corr 0.9997 (lag +0, order 1, bits c1,c3,c4,hpc = (0, 0, 1, 1))
+  ch3+ch4                                      AUDF (114, 118, 118) vol (0, 8, 8) best corr 0.9998 (lag +0, order 0, bits c1,c3,c4,hpc = (0, 1, 1, 0))
+
+Mixer invtable: correlation over the 12 configurations: min 0.9997, median 0.9998.

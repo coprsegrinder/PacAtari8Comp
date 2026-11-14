@@ -1,0 +1,5 @@
+Timer validation against 864 .pokey dumps (cycles until the next fire, from the register writes alone, grid phase 26):
+  channel 1: 864 of 864 exact
+  channel 2: 864 of 864 exact
+  channel 3: 864 of 864 exact
+  channel 4: 864 of 864 exact

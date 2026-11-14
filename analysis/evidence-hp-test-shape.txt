@@ -1,0 +1,8 @@
+Two squares (channels 1 and 4, volume 8 each, no high-pass), rows ['ch1 + ch4, no high-pass,', 'ch1 + ch4, no high-pass,', 'ch1 + ch4, no high-pass,', 'ch1 + ch4, no high-pass,']: correlation of the recording with the model as a function of the level of 'both high'.
+  both-high level 2.00 of 2.00 (eta 0.00, linear sum): correlation 0.9984 0.9984 0.9984 0.9984
+  both-high level 1.92 of 2.00 (eta 0.04): correlation 0.9970 0.9970 0.9969 0.9969
+  both-high level 1.84 of 2.00 (eta 0.08, Altirra's table): correlation 0.9947 0.9947 0.9947 0.9947
+  both-high level 1.76 of 2.00 (eta 0.12): correlation 0.9915 0.9915 0.9914 0.9915
+  both-high level 1.68 of 2.00 (eta 0.16): correlation 0.9871 0.9871 0.9870 0.9871
+Scale factor recording / linear model, relative to the single channel (row 0, channel 4 alone): 1.000 0.920 0.919 0.920 0.920 0.920 0.920
+Altirra's table predicts 0.92 for the amplitude of each of two channels; the shape of the sum is the plain linear one (the correlation falls as the saturation grows), so the compression is a GAIN, not an instantaneous curve.

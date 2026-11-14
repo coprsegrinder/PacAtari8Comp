@@ -1,0 +1,12 @@
+Two squares of the same period (channels 1 and 4, volume 8, no high-pass), relative phase rotated between the rows; amplitude relative to one channel alone (Altirra's table: 0.919 on average over independent phases, 1.00 when the highs never overlap, 0.84 when they always do).
+  row  0: channel 4 behind channel 1 by   4.0 of 115 ticks (opposite phase = 57.5): correlation 0.9990, amplitude 0.921 x one channel
+  row  2: channel 4 behind channel 1 by  32.0 of 115 ticks (opposite phase = 57.5): correlation 0.9980, amplitude 0.921 x one channel
+  row  4: channel 4 behind channel 1 by  70.0 of 115 ticks (opposite phase = 57.5): correlation 0.9965, amplitude 0.921 x one channel
+  row  6: channel 4 behind channel 1 by  93.0 of 115 ticks (opposite phase = 57.5): correlation 0.9985, amplitude 0.921 x one channel
+  row  8: channel 4 behind channel 1 by  50.0 of 115 ticks (opposite phase = 57.5): correlation 0.9974, amplitude 0.921 x one channel
+  row 10: channel 4 behind channel 1 by  97.0 of 115 ticks (opposite phase = 57.5): correlation 0.9986, amplitude 0.921 x one channel
+  row 12: channel 4 behind channel 1 by  38.0 of 115 ticks (opposite phase = 57.5): correlation 0.9978, amplitude 0.921 x one channel
+  row 14: channel 4 behind channel 1 by  88.0 of 115 ticks (opposite phase = 57.5): correlation 0.9956, amplitude 0.921 x one channel
+  row 16: channel 4 behind channel 1 by  45.0 of 115 ticks (opposite phase = 57.5): correlation 0.9976, amplitude 0.921 x one channel
+  row 18: channel 4 behind channel 1 by  36.0 of 115 ticks (opposite phase = 57.5): correlation 0.9961, amplitude 0.921 x one channel
+Over 10 phases: amplitude 0.921 - 0.921 (spread 0.0%).

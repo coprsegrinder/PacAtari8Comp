@@ -1,0 +1,234 @@
+Recording 111.96 s; trace: 224 tone starts of channel 2 (expected 224).
+Marker anchors: 224; drift of the recording against the trace -0.0 ms at the end (first trial 0).
+
+configuration (idle AUDF, tone AUDF): trials, rule right (flip 0 has the higher correlation), mean best correlation, undecided (|difference| < 0.3)
+  (0, 13)    56 trials   rule right  56   wrong   0   undecided   0   mean best corr 0.942
+  (13, 13)   56 trials   rule right  56   wrong   0   undecided   0   mean best corr 0.937
+  (20, 13)   56 trials   rule right  56   wrong   0   undecided   0   mean best corr 0.942
+  (2, 13)    56 trials   rule right  56   wrong   0   undecided   0   mean best corr 0.938
+
+Per trial (delay loops D, tone start cycle mod 28, mod 131071, truth = state predicted XOR (1 if the complement fits better), rule state):
+  cfg( 0,13) D= 1  w0=27015576  mod28= 0  c0=+0.955 c1=-0.955  RIGHT  rule_state=1
+  cfg( 0,13) D= 2  w0=27254520  mod28=20  c0=+0.982 c1=-0.982  RIGHT  rule_state=0
+  cfg( 0,13) D= 3  w0=27493474  mod28=22  c0=+0.912 c1=-0.912  RIGHT  rule_state=1
+  cfg( 0,13) D= 4  w0=27732431  mod28=27  c0=+0.925 c1=-0.925  RIGHT  rule_state=0
+  cfg( 0,13) D= 5  w0=27971372  mod28=16  c0=+0.969 c1=-0.969  RIGHT  rule_state=0
+  cfg( 0,13) D= 6  w0=28210332  mod28=24  c0=+0.856 c1=-0.856  RIGHT  rule_state=0
+  cfg( 0,13) D= 7  w0=28449283  mod28=23  c0=+0.983 c1=-0.983  RIGHT  rule_state=0
+  cfg( 0,13) D= 8  w0=28688230  mod28=18  c0=+0.936 c1=-0.936  RIGHT  rule_state=0
+  cfg( 0,13) D= 9  w0=28927173  mod28= 9  c0=+0.974 c1=-0.974  RIGHT  rule_state=1
+  cfg( 0,13) D=10  w0=29166150  mod28= 6  c0=+0.992 c1=-0.992  RIGHT  rule_state=0
+  cfg( 0,13) D=11  w0=29405094  mod28=26  c0=+0.975 c1=-0.975  RIGHT  rule_state=0
+  cfg( 0,13) D=12  w0=29644054  mod28= 6  c0=+0.976 c1=-0.976  RIGHT  rule_state=1
+  cfg( 0,13) D=13  w0=29883018  mod28=18  c0=+0.971 c1=-0.971  RIGHT  rule_state=0
+  cfg( 0,13) D=14  w0=30121956  mod28= 4  c0=+0.935 c1=-0.935  RIGHT  rule_state=0
+  cfg( 0,13) D=15  w0=30360922  mod28=18  c0=+0.989 c1=-0.989  RIGHT  rule_state=0
+  cfg( 0,13) D=16  w0=30599873  mod28=17  c0=+0.948 c1=-0.948  RIGHT  rule_state=1
+  cfg( 0,13) D=17  w0=30838820  mod28=12  c0=+0.973 c1=-0.973  RIGHT  rule_state=0
+  cfg( 0,13) D=18  w0=31077763  mod28= 3  c0=+0.926 c1=-0.926  RIGHT  rule_state=0
+  cfg( 0,13) D=19  w0=31316725  mod28=13  c0=+0.989 c1=-0.989  RIGHT  rule_state=0
+  cfg( 0,13) D=20  w0=31555669  mod28= 5  c0=+0.962 c1=-0.962  RIGHT  rule_state=1
+  cfg( 0,13) D=21  w0=31794618  mod28= 2  c0=+0.980 c1=-0.980  RIGHT  rule_state=1
+  cfg( 0,13) D=22  w0=32033592  mod28=24  c0=+0.833 c1=-0.833  RIGHT  rule_state=0
+  cfg( 0,13) D=23  w0=32272524  mod28= 4  c0=+0.934 c1=-0.934  RIGHT  rule_state=1
+  cfg( 0,13) D=24  w0=32511502  mod28= 2  c0=+0.979 c1=-0.979  RIGHT  rule_state=1
+  cfg( 0,13) D=25  w0=32750460  mod28= 8  c0=+0.891 c1=-0.891  RIGHT  rule_state=1
+  cfg( 0,13) D=26  w0=32989410  mod28= 6  c0=+0.927 c1=-0.927  RIGHT  rule_state=0
+  cfg( 0,13) D=27  w0=33228352  mod28=24  c0=+0.970 c1=-0.970  RIGHT  rule_state=1
+  cfg( 0,13) D=28  w0=33467315  mod28= 7  c0=+0.966 c1=-0.966  RIGHT  rule_state=0
+  cfg( 0,13) D=29  w0=33706259  mod28=27  c0=+0.988 c1=-0.988  RIGHT  rule_state=0
+  cfg( 0,13) D=30  w0=33945208  mod28=24  c0=+0.940 c1=-0.940  RIGHT  rule_state=0
+  cfg( 0,13) D=31  w0=34184167  mod28= 3  c0=+0.945 c1=-0.945  RIGHT  rule_state=1
+  cfg( 0,13) D=32  w0=34423108  mod28=20  c0=+0.885 c1=-0.885  RIGHT  rule_state=1
+  cfg( 0,13) D=33  w0=34662064  mod28=24  c0=+0.901 c1=-0.901  RIGHT  rule_state=0
+  cfg( 0,13) D=34  w0=34901034  mod28=14  c0=+0.869 c1=-0.869  RIGHT  rule_state=1
+  cfg( 0,13) D=35  w0=35139990  mod28=18  c0=+0.887 c1=-0.887  RIGHT  rule_state=1
+  cfg( 0,13) D=36  w0=35378930  mod28= 6  c0=+0.948 c1=-0.948  RIGHT  rule_state=1
+  cfg( 0,13) D=37  w0=35617902  mod28=26  c0=+0.920 c1=-0.920  RIGHT  rule_state=0
+  cfg( 0,13) D=38  w0=35856846  mod28=18  c0=+0.962 c1=-0.962  RIGHT  rule_state=1
+  cfg( 0,13) D=39  w0=36095800  mod28=20  c0=+0.863 c1=-0.863  RIGHT  rule_state=0
+  cfg( 0,13) D=40  w0=36334757  mod28=25  c0=+0.980 c1=-0.980  RIGHT  rule_state=1
+  cfg( 0,13) D=41  w0=36573698  mod28=14  c0=+0.941 c1=-0.941  RIGHT  rule_state=1
+  cfg( 0,13) D=42  w0=36812658  mod28=22  c0=+0.944 c1=-0.944  RIGHT  rule_state=1
+  cfg( 0,13) D=43  w0=37051609  mod28=21  c0=+0.841 c1=-0.841  RIGHT  rule_state=1
+  cfg( 0,13) D=44  w0=37290556  mod28=16  c0=+0.895 c1=-0.895  RIGHT  rule_state=1
+  cfg( 0,13) D=45  w0=37529499  mod28= 7  c0=+0.946 c1=-0.946  RIGHT  rule_state=0
+  cfg( 0,13) D=46  w0=37768476  mod28= 4  c0=+0.985 c1=-0.985  RIGHT  rule_state=1
+  cfg( 0,13) D=47  w0=38007420  mod28=24  c0=+0.948 c1=-0.948  RIGHT  rule_state=1
+  cfg( 0,13) D=48  w0=38246380  mod28= 4  c0=+0.952 c1=-0.952  RIGHT  rule_state=0
+  cfg( 0,13) D=49  w0=38485344  mod28=16  c0=+0.943 c1=-0.943  RIGHT  rule_state=0
+  cfg( 0,13) D=50  w0=38724282  mod28= 2  c0=+0.983 c1=-0.983  RIGHT  rule_state=1
+  cfg( 0,13) D=51  w0=38963248  mod28=16  c0=+0.977 c1=-0.977  RIGHT  rule_state=0
+  cfg( 0,13) D=52  w0=39202199  mod28=15  c0=+0.988 c1=-0.988  RIGHT  rule_state=1
+  cfg( 0,13) D=53  w0=39441146  mod28=10  c0=+0.806 c1=-0.806  RIGHT  rule_state=1
+  cfg( 0,13) D=54  w0=39680089  mod28= 1  c0=+0.979 c1=-0.979  RIGHT  rule_state=1
+  cfg( 0,13) D=55  w0=39919051  mod28=11  c0=+0.979 c1=-0.979  RIGHT  rule_state=0
+  cfg( 0,13) D=56  w0=40157995  mod28= 3  c0=+0.931 c1=-0.931  RIGHT  rule_state=0
+  cfg(13,13) D= 1  w0=40396430  mod28=18  c0=+0.927 c1=-0.927  RIGHT  rule_state=1
+  cfg(13,13) D= 2  w0=40635392  mod28= 0  c0=+0.925 c1=-0.925  RIGHT  rule_state=1
+  cfg(13,13) D= 3  w0=40874345  mod28= 1  c0=+0.945 c1=-0.945  RIGHT  rule_state=1
+  cfg(13,13) D= 4  w0=41113290  mod28=22  c0=+0.977 c1=-0.977  RIGHT  rule_state=1
+  cfg(13,13) D= 5  w0=41352240  mod28=20  c0=+0.908 c1=-0.908  RIGHT  rule_state=1
+  cfg(13,13) D= 6  w0=41591186  mod28=14  c0=+0.949 c1=-0.949  RIGHT  rule_state=0
+  cfg(13,13) D= 7  w0=41830142  mod28=18  c0=+0.990 c1=-0.990  RIGHT  rule_state=1
+  cfg(13,13) D= 8  w0=42069089  mod28=13  c0=+0.981 c1=-0.981  RIGHT  rule_state=1
+  cfg(13,13) D= 9  w0=42308041  mod28=13  c0=+0.914 c1=-0.914  RIGHT  rule_state=0
+  cfg(13,13) D=10  w0=42546994  mod28=14  c0=+0.937 c1=-0.937  RIGHT  rule_state=0
+  cfg(13,13) D=11  w0=42785972  mod28=12  c0=+0.982 c1=-0.982  RIGHT  rule_state=0
+  cfg(13,13) D=12  w0=43024926  mod28=14  c0=+0.908 c1=-0.908  RIGHT  rule_state=0
+  cfg(13,13) D=13  w0=43263872  mod28= 8  c0=+0.949 c1=-0.949  RIGHT  rule_state=1
+  cfg(13,13) D=14  w0=43502828  mod28=12  c0=+0.831 c1=-0.831  RIGHT  rule_state=0
+  cfg(13,13) D=15  w0=43741776  mod28= 8  c0=+0.980 c1=-0.980  RIGHT  rule_state=1
+  cfg(13,13) D=16  w0=43980732  mod28=12  c0=+0.901 c1=-0.901  RIGHT  rule_state=1
+  cfg(13,13) D=17  w0=44219679  mod28= 7  c0=+0.941 c1=-0.941  RIGHT  rule_state=1
+  cfg(13,13) D=18  w0=44458631  mod28= 7  c0=+0.960 c1=-0.960  RIGHT  rule_state=1
+  cfg(13,13) D=19  w0=44697584  mod28= 8  c0=+0.865 c1=-0.865  RIGHT  rule_state=0
+  cfg(13,13) D=20  w0=44936537  mod28= 9  c0=+0.984 c1=-0.984  RIGHT  rule_state=1
+  cfg(13,13) D=21  w0=45175488  mod28= 8  c0=+0.926 c1=-0.926  RIGHT  rule_state=0
+  cfg(13,13) D=22  w0=45414436  mod28= 4  c0=+0.958 c1=-0.958  RIGHT  rule_state=0
+  cfg(13,13) D=23  w0=45653404  mod28=20  c0=+0.943 c1=-0.943  RIGHT  rule_state=1
+  cfg(13,13) D=24  w0=45892356  mod28=20  c0=+0.961 c1=-0.961  RIGHT  rule_state=0
+  cfg(13,13) D=25  w0=46131314  mod28=26  c0=+0.967 c1=-0.967  RIGHT  rule_state=1
+  cfg(13,13) D=26  w0=46370264  mod28=24  c0=+0.889 c1=-0.889  RIGHT  rule_state=0
+  cfg(13,13) D=27  w0=46609224  mod28= 4  c0=+0.983 c1=-0.983  RIGHT  rule_state=1
+  cfg(13,13) D=28  w0=46848174  mod28= 2  c0=+0.928 c1=-0.928  RIGHT  rule_state=1
+  cfg(13,13) D=29  w0=47087127  mod28= 3  c0=+0.948 c1=-0.948  RIGHT  rule_state=1
+  cfg(13,13) D=30  w0=47326081  mod28= 5  c0=+0.838 c1=-0.838  RIGHT  rule_state=1
+  cfg(13,13) D=31  w0=47565026  mod28=26  c0=+0.897 c1=-0.897  RIGHT  rule_state=0
+  cfg(13,13) D=32  w0=47803976  mod28=24  c0=+0.931 c1=-0.931  RIGHT  rule_state=1
+  cfg(13,13) D=33  w0=48042922  mod28=18  c0=+0.844 c1=-0.844  RIGHT  rule_state=1
+  cfg(13,13) D=34  w0=48281878  mod28=22  c0=+0.974 c1=-0.974  RIGHT  rule_state=0
+  cfg(13,13) D=35  w0=48520834  mod28=26  c0=+0.980 c1=-0.980  RIGHT  rule_state=0
+  cfg(13,13) D=36  w0=48759804  mod28=16  c0=+0.967 c1=-0.967  RIGHT  rule_state=0
+  cfg(13,13) D=37  w0=48998756  mod28=16  c0=+0.981 c1=-0.981  RIGHT  rule_state=1
+  cfg(13,13) D=38  w0=49237718  mod28=26  c0=+0.879 c1=-0.879  RIGHT  rule_state=1
+  cfg(13,13) D=39  w0=49476671  mod28=27  c0=+0.987 c1=-0.987  RIGHT  rule_state=0
+  cfg(13,13) D=40  w0=49715616  mod28=20  c0=+0.949 c1=-0.949  RIGHT  rule_state=0
+  cfg(13,13) D=41  w0=49954566  mod28=18  c0=+0.971 c1=-0.971  RIGHT  rule_state=0
+  cfg(13,13) D=42  w0=50193512  mod28=12  c0=+0.989 c1=-0.989  RIGHT  rule_state=1
+  cfg(13,13) D=43  w0=50432468  mod28=16  c0=+0.926 c1=-0.926  RIGHT  rule_state=1
+  cfg(13,13) D=44  w0=50671415  mod28=11  c0=+0.960 c1=-0.960  RIGHT  rule_state=1
+  cfg(13,13) D=45  w0=50910367  mod28=11  c0=+0.866 c1=-0.866  RIGHT  rule_state=0
+  cfg(13,13) D=46  w0=51149320  mod28=12  c0=+0.895 c1=-0.895  RIGHT  rule_state=1
+  cfg(13,13) D=47  w0=51388298  mod28=10  c0=+0.960 c1=-0.960  RIGHT  rule_state=1
+  cfg(13,13) D=48  w0=51627252  mod28=12  c0=+0.972 c1=-0.972  RIGHT  rule_state=0
+  cfg(13,13) D=49  w0=51866198  mod28= 6  c0=+0.913 c1=-0.913  RIGHT  rule_state=1
+  cfg(13,13) D=50  w0=52105154  mod28=10  c0=+0.926 c1=-0.926  RIGHT  rule_state=0
+  cfg(13,13) D=51  w0=52344102  mod28= 6  c0=+0.958 c1=-0.958  RIGHT  rule_state=1
+  cfg(13,13) D=52  w0=52583058  mod28=10  c0=+0.967 c1=-0.967  RIGHT  rule_state=0
+  cfg(13,13) D=53  w0=52822005  mod28= 5  c0=+0.900 c1=-0.900  RIGHT  rule_state=1
+  cfg(13,13) D=54  w0=53060957  mod28= 5  c0=+0.990 c1=-0.990  RIGHT  rule_state=0
+  cfg(13,13) D=55  w0=53299910  mod28= 6  c0=+0.948 c1=-0.948  RIGHT  rule_state=0
+  cfg(13,13) D=56  w0=53538863  mod28= 7  c0=+0.843 c1=-0.843  RIGHT  rule_state=1
+  cfg(20,13) D= 1  w0=53777302  mod28=26  c0=+0.955 c1=-0.955  RIGHT  rule_state=1
+  cfg(20,13) D= 2  w0=54016246  mod28=18  c0=+0.982 c1=-0.982  RIGHT  rule_state=0
+  cfg(20,13) D= 3  w0=54255200  mod28=20  c0=+0.911 c1=-0.911  RIGHT  rule_state=1
+  cfg(20,13) D= 4  w0=54494158  mod28=26  c0=+0.920 c1=-0.920  RIGHT  rule_state=1
+  cfg(20,13) D= 5  w0=54733108  mod28=24  c0=+0.950 c1=-0.950  RIGHT  rule_state=1
+  cfg(20,13) D= 6  w0=54972055  mod28=19  c0=+0.974 c1=-0.974  RIGHT  rule_state=0
+  cfg(20,13) D= 7  w0=55211010  mod28=22  c0=+0.983 c1=-0.983  RIGHT  rule_state=0
+  cfg(20,13) D= 8  w0=55449957  mod28=17  c0=+0.992 c1=-0.992  RIGHT  rule_state=1
+  cfg(20,13) D= 9  w0=55688914  mod28=22  c0=+0.943 c1=-0.943  RIGHT  rule_state=1
+  cfg(20,13) D=10  w0=55927874  mod28= 2  c0=+0.991 c1=-0.991  RIGHT  rule_state=0
+  cfg(20,13) D=11  w0=56166818  mod28=22  c0=+0.871 c1=-0.871  RIGHT  rule_state=0
+  cfg(20,13) D=12  w0=56405780  mod28= 4  c0=+0.976 c1=-0.976  RIGHT  rule_state=1
+  cfg(20,13) D=13  w0=56644744  mod28=16  c0=+0.971 c1=-0.971  RIGHT  rule_state=0
+  cfg(20,13) D=14  w0=56883700  mod28=20  c0=+0.876 c1=-0.876  RIGHT  rule_state=1
+  cfg(20,13) D=15  w0=57122648  mod28=16  c0=+0.920 c1=-0.920  RIGHT  rule_state=1
+  cfg(20,13) D=16  w0=57361600  mod28=16  c0=+0.944 c1=-0.944  RIGHT  rule_state=1
+  cfg(20,13) D=17  w0=57600547  mod28=11  c0=+0.972 c1=-0.972  RIGHT  rule_state=1
+  cfg(20,13) D=18  w0=57839504  mod28=16  c0=+0.875 c1=-0.875  RIGHT  rule_state=1
+  cfg(20,13) D=19  w0=58078452  mod28=12  c0=+0.990 c1=-0.990  RIGHT  rule_state=1
+  cfg(20,13) D=20  w0=58317396  mod28= 4  c0=+0.990 c1=-0.990  RIGHT  rule_state=0
+  cfg(20,13) D=21  w0=58556345  mod28= 1  c0=+0.980 c1=-0.980  RIGHT  rule_state=0
+  cfg(20,13) D=22  w0=58795316  mod28=20  c0=+0.839 c1=-0.839  RIGHT  rule_state=0
+  cfg(20,13) D=23  w0=59034280  mod28= 4  c0=+0.959 c1=-0.959  RIGHT  rule_state=1
+  cfg(20,13) D=24  w0=59273228  mod28= 0  c0=+0.880 c1=-0.880  RIGHT  rule_state=1
+  cfg(20,13) D=25  w0=59512186  mod28= 6  c0=+0.889 c1=-0.889  RIGHT  rule_state=0
+  cfg(20,13) D=26  w0=59751136  mod28= 4  c0=+0.925 c1=-0.925  RIGHT  rule_state=0
+  cfg(20,13) D=27  w0=59990094  mod28=10  c0=+0.990 c1=-0.990  RIGHT  rule_state=1
+  cfg(20,13) D=28  w0=60229042  mod28= 6  c0=+0.963 c1=-0.963  RIGHT  rule_state=0
+  cfg(20,13) D=29  w0=60467986  mod28=26  c0=+0.986 c1=-0.986  RIGHT  rule_state=0
+  cfg(20,13) D=30  w0=60706935  mod28=23  c0=+0.937 c1=-0.937  RIGHT  rule_state=0
+  cfg(20,13) D=31  w0=60945894  mod28= 2  c0=+0.943 c1=-0.943  RIGHT  rule_state=0
+  cfg(20,13) D=32  w0=61184844  mod28= 0  c0=+0.965 c1=-0.965  RIGHT  rule_state=0
+  cfg(20,13) D=33  w0=61423790  mod28=22  c0=+0.900 c1=-0.900  RIGHT  rule_state=1
+  cfg(20,13) D=34  w0=61662758  mod28=10  c0=+0.875 c1=-0.875  RIGHT  rule_state=0
+  cfg(20,13) D=35  w0=61901714  mod28=14  c0=+0.893 c1=-0.893  RIGHT  rule_state=0
+  cfg(20,13) D=36  w0=62140676  mod28=24  c0=+0.982 c1=-0.982  RIGHT  rule_state=1
+  cfg(20,13) D=37  w0=62379628  mod28=24  c0=+0.918 c1=-0.918  RIGHT  rule_state=0
+  cfg(20,13) D=38  w0=62618572  mod28=16  c0=+0.962 c1=-0.962  RIGHT  rule_state=0
+  cfg(20,13) D=39  w0=62857526  mod28=18  c0=+0.862 c1=-0.862  RIGHT  rule_state=1
+  cfg(20,13) D=40  w0=63096484  mod28=24  c0=+0.978 c1=-0.978  RIGHT  rule_state=0
+  cfg(20,13) D=41  w0=63335434  mod28=22  c0=+0.910 c1=-0.910  RIGHT  rule_state=1
+  cfg(20,13) D=42  w0=63574381  mod28=17  c0=+0.948 c1=-0.948  RIGHT  rule_state=1
+  cfg(20,13) D=43  w0=63813336  mod28=20  c0=+0.962 c1=-0.962  RIGHT  rule_state=0
+  cfg(20,13) D=44  w0=64052283  mod28=15  c0=+0.888 c1=-0.888  RIGHT  rule_state=0
+  cfg(20,13) D=45  w0=64291240  mod28=20  c0=+0.987 c1=-0.987  RIGHT  rule_state=0
+  cfg(20,13) D=46  w0=64530200  mod28= 0  c0=+0.906 c1=-0.906  RIGHT  rule_state=1
+  cfg(20,13) D=47  w0=64769144  mod28=20  c0=+0.951 c1=-0.951  RIGHT  rule_state=1
+  cfg(20,13) D=48  w0=65008106  mod28= 2  c0=+0.950 c1=-0.950  RIGHT  rule_state=1
+  cfg(20,13) D=49  w0=65247070  mod28=14  c0=+0.942 c1=-0.942  RIGHT  rule_state=1
+  cfg(20,13) D=50  w0=65486026  mod28=18  c0=+0.955 c1=-0.955  RIGHT  rule_state=1
+  cfg(20,13) D=51  w0=65724974  mod28=14  c0=+0.871 c1=-0.871  RIGHT  rule_state=0
+  cfg(20,13) D=52  w0=65963926  mod28=14  c0=+0.986 c1=-0.986  RIGHT  rule_state=1
+  cfg(20,13) D=53  w0=66202873  mod28= 9  c0=+0.943 c1=-0.943  RIGHT  rule_state=0
+  cfg(20,13) D=54  w0=66441830  mod28=14  c0=+0.952 c1=-0.952  RIGHT  rule_state=1
+  cfg(20,13) D=55  w0=66680778  mod28=10  c0=+0.976 c1=-0.976  RIGHT  rule_state=0
+  cfg(20,13) D=56  w0=66919722  mod28= 2  c0=+0.991 c1=-0.991  RIGHT  rule_state=0
+  cfg( 2,13) D= 1  w0=67158156  mod28=16  c0=+0.926 c1=-0.926  RIGHT  rule_state=1
+  cfg( 2,13) D= 2  w0=67397118  mod28=26  c0=+0.990 c1=-0.990  RIGHT  rule_state=0
+  cfg( 2,13) D= 3  w0=67636072  mod28= 0  c0=+0.941 c1=-0.941  RIGHT  rule_state=0
+  cfg( 2,13) D= 4  w0=67875017  mod28=21  c0=+0.863 c1=-0.863  RIGHT  rule_state=1
+  cfg( 2,13) D= 5  w0=68113967  mod28=19  c0=+0.902 c1=-0.902  RIGHT  rule_state=0
+  cfg( 2,13) D= 6  w0=68352913  mod28=13  c0=+0.945 c1=-0.945  RIGHT  rule_state=0
+  cfg( 2,13) D= 7  w0=68591869  mod28=17  c0=+0.957 c1=-0.957  RIGHT  rule_state=1
+  cfg( 2,13) D= 8  w0=68830816  mod28=12  c0=+0.980 c1=-0.980  RIGHT  rule_state=1
+  cfg( 2,13) D= 9  w0=69069768  mod28=12  c0=+0.989 c1=-0.989  RIGHT  rule_state=1
+  cfg( 2,13) D=10  w0=69308718  mod28=10  c0=+0.941 c1=-0.941  RIGHT  rule_state=0
+  cfg( 2,13) D=11  w0=69547698  mod28=10  c0=+0.982 c1=-0.982  RIGHT  rule_state=1
+  cfg( 2,13) D=12  w0=69786652  mod28=12  c0=+0.987 c1=-0.987  RIGHT  rule_state=0
+  cfg( 2,13) D=13  w0=70025598  mod28= 6  c0=+0.948 c1=-0.948  RIGHT  rule_state=1
+  cfg( 2,13) D=14  w0=70264554  mod28=10  c0=+0.830 c1=-0.830  RIGHT  rule_state=1
+  cfg( 2,13) D=15  w0=70503502  mod28= 6  c0=+0.981 c1=-0.981  RIGHT  rule_state=1
+  cfg( 2,13) D=16  w0=70742459  mod28=11  c0=+0.984 c1=-0.984  RIGHT  rule_state=1
+  cfg( 2,13) D=17  w0=70981406  mod28= 6  c0=+0.937 c1=-0.937  RIGHT  rule_state=0
+  cfg( 2,13) D=18  w0=71220358  mod28= 6  c0=+0.958 c1=-0.958  RIGHT  rule_state=0
+  cfg( 2,13) D=19  w0=71459311  mod28= 7  c0=+0.860 c1=-0.860  RIGHT  rule_state=1
+  cfg( 2,13) D=20  w0=71698264  mod28= 8  c0=+0.982 c1=-0.982  RIGHT  rule_state=0
+  cfg( 2,13) D=21  w0=71937214  mod28= 6  c0=+0.926 c1=-0.926  RIGHT  rule_state=1
+  cfg( 2,13) D=22  w0=72176160  mod28= 0  c0=+0.962 c1=-0.962  RIGHT  rule_state=0
+  cfg( 2,13) D=23  w0=72415128  mod28=16  c0=+0.947 c1=-0.947  RIGHT  rule_state=1
+  cfg( 2,13) D=24  w0=72654080  mod28=16  c0=+0.966 c1=-0.966  RIGHT  rule_state=1
+  cfg( 2,13) D=25  w0=72893040  mod28=24  c0=+0.966 c1=-0.966  RIGHT  rule_state=0
+  cfg( 2,13) D=26  w0=73131990  mod28=22  c0=+0.889 c1=-0.889  RIGHT  rule_state=1
+  cfg( 2,13) D=27  w0=73370950  mod28= 2  c0=+0.891 c1=-0.891  RIGHT  rule_state=1
+  cfg( 2,13) D=28  w0=73609901  mod28= 1  c0=+0.924 c1=-0.924  RIGHT  rule_state=1
+  cfg( 2,13) D=29  w0=73848854  mod28= 2  c0=+0.944 c1=-0.944  RIGHT  rule_state=0
+  cfg( 2,13) D=30  w0=74087808  mod28= 4  c0=+0.961 c1=-0.961  RIGHT  rule_state=0
+  cfg( 2,13) D=31  w0=74326753  mod28=25  c0=+0.894 c1=-0.894  RIGHT  rule_state=1
+  cfg( 2,13) D=32  w0=74565703  mod28=23  c0=+0.928 c1=-0.928  RIGHT  rule_state=1
+  cfg( 2,13) D=33  w0=74804649  mod28=17  c0=+0.837 c1=-0.837  RIGHT  rule_state=0
+  cfg( 2,13) D=34  w0=75043602  mod28=18  c0=+0.977 c1=-0.977  RIGHT  rule_state=1
+  cfg( 2,13) D=35  w0=75282558  mod28=22  c0=+0.887 c1=-0.887  RIGHT  rule_state=0
+  cfg( 2,13) D=36  w0=75521530  mod28=14  c0=+0.966 c1=-0.966  RIGHT  rule_state=0
+  cfg( 2,13) D=37  w0=75760482  mod28=14  c0=+0.980 c1=-0.980  RIGHT  rule_state=1
+  cfg( 2,13) D=38  w0=75999444  mod28=24  c0=+0.877 c1=-0.877  RIGHT  rule_state=1
+  cfg( 2,13) D=39  w0=76238398  mod28=26  c0=+0.901 c1=-0.901  RIGHT  rule_state=0
+  cfg( 2,13) D=40  w0=76477343  mod28=19  c0=+0.991 c1=-0.991  RIGHT  rule_state=1
+  cfg( 2,13) D=41  w0=76716293  mod28=17  c0=+0.970 c1=-0.970  RIGHT  rule_state=1
+  cfg( 2,13) D=42  w0=76955239  mod28=11  c0=+0.906 c1=-0.906  RIGHT  rule_state=0
+  cfg( 2,13) D=43  w0=77194195  mod28=15  c0=+0.922 c1=-0.922  RIGHT  rule_state=1
+  cfg( 2,13) D=44  w0=77433142  mod28=10  c0=+0.956 c1=-0.956  RIGHT  rule_state=0
+  cfg( 2,13) D=45  w0=77672094  mod28=10  c0=+0.974 c1=-0.974  RIGHT  rule_state=1
+  cfg( 2,13) D=46  w0=77911044  mod28= 8  c0=+0.902 c1=-0.902  RIGHT  rule_state=1
+  cfg( 2,13) D=47  w0=78150024  mod28= 8  c0=+0.958 c1=-0.958  RIGHT  rule_state=0
+  cfg( 2,13) D=48  w0=78388978  mod28=10  c0=+0.857 c1=-0.857  RIGHT  rule_state=0
+  cfg( 2,13) D=49  w0=78627924  mod28= 4  c0=+0.987 c1=-0.987  RIGHT  rule_state=0
+  cfg( 2,13) D=50  w0=78866880  mod28= 8  c0=+0.990 c1=-0.990  RIGHT  rule_state=0
+  cfg( 2,13) D=51  w0=79105828  mod28= 4  c0=+0.958 c1=-0.958  RIGHT  rule_state=1
+  cfg( 2,13) D=52  w0=79344785  mod28= 9  c0=+0.842 c1=-0.842  RIGHT  rule_state=0
+  cfg( 2,13) D=53  w0=79583732  mod28= 4  c0=+0.896 c1=-0.896  RIGHT  rule_state=0
+  cfg( 2,13) D=54  w0=79822684  mod28= 4  c0=+0.989 c1=-0.989  RIGHT  rule_state=0
+  cfg( 2,13) D=55  w0=80061637  mod28= 5  c0=+0.945 c1=-0.945  RIGHT  rule_state=1
+  cfg( 2,13) D=56  w0=80300590  mod28= 6  c0=+0.968 c1=-0.968  RIGHT  rule_state=1

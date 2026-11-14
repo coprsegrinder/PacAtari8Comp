@@ -1,0 +1,47 @@
+Log: 74281 frames (f=39..74319), 31 events.
+Games started: 2 at frames [458, 6285], with zp_1A (two players) = ['0', '1']
+
+A. Game A (one player)
+  ok   game A starts with one player (zp_1A = 0) at f=458
+  ok   game A: Sub_AB26 called for player 1 then player 2 (X=[42, 71])
+     scores P1 100 P2 -; high score before -, after 100
+  ok   game A leaves a non-empty high score of at most 3 digits (100)
+
+B. SELECT in title state 4
+  ok   game A's countdown completed (zp_1E = 0) and zp_19 := 4 at f=5933
+  ok   KEY_SELECT seen with zp_19 = 4 at f=[6043] (zp_1A ['0'])
+  ok   before the key: zp_19 = 4, zp_1A = 0
+  ok   after the key: zp_19 = [3, 3, 3, 3], zp_1A = [1, 1, 1, 1] (state 3, two players)
+     SET_Z19 events after the key: [(6043, '3')]
+  ok   game B started from title state 3 with two players (zp_1A = 1) at f=6285
+
+C. The aid (player 2's score set once)
+  ok   player 2's score reads 1500 (1500) first at f=8044
+  ok   the poke happens while player 2 plays (CurrentPlayer = 1, zp_20 = 0); score before: 100
+     frames of player 2's play before the poke: 299
+     player 2's score after the poke (distinct values): ['00', '1500']
+     the change was made by the harness, but the later increases are the game's own AddToScore: yes
+
+D. Game over of game B: Sub_AB26 for both players
+  ok   calls in game B: X=[42, 71] at f=[13476, 13476] (player 1 first, then player 2)
+     P1: score 400, high score 100 -> 400; model: copy 400; log: 3 digit(s) copied (y=[3, 4, 5])
+  ok   P1: the log equals the model (copy, 3 digits copied)
+     P2: score 1500, high score 400 -> 1500; model: copy 1500; log: 4 digit(s) copied (y=[2, 3, 4, 5])
+  ok   P2: the log equals the model (copy, 4 digits copied)
+  ok   player 2's score is above the high score
+  ok   a 4-digit score (1500) beats a non-empty 3-digit high score (400)
+     player 1's own compare came first: score 400 against high score 100 = 'copy' (the model and the log agree, checked above); player 2 then compares against the high score player 1 left behind (400)
+  ok   player 2's compare starts from the high score player 1's compare left (400)
+  ok   the new high score is player 2's score: 1500
+     GAME_OVER_TEXT events (final = zp_23 0): [(12142, '2'), (13476, '0')]
+
+E. OPTION in title state 4
+  ok   game B's countdown completed and zp_19 := 4 at f=15277
+  ok   KEY_OPTION seen with zp_19 = 4 at f=[15387] (StartLevel ['0'])
+  ok   before the key: zp_19 = 4, StartLevel = 0
+  ok   after the key: zp_19 = 3 and StartLevel = [1, 1, 1] (+1)
+
+F. High score writes
+  ok   writes to $2039-$203E after the first 100 frames come from PC {'AB3E': 10}
+
+PROBLEMS: none

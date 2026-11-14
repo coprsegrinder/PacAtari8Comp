@@ -1,0 +1,11 @@
+Set 'nohp': per row, correlation / fitted scale (1e-3) with linear, altirra, cfggain, invtable.
+  ch4 only (refere linear 0.9997 / 17.81 | altirr 0.9997 / 17.81 | cfggai 0.9997 / 17.81 | invtab 0.9997 / 17.81
+  ch1 + ch4, no hi linear 0.9997 / 16.39 | altirr 0.9995 / 17.82 | cfggai 0.9997 / 17.83 | invtab 0.9998 / 17.83
+  ch1 + ch4, no hi linear 0.9984 / 16.38 | altirr 0.9947 / 17.72 | cfggai 0.9984 / 17.81 | invtab 0.9997 / 17.81
+  ch1 + ch4, no hi linear 0.9984 / 16.38 | altirr 0.9946 / 17.73 | cfggai 0.9984 / 17.82 | invtab 0.9997 / 17.82
+  ch1 + ch4, no hi linear 0.9984 / 16.38 | altirr 0.9946 / 17.73 | cfggai 0.9984 / 17.82 | invtab 0.9997 / 17.82
+  ch1 + ch4, no hi linear 0.9984 / 16.38 | altirr 0.9947 / 17.73 | cfggai 0.9984 / 17.81 | invtab 0.9997 / 17.81
+  ch1 + ch4, no hi linear 0.9984 / 16.38 | altirr 0.9946 / 17.73 | cfggai 0.9984 / 17.82 | invtab 0.9997 / 17.82
+  ch1 + ch4, no hi linear 0.9984 / 16.38 | altirr 0.9946 / 17.73 | cfggai 0.9984 / 17.82 | invtab 0.9997 / 17.82
+  ch1 + ch4, no hi linear 0.9987 / 16.40 | altirr 0.9958 / 17.77 | cfggai 0.9987 / 17.84 | invtab 0.9997 / 17.84
+Spread of the fitted scale over the 9 rows (max / min - 1): linear 8.8%, altirra 0.6%, cfggain 0.1%, invtable 0.1%
