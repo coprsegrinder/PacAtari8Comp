@@ -1,0 +1,9 @@
+Calls of Sub_AB57 in the log: 119351 (0 in the sweep, 119351 natural: the game's own entities on the tunnel row).
+Deviations from the model (mask, X after the call, pointer, picture bytes, Pac-Man's zp_80): 0
+
+Coverage of the sweep (X values seen at the call, per entity and direction):
+Masks seen in the sweep (count of calls): 
+Wraps (X moved to the other side): left Pac-Man natural: 9
+Natural calls (the game's own entities on the tunnel row, before the sweep): entity 0 inside the maze: 3673, entity 1 inside the maze: 53893, entity 2 inside the maze: 5738, entity 3 inside the maze: 53862, entity 4 inside the maze: 1833, entity 4 left of $39: 208, entity 4 right of $BF: 144
+
+PROBLEMS: none

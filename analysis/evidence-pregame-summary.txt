@@ -1,0 +1,38 @@
+Title screen in state 3 (screen RAM $1C00-$1DFF, every frame; the bytes Sub_A6CC writes compared with the ROM tables):
+  one player (zp_1A = 0): 209 frames logged, 207 compared (the first two of a phase skipped), 0 with a deviation
+      screen text of frame 496:
+        $1C54  '1'
+        $1C56  'PLAYER GAME'
+        $1C90  '2'
+        $1C92  'PLAYER GAME'
+        $1C7A  'PRESS SELECT FOR'
+        $1CF2  'PRESS OPTION TO '
+        $1D56  'PRESS START TO  '
+        $1D05  'CHANGE DIFFICULTY'
+        $1D6D  'PLAY GAME'
+  two players (zp_1A = 1): 142 frames logged, 140 compared (the first two of a phase skipped), 0 with a deviation
+      screen text of frame 638:
+        $1C54  '2'
+        $1C56  'PLAYER GAME'
+        $1C90  '1'
+        $1C92  'PLAYER GAME'
+        $1C7A  'PRESS SELECT FOR'
+        $1CF2  'PRESS OPTION TO '
+        $1D56  'PRESS START TO  '
+        $1D05  'CHANGE DIFFICULTY'
+        $1D6D  'PLAY GAME'
+
+Status-line labels in a two-player game (12200 frames, from the game's first frame to its end; "1UP" = $11 $35 $30 at $2004, "2UP" = $12 $35 $30 at $2021):
+    3206  player 1 on turn: other label steady, own label blank
+    3246  player 1 on turn: other label steady, own label shown
+    1941  player 2 on turn: other label steady, own label blank
+    3807  player 2 on turn: other label steady, own label shown
+  player 1 on turn, own label shown: 203 stretches, length 1..25 frames (median 16)
+  player 1 on turn, own label blank: 202 stretches, length 4..16 frames (median 16)
+  player 2 on turn, own label shown: 125 stretches, length 7..30 frames (median 16)
+  player 2 on turn, own label blank: 122 stretches, length 16..16 frames (median 16)
+  title frames (z19, zp_1A, label 1, label 2): (3, 0, '000000', '000000'): 1; (3, 0, '113530', '000000'): 208; (3, 1, '113530', '000000'): 1; (3, 1, '113530', '123530'): 141; (4, 1, '113530', '123530'): 28921
+
+Maze copies at the turn switches: 8 saves and 5 loads checked, the two players' last saved mazes differ in 105 bytes; deviations: 0
+
+PROBLEMS: none
