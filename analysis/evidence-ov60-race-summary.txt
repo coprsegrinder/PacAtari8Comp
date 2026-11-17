@@ -1,0 +1,6 @@
+OV-60 forced-interrupt run in tools/cpu6502.py (tools/check_ov60_race.py): START ($A537), the restart's clear loop and the code up to $A48D; the vertical-blank handler ($A5FD) entered before every main instruction (144 positions) of 40 random game states with DotsEaten = $0103 for both players
+runs: 5760; race ends (LevelComplete $26 = 1 and PlayStarted $20 = 0 at $A48D): 0
+interrupt in the clear loop BEFORE $26 is cleared (X >= 7: DotsEaten $34-$37 cleared at X = $14-$17, so for X <= $13 it is 0): 3000 runs, the VBI left $26 = 1 in 159, race at the end in 0
+interrupt just after the clear of $26 (X = 6): 120 runs, the VBI left $26 = 1 in 0, race at the end in 0
+interrupt in the window the search found: after $26 is cleared, before $21 and $20 are (X <= 5): 720 runs, the VBI left $26 = 1 in 0, race at the end in 0
+interrupt anywhere else (before the loop, after it): 1920 runs, the VBI left $26 = 1 in 48, race at the end in 0
