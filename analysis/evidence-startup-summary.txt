@@ -1,0 +1,78 @@
+Startup audit (tools/altirra_startup.cmd, tools/altirra_warmstart.cmd, tools/startup_poison.py, tools/analyze_startup.py)
+
+milestones (frame / scan line / colour clock) per machine:
+  NTSC, OS-B: INIT called at frame 22 (return to $F1BC)
+    MS_RUN           f=32   vp=63  hp=6   s=$FF p=$31 a=$04 x=$00 y=$80
+    MS_HSTEXT        f=32   vp=65  hp=98  
+    MS_ZPCLEAR       f=32   vp=90  hp=78  
+    MS_MAZE          f=34   vp=207 hp=80  
+    MS_NIBBLES       f=36   vp=70  hp=6   
+    MS_CHARSET       f=39   vp=23  hp=32  
+    MS_TITLECHARSET  f=39   vp=187 hp=100 
+    MS_TAIL          f=39   vp=195 hp=13  
+    MS_IRQ           f=39   vp=195 hp=44  
+    MS_SETVBV        f=39   vp=195 hp=76  a=$07 x=$A5 y=$FD
+    MS_SETVBV_DONE   f=39   vp=197 hp=70  vvblkd=$A5FD
+    MS_RESTART       f=39   vp=197 hp=109 
+    MS_COPY1         f=39   vp=204 hp=40  
+    MS_COPIES_DONE   f=41   vp=183 hp=9   gs=2
+    GameState writes (pc, value, frame): $F140=0 f3; $A395=0 f32; $A3A1=0 f32; $A3A1=1 f32; $A70A=1 f40; $A70A=2 f40; $A70A=2 f286; $A70A=3 f286
+    cartridge header reads (address by pc): $BFFC@$F244 $BFFC@$F247 $BFFD@$F24C $BFFC@$F254 $BFFC@$F1B3 $BFFE@$F239 $BFFF@$F239 $BFFD@$F1EE $BFFD@$F208 $BFFA@$F20F $BFFB@$F20F
+  PAL, OS-B: INIT called at frame 19 (return to $F1BC)
+    MS_RUN           f=26   vp=307 hp=93  s=$FF p=$31 a=$04 x=$00 y=$80
+    MS_HSTEXT        f=26   vp=309 hp=15  
+    MS_ZPCLEAR       f=27   vp=11  hp=71  
+    MS_MAZE          f=28   vp=291 hp=74  
+    MS_NIBBLES       f=30   vp=22  hp=91  
+    MS_CHARSET       f=32   vp=89  hp=56  
+    MS_TITLECHARSET  f=32   vp=244 hp=73  
+    MS_TAIL          f=32   vp=257 hp=19  
+    MS_IRQ           f=32   vp=257 hp=36  
+    MS_SETVBV        f=32   vp=257 hp=52  a=$07 x=$A5 y=$FD
+    MS_SETVBV_DONE   f=32   vp=258 hp=40  vvblkd=$A5FD
+    MS_RESTART       f=32   vp=258 hp=69  
+    MS_COPY1         f=32   vp=262 hp=30  
+    MS_COPIES_DONE   f=34   vp=118 hp=7   gs=2
+    GameState writes (pc, value, frame): $F140=0 f3; $A395=0 f27; $A3A1=0 f27; $A3A1=1 f27; $A70A=1 f34; $A70A=2 f34; $A70A=2 f281; $A70A=3 f281
+    cartridge header reads (address by pc): $BFFC@$F244 $BFFC@$F247 $BFFD@$F24C $BFFC@$F254 $BFFC@$F1B3 $BFFE@$F239 $BFFF@$F239 $BFFD@$F1EE $BFFD@$F208 $BFFA@$F20F $BFFB@$F20F
+  NTSC, built-in OS: INIT called at frame 19 (return to $F181)
+    MS_RUN           f=21   vp=257 hp=102 s=$FF p=$30 a=$04 x=$01 y=$01
+    MS_HSTEXT        f=21   vp=259 hp=24  
+    MS_ZPCLEAR       f=22   vp=11  hp=80  
+    MS_MAZE          f=24   vp=117 hp=48  
+    MS_NIBBLES       f=26   vp=3   hp=28  
+    MS_CHARSET       f=28   vp=227 hp=108 
+    MS_TITLECHARSET  f=29   vp=104 hp=105 
+    MS_TAIL          f=29   vp=111 hp=98  
+    MS_IRQ           f=29   vp=111 hp=113 
+    MS_SETVBV        f=29   vp=112 hp=12  a=$07 x=$A5 y=$FD
+    MS_SETVBV_DONE   f=29   vp=114 hp=72  vvblkd=$A5FD
+    MS_RESTART       f=29   vp=114 hp=110 
+    MS_COPY1         f=29   vp=121 hp=44  
+    MS_COPIES_DONE   f=31   vp=115 hp=52  gs=2
+    GameState writes (pc, value, frame): $F02E=0 f3; $A395=0 f22; $A3A1=0 f22; $A3A1=1 f22; $A70A=1 f30; $A70A=2 f30; $A70A=2 f276; $A70A=3 f276
+    cartridge header reads (address by pc): $BFFF@$F009 $BFFC@$F011 $BFFD@$F019 $BFFC@$F169 $BFFB@$F16E $BFFB@$F177 $BFFE@$F20B $BFFF@$F20B $BFFD@$F1D5 $BFFD@$F1F4 $BFFA@$F1F9 $BFFB@$F1F9
+
+state at the first pass of the key loop ($A4BA):
+  NTSC, OS-B: tables $0600-$07FF EQUAL to the interpreter's expansion; DMACTL=3E CHBASE=E0 NMIEN=C0 PMBASE=20 GRACTL=03 IRQEN=C0 SKCTL=07 AUDCTL=00
+  PAL, OS-B: tables $0600-$07FF EQUAL to the interpreter's expansion; DMACTL=3E CHBASE=E0 NMIEN=C0 PMBASE=20 GRACTL=03 IRQEN=C0 SKCTL=07 AUDCTL=00
+  NTSC, built-in OS: tables $0600-$07FF EQUAL to the interpreter's expansion; DMACTL=3E CHBASE=E0 NMIEN=C0 PMBASE=20 GRACTL=03 IRQEN=C0 SKCTL=07 AUDCTL=00
+
+state when the OS jumps to RUN:
+  NTSC, OS-B: s=$FF p=$31 a=$04 x=$00 y=$80; $0400-$043F all zero; $0B98-$0BFF all zero; $5E/$5F = $42 $9C; $45 = $00
+  PAL, OS-B: s=$FF p=$31 a=$04 x=$00 y=$80; $0400-$043F all zero; $0B98-$0BFF all zero; $5E/$5F = $42 $9C; $45 = $00
+  NTSC, built-in OS: s=$FF p=$30 a=$04 x=$01 y=$01; $0400-$043F all zero; $0B98-$0BFF all zero; $5E/$5F = $42 $9C; $45 = $00
+
+warm start (F5 posted to Altirra's window while the title ran): the OS writes GameState = 0 at $F16E (frame 14258), calls INIT again (frames 22, 14258; return into the OS at $F1BC), and jumps to RUN again at frame 14268 with S=$FF P=$31 A=$04 X=$00 Y=$80 (cold: S=$FF P=$31 A=$04 X=$00 Y=$80)
+  zero page at RUN, cold against warm: 2 of 256 bytes differ ($05 $08); the game's own ranges $18-$3F and $80-$FF (which Start clears): the same in both
+  $0400-$043F at the warm RUN: all zero
+  $0B98-$0BFF at the warm RUN: all zero
+
+what the game takes from the power-on state (interpreter: RAM filled with random bytes against zero, 4 fills, 900 frames with a START press and a joystick; game started at frame 481):
+  read before write: Copy0800To0C00     $0B98-$0BFF  -> destination in RAM
+  read before write: DliHandler2        $005E-$005F  -> destination in RAM
+  read before write: DrawAllInPlace     $0400-$0402 $040D-$040F  -> destination in RAM
+  read before write: InitDisplay2       $0410-$0411 $041D-$041F  -> destination in RAM
+  read before write: InitDisplay2       $0000-$000F  -> destination in ROM (no effect)
+  read before write: VbiHandler         $0045  -> destination in RAM
+  addresses the game wrote whose final value depends on the fill: $0045 $0F98-$0FFF $1398-$13FF $1798-$17FF $238E-$2390 $239B-$23B3 $2464-$2475 $2481-$2483 $2570-$2573 $257F-$2587 $2670-$2677 $2683-$2687 $2770-$2777 $2783-$2787
