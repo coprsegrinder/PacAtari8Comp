@@ -1,0 +1,6 @@
+OV-61 real key press (tools/altirra_realkey.cmd, tools/analyze_realkey.py): the space bar posted twice to Altirra's window from outside the emulated machine; no write to CH or any register by the harness
+game key-loop toggles of Paused: 2: f=15260 0->1; f=20033 1->0
+press 1: OS reads KBCODE at $FFCB (frame 15226), OS stores CH = $21 at $FFDC (frame 15226), the key loop toggles at frame 15260 (0 -> 1) and clears CH to $FF at $A4E6 (frame 15260)
+press 2: OS reads KBCODE at $FFCB (frame 20001), OS stores CH = $21 at $FFDC (frame 20001), the key loop toggles at frame 20033 (1 -> 0) and clears CH to $FF at $A4E6 (frame 20033)
+frames with Paused = 1 at the entry of the handler: 4774; paused frames run by the game ($A79C): 4774
+result: every press reached the game through the OS keyboard IRQ routine (KBCODE -> CH = $21 within 120 frames before the toggle (34 frames seen: the main loop polls CH, and the sessions run the game at 7.5 times real time)), two presses toggle 0 -> 1 -> 0
