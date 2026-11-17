@@ -1,0 +1,49 @@
+Main-loop audit (tools/run_mainloop_audit.ps1, tools/analyze_mainloop.py): 7 sessions (death 33361, frightened_cases 33368, fullgame 31198, fullgame2 28061, levels 33355, p2win 27290, pause 23777), 210410 frames of the deferred vertical-blank handler
+frames in a row (no handler entry missed): gaps 0; handler still running when the next entry came: 0
+
+class | frames | FrameDispatch scan lines min/median/max | handler (to XITVBV) min/median/max | run length (frames) min/median/max
+copyright setup            7 |  76 /  76 /  76 |  77 /  77 /  77 |     1 /     1 /     1  (7 runs)
+copyright wait           745 |   0 /   0 /   0 |   1 /   1 /   1 |     1 /     1 /   247  (7 runs)
+title menu             13650 |  18 /  18 /  18 |  19 /  19 /  19 |   171 /   171 / 11942  (8 runs)
+title after game        9232 |  16 /  16 /  16 |  17 /  17 /  17 |   109 /   200 /  8614  (5 runs)
+paused                   300 |   1 /   1 /   1 |   2 /   2 /   2 |   300 /   300 /   300  (1 runs)
+board start               17 |   3 /   3 /   4 |   5 /   5 /   6 |     1 /     1 /     1  (17 runs)
+game-over countdown    13444 |   1 /   1 /   2 |   2 /   2 /   4 |   606 /  1436 /  1808  (10 runs)
+level end               7480 |   1 /   1 / 232 |   2 /   2 / 234 |   187 /   187 /   187  (40 runs)
+start idle                59 |   1 /   1 /   1 |   1 /   1 /   3 |     3 /     3 /     4  (17 runs)
+start tune              4411 |   1 /   1 /  50 |   3 /   3 /  52 |   257 /   260 /   260  (17 runs)
+turn control             822 |   2 /   2 / 219 |   2 /   3 / 225 |     1 /     1 /    51  (72 runs)
+ready wait              6630 |   1 /   1 /  50 |   3 /   3 /  52 |    65 /    65 /    65  (102 runs)
+death                  25488 |   1 /   2 /  24 |   2 /   3 /  26 |   354 /   354 /   354  (72 runs)
+eaten pause             1023 |   3 /  11 /  42 |   3 /  11 /  44 |    33 /    33 /    33  (31 runs)
+play                  127102 |   6 /  35 /  99 |   7 /  39 / 103 |     1 /   732 / 22915  (151 runs)
+
+transitions between classes (frames):
+  ready wait           -> play                    102
+  death                -> turn control             72
+  play                 -> death                    72
+  turn control         -> ready wait               62
+  level end            -> ready wait               40
+  play                 -> level end                40
+  eaten pause          -> play                     31
+  play                 -> eaten pause              31
+  board start          -> start tune               17
+  start idle           -> board start              17
+  start tune           -> play                     17
+  turn control         -> game-over countdown      10
+  copyright setup      -> copyright wait            7
+  title menu           -> start idle                7
+  game-over countdown  -> title after game          5
+  copyright wait       -> start idle                4
+  copyright wait       -> title menu                3
+  game-over countdown  -> start idle                3
+  game-over countdown  -> title menu                2
+  title after game     -> start idle                2
+  title after game     -> title menu                2
+  paused               -> play                      1
+  play                 -> paused                    1
+  play                 -> start idle                1
+  play                 -> title menu                1
+
+the first session as runs (class, frames):
+  copyright setup 1; copyright wait 247; title menu 171; start idle 3; board start 1; start tune 260; play 745; death 354; turn control 1; ready wait 65; play 738; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; game-over countdown 1802; title after game 200; start idle 3; board start 1; start tune 260; play 779; death 354; turn control 1; ready wait 65; play 925; death 354; turn control 1; ready wait 65; play 142; death 354; turn control 1; game-over countdown 1072; start idle 4; board start 1; start tune 258; play 1135; death 354; turn control 1; ready wait 65; play 685; death 354; turn control 1; ready wait 65; play 841; death 354; turn control 1; game-over countdown 609; start idle 4; board start 1; start tune 258; play 702; death 354; turn control 1; ready wait 65; play 148; death 354; turn control 1; ready wait 65
