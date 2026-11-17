@@ -1,0 +1,299 @@
+Hardware / API audit (tools/run_hw_audit.ps1, tools/analyze_hw.py): 8 harness logs (death, frightened_cases, fullgame, gameover, inputs, levels, p2win, pregame), 116495 vertical-blank entries with a dump of the chips
+
+OS API: SETVBV calls 8 (all with SETVBV a=$07 x=$A5 y=$FD); vectors after the call: SETVBV_DONE vvblkd=$A5FD vvblki=$E7AE
+deferred vertical-blank handler: 116495 entries, frame gaps 0, OS clock (RTCLOK2) gaps 0
+display-list interrupts: DLI1 518677, DLI2 63775
+
+chips against the OS shadows at the entry of the vertical-blank handler (frames from 60 on):
+  CHACTL = CHACT                                        116327 checks,     0 violations
+  CHBASE = CHBAS                                        116327 checks,     0 violations
+  COLBK = (COLOR4 xor COLRSH) and DRKMSK                116327 checks,     0 violations
+  COLPF0 = (COLOR0 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  COLPF1 = (COLOR1 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  COLPF2 = (COLOR2 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  COLPF3 = (COLOR3 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  COLPM0 = (PCOLR0 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  COLPM1 = (PCOLR1 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  COLPM2 = (PCOLR2 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  COLPM3 = (PCOLR3 xor COLRSH) and DRKMSK               116327 checks,     0 violations
+  DLIST = SDLSTL/H                                      116327 checks,     0 violations
+  DMACTL = SDMCTL                                       116327 checks,     0 violations
+  IRQEN = POKMSK                                        116327 checks,     0 violations
+  PRIOR = GPRIOR                                        116327 checks,     0 violations
+chips against the last value the CPU wrote to them:
+  AUDC1                                                 116327 checks,     0 violations
+  AUDC2                                                 116327 checks,     0 violations
+  AUDC3                                                 116327 checks,     0 violations
+  AUDC4                                                 116327 checks,     0 violations
+  AUDCTL                                                116327 checks,     0 violations
+  AUDF1                                                 116327 checks,     0 violations
+  AUDF2                                                 116327 checks,     0 violations
+  AUDF3                                                 116327 checks,     0 violations
+  AUDF4                                                 116327 checks,     0 violations
+  CHACTL                                                116327 checks,     0 violations
+  CHBASE                                                116327 checks,     0 violations
+  COLBK                                                 116327 checks,     0 violations
+  COLPF0                                                116327 checks,     0 violations
+  COLPF1                                                116327 checks,     0 violations
+  COLPF2                                                116327 checks,     0 violations
+  COLPF3                                                116327 checks,     0 violations
+  COLPM0                                                116327 checks,     0 violations
+  COLPM1                                                116327 checks,     0 violations
+  COLPM2                                                116327 checks,     0 violations
+  COLPM3                                                116327 checks,     0 violations
+  DLIST                                                 116327 checks,     0 violations
+  DMACTL                                                116327 checks,     0 violations
+  GRACTL                                                116327 checks,     0 violations
+  HPOSM0                                                116327 checks,     0 violations
+  HPOSM1                                                116327 checks,     0 violations
+  HPOSM2                                                116327 checks,     0 violations
+  HPOSM3                                                116327 checks,     0 violations
+  HPOSP0                                                116327 checks,     0 violations
+  HPOSP1                                                116327 checks,     0 violations
+  HPOSP2                                                116327 checks,     0 violations
+  HPOSP3                                                116327 checks,     0 violations
+  IRQEN                                                 116327 checks,     0 violations
+  NMIEN                                                 116327 checks,     0 violations
+  PMBASE                                                116327 checks,     0 violations
+  PRIOR                                                 116327 checks,     0 violations
+  SKCTL                                                 116327 checks,     0 violations
+
+writes (register | writer: count, instructions, values, scan lines)
+  $D000 HPOSP0       game     43267    5 pcs  162 values, $00..$CA       vp: 95 lines, 0..261
+  $D000 HPOSP0       os           8    1 pcs  00                         vp: 4
+  $D001 HPOSP1       game     42038    5 pcs  256 values, $00..$FF       vp: 80 lines, 0..261
+  $D001 HPOSP1       os           8    1 pcs  00                         vp: 4
+  $D002 HPOSP2       game     41187    5 pcs  256 values, $00..$FF       vp: 69 lines, 0..261
+  $D002 HPOSP2       os           8    1 pcs  00                         vp: 4
+  $D003 HPOSP3       game     39860    4 pcs  161 values, $00..$C9       vp: 69 lines, 12..261
+  $D003 HPOSP3       os           8    1 pcs  00                         vp: 5
+  $D004 HPOSM0       game     82663    3 pcs  127 values, $00..$BC       vp: 57 lines, 4..261
+  $D004 HPOSM0       os           8    1 pcs  00                         vp: 5
+  $D005 HPOSM1       game     82663    3 pcs  127 values, $00..$BA       vp: 55 lines, 4..261
+  $D005 HPOSM1       os           8    1 pcs  00                         vp: 5
+  $D006 HPOSM2       game     82663    3 pcs  127 values, $00..$B8       vp: 56 lines, 4..261
+  $D006 HPOSM2       os           8    1 pcs  00                         vp: 5
+  $D007 HPOSM3       game     82663    3 pcs  127 values, $00..$B6       vp: 57 lines, 4..261
+  $D007 HPOSM3       os           8    1 pcs  00                         vp: 6
+  $D008 SIZEP0       os           8    1 pcs  00                         vp: 6
+  $D009 SIZEP1       os           8    1 pcs  00                         vp: 6
+  $D00A SIZEP2       os           8    1 pcs  00                         vp: 6
+  $D00B SIZEP3       os           8    1 pcs  00                         vp: 8
+  $D00C SIZEM        os           8    1 pcs  00                         vp: 8
+  $D00D GRAFP0       os           8    1 pcs  00                         vp: 8
+  $D00E GRAFP1       os           8    1 pcs  00                         vp: 8
+  $D00F GRAFP2       os           8    1 pcs  00                         vp: 9
+  $D010 GRAFP3       os           8    1 pcs  00                         vp: 9
+  $D011 GRAFM        os           8    1 pcs  00                         vp: 9
+  $D012 COLPM0       dli     103733    1 pcs  00                         vp: 231
+  $D012 COLPM0       os      116640    2 pcs  00 0C 44 84 DC             vp: 9 251
+  $D013 COLPM1       dli     103733    1 pcs  00                         vp: 231
+  $D013 COLPM1       os      116640    2 pcs  00 0C 4A 84 DC             vp: 9 251
+  $D014 COLPM2       dli     103733    1 pcs  00                         vp: 231
+  $D014 COLPM2       os      116640    2 pcs  00 0C 84 D8 DC             vp: 10 251
+  $D015 COLPM3       dli     103733    1 pcs  00                         vp: 231
+  $D015 COLPM3       os      116640    2 pcs  00 0C 28 84                vp: 10 250 251
+  $D016 COLPF0       dli     103734    1 pcs  DA                         vp: 216
+  $D016 COLPF0       os      116640    2 pcs  00 0C 28 86 DA             vp: 10 250
+  $D017 COLPF1       dli     220227    3 pcs  00 44 9C DA                vp: 48 208
+  $D017 COLPF1       os      116640    2 pcs  00 0C CA                   vp: 10 250
+  $D018 COLPF2       dli     116493    2 pcs  3A 42                      vp: 47 48
+  $D018 COLPF2       os      116640    2 pcs  00 94                      vp: 11 250
+  $D019 COLPF3       dli     207466    2 pcs  00 2A                      vp: 216 231 232
+  $D019 COLPF3       game         7    1 pcs  44                         vp: 260
+  $D019 COLPF3       os      116640    2 pcs  00 2A 44 46 DC             vp: 11 250
+  $D01A COLBK        os      116640    2 pcs  00                         vp: 11 249 250
+  $D01B PRIOR        os      116640    2 pcs  00 11 14                   vp: 12 249
+  $D01C VDELAY       os           8    1 pcs  00                         vp: 12
+  $D01D GRACTL       game         8    1 pcs  03                         vp: 197
+  $D01D GRACTL       os           8    1 pcs  00                         vp: 12
+  $D01E HITCLR       game     70918    3 pcs  00 01 02 03 0C 30          vp: 39 lines, 0..261
+  $D01E HITCLR       os           8    1 pcs  00                         vp: 12
+  $D01F CONSOL       os      116640    2 pcs  00 08                      vp: 13 249
+  $D200 AUDF1        game     22714   10 pcs  70 values, $00..$B4        vp: 26 lines, 0..261
+  $D200 AUDF1        os           8    1 pcs  00                         vp: 4
+  $D201 AUDC1        game     23421    8 pcs  00 A3 A4 A5 A8             vp: 25 lines, 0..261
+  $D201 AUDC1        os           8    1 pcs  00                         vp: 4
+  $D202 AUDF2        game     83629    6 pcs  38 values, $00..$F3        vp: 31 lines, 0..261
+  $D202 AUDF2        os           8    1 pcs  00                         vp: 5
+  $D203 AUDC2        game     83642    6 pcs  00 A1 A3 A4 A5             vp: 31 lines, 0..261
+  $D203 AUDC2        os           8    1 pcs  00                         vp: 5
+  $D204 AUDF3        game     12324    3 pcs  17 values, $00..$7D        vp: 18 lines, 0..261
+  $D204 AUDF3        os           8    1 pcs  00                         vp: 5
+  $D205 AUDC3        game     12324    3 pcs  00 A8                      vp: 18 lines, 0..261
+  $D205 AUDC3        os           8    1 pcs  00                         vp: 5
+  $D206 AUDF4        game     12532    4 pcs  33 values, $00..$80        vp: 19 lines, 0..261
+  $D206 AUDF4        os           8    1 pcs  00                         vp: 6
+  $D207 AUDC4        game     12532    3 pcs  00 A4 A8                   vp: 20 lines, 0..261
+  $D207 AUDC4        os           8    1 pcs  00                         vp: 6
+  $D208 AUDCTL       game       221    2 pcs  00 84                      vp: 4 5 6 12 13 14 15 16 259 260 261
+  $D208 AUDCTL       os           8    1 pcs  00                         vp: 6
+  $D209 STIMER       os           8    1 pcs  00                         vp: 6
+  $D20A SKRES/RANDOM os           8    1 pcs  00                         vp: 7
+  $D20B POTGO        os      116639    2 pcs  00 3F E4 E5                vp: 8 254
+  $D20C ?            os           8    1 pcs  00                         vp: 8
+  $D20D SEROUT/SERIN os           8    1 pcs  00                         vp: 8
+  $D20E IRQEN/IRQST  game         8    1 pcs  C0                         vp: 195
+  $D20E IRQEN/IRQST  os          16    2 pcs  00 C0                      vp: 8 201
+  $D20F SKCTL/SKSTAT game         8    1 pcs  07                         vp: 195
+  $D20F SKCTL/SKSTAT os          16    2 pcs  00 03                      vp: 9 191
+  $D400 DMACTL       os      116640    2 pcs  00 02 22 3E                vp: 4 249
+  $D401 CHACTL       os      116639    2 pcs  00 02                      vp: 4 251
+  $D402 DLISTL       game     11760    1 pcs  81 A3                      vp: 0 257 258 260
+  $D402 DLISTL       os      116640    2 pcs  00 20 81 A3                vp: 5 249
+  $D403 DLISTH       game     11760    1 pcs  BF                         vp: 0 257 258 260
+  $D403 DLISTH       os      116640    2 pcs  00 9C BF                   vp: 5 249
+  $D404 HSCROL       os           8    1 pcs  00                         vp: 5
+  $D405 VSCROL       os           8    1 pcs  00                         vp: 5
+  $D406 ?            os           8    1 pcs  00                         vp: 5
+  $D407 PMBASE       game         8    1 pcs  20                         vp: 197
+  $D407 PMBASE       os           8    1 pcs  00                         vp: 6
+  $D408 ?            os           8    1 pcs  00                         vp: 6
+  $D409 CHBASE       dli     167513    3 pcs  18 30 E0                   vp: 39 47 87 127 143 215
+  $D409 CHBASE       os      116639    2 pcs  00 E0                      vp: 6 251
+  $D40A WSYNC        dli     478719    6 pcs  00 2A 30 3A 42 44 DA E0    vp: 39 47 48 87 127 143 207 215 216
+  $D40A WSYNC        os          16    2 pcs  00 A5                      vp: 6 195
+  $D40B VCOUNT       os           8    1 pcs  00                         vp: 8
+  $D40C PENH         os           8    1 pcs  00                         vp: 8
+  $D40D PENV         os           8    1 pcs  00                         vp: 8
+  $D40E NMIEN        game         8    1 pcs  C0                         vp: 197
+  $D40E NMIEN        os          16    2 pcs  00 40                      vp: 8 192
+  $D40F NMIRES/NMIST os      116640    2 pcs  13 values, $00..$FF        vp: 9 248
+reads (register | reader: count, instructions; the value of a read is not available to the trace, the values are in docs/33; a store with an index also makes a dummy read, so a DLI 'read' of COLPM0 is the dummy cycle of its STA)
+  $D000 M0PF         game     43267    5 pcs
+  $D000 M0PF         os           8    1 pcs
+  $D001 M1PF         game     42038    5 pcs
+  $D001 M1PF         os           8    1 pcs
+  $D002 M2PF         game    112028    6 pcs
+  $D002 M2PF         os           8    1 pcs
+  $D003 M3PF         game     39860    4 pcs
+  $D003 M3PF         os           8    1 pcs
+  $D004 P0PF         game     11763    2 pcs
+  $D004 P0PF         os           8    1 pcs
+  $D005 P1PF         game     11763    2 pcs
+  $D005 P1PF         os           8    1 pcs
+  $D006 P2PF         game     11763    2 pcs
+  $D006 P2PF         os           8    1 pcs
+  $D007 P3PF         game     11750    1 pcs
+  $D007 P3PF         os           8    1 pcs
+  $D008 M0PL         os           8    1 pcs
+  $D009 M1PL         game    276645    1 pcs
+  $D009 M1PL         os           8    1 pcs
+  $D00A M2PL         game     27645    1 pcs
+  $D00A M2PL         os           8    1 pcs
+  $D00B M3PL         os           8    1 pcs
+  $D00C P0PL         os           8    1 pcs
+  $D00D P1PL         os           8    1 pcs
+  $D00E P2PL         os           8    1 pcs
+  $D00F P3PL         os           8    1 pcs
+  $D010 TRIG0        os      116639    2 pcs
+  $D011 TRIG1        os      116639    2 pcs
+  $D012 TRIG2        dli     103733    1 pcs
+  $D012 TRIG2        os      233271    3 pcs
+  $D013 TRIG3        dli     103733    1 pcs
+  $D013 TRIG3        os      233271    3 pcs
+  $D014 PAL          dli     103733    1 pcs
+  $D014 PAL          os      116640    2 pcs
+  $D015 COLPM3       dli     103733    1 pcs
+  $D015 COLPM3       os      116640    2 pcs
+  $D016 COLPF0       os      116640    2 pcs
+  $D017 COLPF1       os      116640    2 pcs
+  $D018 COLPF2       os      116640    2 pcs
+  $D019 COLPF3       os      116640    2 pcs
+  $D01A COLBK        os      116640    2 pcs
+  $D01B PRIOR        os           8    1 pcs
+  $D01C VDELAY       os           8    1 pcs
+  $D01D GRACTL       os           8    1 pcs
+  $D01E HITCLR       os           8    1 pcs
+  $D01F CONSOL       game  14930858    3 pcs
+  $D01F CONSOL       os          16    2 pcs
+  $D200 AUDF1        game     12116    2 pcs
+  $D200 AUDF1        os      116639    2 pcs
+  $D201 AUDC1        game     12116    2 pcs
+  $D201 AUDC1        os      116639    2 pcs
+  $D202 AUDF2        game     12116    2 pcs
+  $D202 AUDF2        os      116639    2 pcs
+  $D203 AUDC2        game     12116    2 pcs
+  $D203 AUDC2        os      116639    2 pcs
+  $D204 AUDF3        game     12116    2 pcs
+  $D204 AUDF3        os      116639    2 pcs
+  $D205 AUDC3        game     12116    2 pcs
+  $D205 AUDC3        os      116639    2 pcs
+  $D206 AUDF4        game     12116    2 pcs
+  $D206 AUDF4        os      116639    2 pcs
+  $D207 AUDC4        game     12116    2 pcs
+  $D207 AUDC4        os      116639    2 pcs
+  $D208 AUDCTL       os           8    1 pcs
+  $D209 KBCODE       os           8    1 pcs
+  $D20A RANDOM       game      2086    3 pcs
+  $D20A RANDOM       os           8    1 pcs
+  $D20B POTGO        os           8    1 pcs
+  $D20C ?            os           8    1 pcs
+  $D20D SERIN        os           8    1 pcs
+  $D20E IRQST        os           8    1 pcs
+  $D20F SKSTAT       os      116639    2 pcs
+  $D300 PORTA        os      233270    3 pcs
+  $D301 PORTB        os      233270    3 pcs
+  $D302 PACTL        os           8    1 pcs
+  $D303 PBCTL        os           8    1 pcs
+  $D400 DMACTL       os           8    1 pcs
+  $D401 CHACTL       os           8    1 pcs
+  $D402 DLISTL       os           8    1 pcs
+  $D403 DLISTH       os           8    1 pcs
+  $D404 HSCROL       os           8    1 pcs
+  $D405 VSCROL       os           8    1 pcs
+  $D406 ?            os           8    1 pcs
+  $D407 PMBASE       os           8    1 pcs
+  $D408 ?            os           8    1 pcs
+  $D409 CHBASE       os           8    1 pcs
+  $D40A WSYNC        os           8    1 pcs
+  $D40B VCOUNT       os        2600    2 pcs
+  $D40C PENH         os      116640    2 pcs
+  $D40D PENV         os      116640    2 pcs
+  $D40E NMIEN        os           8    1 pcs
+  $D40F NMIST        os      815724    3 pcs
+
+game / DLI write instructions seen: 71 of the 71 static chip-write sites; not a static site (or wrong register): 0
+static chip-write sites never seen writing in these sessions: none
+
+what the display-list interrupts write (scan line of the write: register = value, times):
+  vp  39  CHBASE  = $30    103738
+  vp  39  WSYNC   = $30    103738
+  vp  47  COLPF2  = $3A     12739
+  vp  47  COLPF2  = $42        16
+  vp  47  CHBASE  = $18     12755
+  vp  47  WSYNC   = $00        34
+  vp  47  WSYNC   = $3A     12739
+  vp  47  WSYNC   = $42        16
+  vp  47  WSYNC   = $44     94048
+  vp  47  WSYNC   = $DA      7460
+  vp  48  COLPF1  = $00        39
+  vp  48  COLPF1  = $44    108593
+  vp  48  COLPF1  = $9C        16
+  vp  48  COLPF1  = $DA      7845
+  vp  48  COLPF2  = $3A    103738
+  vp  48  WSYNC   = $00         5
+  vp  48  WSYNC   = $44      1806
+  vp  48  WSYNC   = $DA       385
+  vp  87  CHBASE  = $E0     12755
+  vp  87  WSYNC   = $E0     12755
+  vp 127  CHBASE  = $30     12755
+  vp 127  WSYNC   = $30     12755
+  vp 143  CHBASE  = $E0     12755
+  vp 143  WSYNC   = $E0     12755
+  vp 207  WSYNC   = $44    103734
+  vp 208  COLPF1  = $44    103734
+  vp 215  CHBASE  = $30     12755
+  vp 215  WSYNC   = $30     12755
+  vp 216  COLPF0  = $DA    103734
+  vp 216  COLPF3  = $2A    103733
+  vp 216  WSYNC   = $2A    103734
+  vp 231  COLPM0  = $00    103733
+  vp 231  COLPM1  = $00    103733
+  vp 231  COLPM2  = $00    103733
+  vp 231  COLPM3  = $00    103733
+  vp 231  COLPF3  = $00     83443
+  vp 232  COLPF3  = $00     20290
+display-list interrupt line sequences per frame (the most frequent):
+   103732 frames: 1@39 1@47 1@207 1@215 1@231
+    12755 frames: 2@47 2@87 2@127 2@143 2@215
