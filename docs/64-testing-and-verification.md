@@ -8,7 +8,7 @@ Checklist stage 98: "Record testing procedures, results, compatibility informati
 
 - **The C port equals the original ROM, frame by frame, in the whole state, the ordered sound-chip writes and the RANDOM reads: 709,116 frames, 0 differences** (`52`-`56`), and in the frame classes, the state variables and the outputs on 171,300 frames (`53`). Every difference found along the way had a cause and was corrected (`56`: 19 items, none a difference in what the game does).
 - **The register holds 69 verification items (OV-nn): 67 closed, 7 of them closed as a documented limit, 2 open** (section 6), and 136 numbered results (C-nn). **120 evidence summaries** are kept in `analysis/`.
-- **102 test modules with 877 test functions** in `tests/` (Python) and **39 tests** under `ctest` (C); every one passes (`run_regression.py`: ALL PASSED).
+- **103 test modules with 880 test functions** in `tests/` (Python) and **39 tests** under `ctest` (C); every one passes (`run_regression.py`: ALL PASSED).
 - **Nothing was verified on real hardware**: every measurement is against Altirra 4.40 (NTSC, Atari 800, OS Rev B), by the owner's decision (OV-01, OV-42b; C-27).
 
 ## 2. The chain of verification
@@ -76,8 +76,8 @@ Each arrow is a comparison that was made and shown to see a difference (a corrup
 | the analysis of the binary | 11 | 79 |
 | the models and the Python port | 18 | 198 |
 | the sound and the emulator evidence | 16 | 147 |
-| other | 22 | 155 |
-| **all** | **102** | **877** |
+| other | 23 | 158 |
+| **all** | **103** | **880** |
 
 ## 5. What it was checked on (compatibility)
 
