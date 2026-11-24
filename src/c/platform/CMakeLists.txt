@@ -2,3 +2,7 @@
 add_library(pm_platform STATIC fs.c pokey_random.c hal_scripted.c timer.c)
 target_include_directories(pm_platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(pm_platform PUBLIC pm_core)
+
+if(WIN32)
+  add_subdirectory(win32)
+endif()

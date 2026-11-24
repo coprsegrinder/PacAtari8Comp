@@ -119,3 +119,9 @@ add_test(NAME assets_install_nested_clean COMMAND ${CMAKE_COMMAND} -E remove_dir
 set_tests_properties(assets_install_nested_clean PROPERTIES FIXTURES_SETUP nested_clean)
 add_test(NAME assets_install_nested COMMAND install_assets original/Pac-Man.rom build/installer-nested/a/b/assets.pmab WORKING_DIRECTORY ${PM_MAIN_DIR})
 set_tests_properties(assets_install_nested PROPERTIES FIXTURES_REQUIRED nested_clean SKIP_REGULAR_EXPRESSION "cannot be opened" PASS_REGULAR_EXPRESSION "install_assets: ok")
+
+# stage J: the front end's input logic and a game played through it (the Windows window / sound front end itself is checked by tools/check_front_end.py)
+add_executable(frontend_check frontend_check.c)
+target_link_libraries(frontend_check pm_shell pm_assets pm_app pm_core pm_platform)
+add_test(NAME frontend_check COMMAND frontend_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(frontend_check PROPERTIES FIXTURES_REQUIRED asset_blob PASS_REGULAR_EXPRESSION "frontend_check: OK")
