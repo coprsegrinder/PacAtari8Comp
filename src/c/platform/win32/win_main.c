@@ -392,6 +392,9 @@ static void detect_monitor_hz(void)
 }
 
 /* the window gets the picture of iout: all of it, or the rectangles of d; the black around it is drawn when the layout changed */
+static int plain_gl;                     /* the OpenGL window is shown and draws the plain picture when no shader is chosen (set below, with the chains) */
+static int plain_present(const uint32_t *src, int w, int h);
+
 static void present_interp(const InterpDirty *d)
 {
     HDC dc;
@@ -406,6 +409,10 @@ static void present_interp(const InterpDirty *d)
     GetClientRect(hwnd, &rc);
     layout(rc.right, rc.bottom, &pr);
     if (pr.w != iout.ow || pr.h != iout.oh) {                 /* the window changed size since the picture was made: the next picture is made at the new size */
+        return;
+    }
+    if (plain_gl) {
+        (void)plain_present((const uint32_t *)iout.work, iout.ow, iout.oh);
         return;
     }
     dc = GetDC(hwnd);
@@ -464,10 +471,13 @@ static int crt_errors;                   /* pictures the chain failed to make (t
 static int crt_shot_req;                 /* a test asks for the pixels of the next picture */
 static uint8_t *crt_shot;
 static int crt_shot_w, crt_shot_h;
+static double swap_ema_ms = -1.0;        /* how long the swap of the OpenGL window takes while it waits for the monitor (-1: not known yet); a swap that does not wait (a window, not fullscreen) is no clock, and the timer paces the pictures then */
 static int crt_want_interval;            /* how the swap of the OpenGL window waits: 0 not at all, n for every n-th refresh of the monitor (the pictures are then paced by it) */
 static double crt_ms_render, crt_ms_swap;   /* how long the last picture took to give to OpenGL, and to swap (the trace shows them) */
 static char crt_why[2000];                /* why the shaders are not available, for the log */
 
+static CrtChain *plain_chain;            /* the picture as it is (src/shaders/plain.slangp): the OpenGL window is the one that shows the picture all the time when it can, so that choosing a shader or Off only changes what is drawn into it (no window is shown or hidden, the screen does not go black) */
+static uint64_t crt_choice_ns;           /* when the shader was chosen: the first picture through it is timed from here (the log says how long the choice took to show) */
 static void crt_render_last(void)
 {
     RECT rc;
@@ -513,6 +523,47 @@ static void crt_render_last(void)
     crt_gl_swap();
     crt_ms_render = (double)(t_mid - t_start_ns) / 1e6;
     crt_ms_swap = (double)(pm_time_ns() - t_mid) / 1e6;
+    if (crt_want_interval > 0) {
+        swap_ema_ms = swap_ema_ms < 0.0 ? crt_ms_swap : 0.9 * swap_ema_ms + 0.1 * crt_ms_swap;
+    }
+    if (crt_choice_ns != 0) {
+        char line[160];
+        snprintf(line, sizeof line, "CRT shader: first picture %.0f ms after the choice (draw %.1f ms, swap %.1f ms)", (double)(pm_time_ns() - crt_choice_ns) / 1e6, crt_ms_render, crt_ms_swap);
+        (void)shell_log(line);
+        crt_choice_ns = 0;
+    }
+}
+
+/* the plain picture (w x h, BGRA, the part of the window `pr`) through the plain chain into the OpenGL window; 1 when it was drawn */
+static int plain_present(const uint32_t *src, int w, int h)
+{
+    RECT rc;
+    DisplayRect pr;
+    char err[200];
+
+    if (!plain_gl || plain_chain == NULL || hwnd == NULL || src == NULL) {
+        return 0;
+    }
+    GetClientRect(hwnd, &rc);
+    if (rc.right != crt_gl_w || rc.bottom != crt_gl_h) {
+        crt_gl_resize(rc.right, rc.bottom);
+        crt_gl_w = rc.right;
+        crt_gl_h = rc.bottom;
+    }
+    layout(rc.right, rc.bottom, &pr);
+    if (pr.w < 1 || pr.h < 1 || crt_chain_render(plain_chain, src, w, h, pr.x, pr.y, pr.w, pr.h, 0u, err, sizeof err) != 0) {
+        return 0;
+    }
+    {
+        uint64_t sw0 = pm_time_ns();
+        crt_gl_interval(crt_want_interval);
+        crt_gl_swap();
+        crt_ms_swap = (double)(pm_time_ns() - sw0) / 1e6;
+        if (crt_want_interval > 0) {
+            swap_ema_ms = swap_ema_ms < 0.0 ? crt_ms_swap : 0.9 * swap_ema_ms + 0.1 * crt_ms_swap;
+        }
+    }
+    return 1;
 }
 
 /* the chosen shader on (or off): the chain is made, the OpenGL window shown; when the machine cannot, the choice goes back to off and says so in the menu and the log */
@@ -520,13 +571,16 @@ static void crt_apply(void)
 {
     char err[1600];
 
+    crt_choice_ns = pm_time_ns();
     crt_chain = NULL;
     crt_active = 0;
     crt_have_last = 0;
     iout_have = 0;
     menu_dirty = 1;
     if (menu.crt == 0) {
-        crt_gl_show(0);
+        if (!plain_gl) {
+            crt_gl_show(0);
+        }
         if (hwnd != NULL) {
             InvalidateRect(hwnd, NULL, FALSE);                          /* not erased to black: the next picture covers it */
         }
@@ -548,7 +602,7 @@ static void crt_apply(void)
         (void)shell_log(crt_why);
         menu.crt = 0;
         menu.crt_unavailable = 1;
-        crt_gl_show(0);
+        crt_gl_show(plain_gl);
         return;
     }
     menu.crt_unavailable = 0;
@@ -582,6 +636,11 @@ static void present(void)
     }
     if (iout_have && !menu_is_open(&menu) && interp_wanted()) {         /* the picture of the FPS option is what the window shows */
         present_interp(NULL);
+        return;
+    }
+    if (plain_gl) {
+        crt_want_interval = 0;
+        (void)plain_present((const uint32_t *)bgra, RENDER_W, RENDER_H);
         return;
     }
     dc = GetDC(hwnd);
@@ -629,6 +688,7 @@ static void menu_event(MenuKey k)
     }
     if (menu.changed) {
         menu.changed = 0;
+        swap_ema_ms = -1.0;                                   /* window or fullscreen: whether the swap waits is found out again */
         apply_display();
     }
     if (menu.crt_changed) {                                   /* the CRT shader */
@@ -974,7 +1034,7 @@ static int interp_step(uint64_t t_start_ns)
         /* no clock: see above */
     } else if (target == MENU_FPS_UNCAPPED) {
         /* as many pictures as there are: one whenever the picture is not the one before */
-    } else if (crt_active && target >= 55 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
+    } else if ((crt_active || plain_gl) && (swap_ema_ms < 0.0 || swap_ema_ms > 300.0 / (double)target) && target >= 55 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
         /* with a CRT shader the OpenGL swap waits for every n-th refresh of the monitor and so is the clock itself: the picture is drawn, the swap returns when it is on its way to the screen (not for the rates below 55: a swap that long would keep the game and the sound waiting) */
         crt_want_interval = (menu.monitor_hz + target / 2) / target;
     } else if (dwm_flush != NULL && target >= 30 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
@@ -1011,7 +1071,7 @@ static int interp_step(uint64_t t_start_ns)
             next_tick_ns = now + period;
         }
     }
-    if (!(crt_active && crt_want_interval > 0 && target >= 55 && menu.monitor_hz >= target)) {
+    if (!((crt_active || plain_gl) && crt_want_interval > 0 && target >= 55 && menu.monitor_hz >= target)) {
         crt_want_interval = 0;                                  /* a rate the monitor's refresh does not fit (or no shader): the swap does not wait */
     }
     tau = still ? still_tau : game_time(now, t_start_ns);
@@ -1276,7 +1336,7 @@ static long compare_window(void)
 /* ---------------------------------------------------------------- the menu test: real key messages, then what the window really shows */
 
 enum { OP_KEY, OP_SYSKEY, OP_WAIT, OP_FRAMES, OP_CHECK };
-enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP, CK_CRT_REQ, CK_CRT, CK_CRT_SET };
+enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP, CK_CRT_REQ, CK_CRT, CK_CRT_SET, CK_DUMP };
 
 typedef struct Op {
     int kind, a, b;
@@ -1345,9 +1405,21 @@ static void mt_build(void)
         mt_add(OP_FRAMES, 300, 0);
         mt_add(OP_CHECK, CK_CRT_SET, 2);
         mt_add(OP_WAIT, 1500, 0);
+        mt_key(VK_ESCAPE); mt_key(VK_DOWN); mt_key(VK_RETURN);
+        mt_key(VK_DOWN); mt_key(VK_DOWN); mt_key(VK_DOWN);
+        mt_add(OP_WAIT, 600, 0);
+        mt_add(OP_CHECK, CK_DUMP, 2);
+        mt_key(VK_RIGHT); mt_add(OP_WAIT, 600, 0); mt_add(OP_CHECK, CK_DUMP, 3);
+        mt_key(VK_RIGHT); mt_add(OP_WAIT, 600, 0); mt_add(OP_CHECK, CK_DUMP, 0);     /* the last shader, then round to Off */
+        mt_key(VK_RIGHT); mt_add(OP_WAIT, 600, 0); mt_add(OP_CHECK, CK_DUMP, 1);
+        mt_key(VK_LEFT); mt_add(OP_WAIT, 600, 0); mt_add(OP_CHECK, CK_DUMP, 0);      /* and back to Off with Left */
+        mt_key(VK_LEFT); mt_add(OP_WAIT, 600, 0); mt_add(OP_CHECK, CK_DUMP, 3);
+        mt_key(VK_RIGHT); mt_add(OP_WAIT, 600, 0); mt_add(OP_CHECK, CK_DUMP, 0);
+        mt_key(VK_ESCAPE); mt_key(VK_ESCAPE);
+        mt_add(OP_WAIT, 500, 0);
         mt_add(OP_CHECK, CK_CRT_REQ, 0);
         mt_add(OP_WAIT, 300, 0);
-        mt_add(OP_CHECK, CK_CRT, 2);
+        mt_add(OP_CHECK, CK_CRT, 0);
         mt_add(OP_CHECK, CK_CRT_SET, 0);
         mt_add(OP_WAIT, 1500, 0);
         mt_add(OP_CHECK, CK_CRT, 0);
@@ -1529,14 +1601,13 @@ static void check_mode(int want)
 }
 
 /* what the window shows, copied back out of the screen, against what the layout says it should show */
+static int capture_client(uint8_t **out, int *cw, int *ch);
+
 static void check_picture(void)
 {
     MONITORINFO mi;
     RECT cr, fr;
     DisplayRect r;
-    HDC dc, mem;
-    HBITMAP bmp, old;
-    BITMAPINFO bi;
     uint8_t *got;
     int cw, ch, rw, rh, ex_w, ex_h, x, y, ok, size_ok;
     long outside = 0, exact_bad = 0, nn_bad = 0, inside = 0;
@@ -1567,36 +1638,24 @@ static void check_picture(void)
     size_ok = cw == ex_w && ch == ex_h;
     layout(cw, ch, &r);
     snprintf(what, sizeof what, "%s %dx%d%s", menu.fullscreen ? "fullscreen" : "windowed", rw, rh, menu.res >= 0 ? "" : " (window)");
-    dc = GetDC(hwnd);
-    mem = CreateCompatibleDC(dc);
-    bmp = CreateCompatibleBitmap(dc, cw, ch);
-    old = (HBITMAP)SelectObject(mem, bmp);
-    BitBlt(mem, 0, 0, cw, ch, dc, 0, 0, SRCCOPY);
-    SelectObject(mem, old);
-    got = (uint8_t *)malloc((size_t)cw * (size_t)ch * 4u);
-    if (got == NULL) {
-        DeleteObject(bmp);
-        DeleteDC(mem);
-        ReleaseDC(hwnd, dc);
-        mt_result(0, what, "out of memory");
-        return;
+    {                                                           /* what the window shows as Windows composes it (the OpenGL window is the one that shows the picture) */
+        int gw = 0, gh = 0;
+        got = NULL;
+        if (capture_client(&got, &gw, &gh) != 0 || gw != cw || gh != ch) {
+            free(got);
+            mt_result(0, what, "the window's pixels could not be read");
+            return;
+        }
     }
-    memset(&bi, 0, sizeof bi);
-    bi.bmiHeader.biSize = sizeof bi.bmiHeader;
-    bi.bmiHeader.biWidth = cw;
-    bi.bmiHeader.biHeight = -ch;
-    bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = 32;
-    bi.bmiHeader.biCompression = BI_RGB;
-    GetDIBits(mem, bmp, 0, (UINT)ch, got, &bi, DIB_RGB_COLORS);
-    DeleteObject(bmp);
-    DeleteDC(mem);
-    ReleaseDC(hwnd, dc);
     for (y = 0; y < ch; y++) {
         for (x = 0; x < cw; x++) {
             const uint8_t *g = got + 4 * ((size_t)y * (size_t)cw + (size_t)x);
+            if (x >= cw - 420 && y < 280) {
+                inside += (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h) ? 1 : 0;
+                continue;                                      /* (the graphics driver's own notice in the top right corner is not the program's) */
+            }
             if (x < r.x || x >= r.x + r.w || y < r.y || y >= r.y + r.h) {
-                if (g[0] != 0 || g[1] != 0 || g[2] != 0) {
+                if ((g[0] != 0 || g[1] != 0 || g[2] != 0)) {
                     outside++;
                 }
             } else {
@@ -1773,6 +1832,18 @@ static void mt_check(int id, int arg)
     case CK_CRT_REQ:
         crt_shot_req = 1;
         break;
+    case CK_DUMP: {                                    /* the item as the player sees it: with the keys, the shader item steps through every choice and its line says which one */
+        MenuLine ml[MENU_MAX_LINES];
+        int ln, nl2, found = 0;
+        nl2 = menu_lines(&menu, ml);
+        for (ln = 0; ln < nl2; ln++) {
+            if (ml[ln].item && strstr(ml[ln].text, menu_crt_names[arg]) != NULL && strstr(ml[ln].text, "CRT SHADER") != NULL) {
+                found = 1;
+            }
+        }
+        mt_result(menu.crt == arg && found && crt_active == (arg != 0), "crt item by keys", "choice %d (%s): the menu line says so, the shader is %s", arg, menu_crt_names[arg], crt_active ? "on" : "off");
+        break;
+    }
     case CK_CRT_SET:                                   /* chosen as the menu does it */
         menu.crt = arg;
         crt_apply();
@@ -1803,7 +1874,7 @@ static void mt_check(int id, int arg)
                 }
                 free(cap);
             }
-            mt_result(ok0 && total > 1000 && same * 100 >= total * 99, what, "none: no chain, no OpenGL window shown, and the window's own pixels (read back through Windows, the OpenGL window included) are the plain picture: %ld of %ld sampled pixels equal", same, total);
+            mt_result(ok0 && total > 1000 && same * 100 >= total * 99, what, "none: no shader chain, and the window's own pixels (read back through Windows; the OpenGL window draws them, through the plain shader) are the plain picture: %ld of %ld sampled pixels equal", same, total);
             break;
         }
         if (crt_shot == NULL || crt_shot_w < 1 || !crt_active || crt_chain == NULL) {
@@ -2314,7 +2385,14 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
                     }
                 }
             }
-            crt_gl_show(0);
+            if (plain_chain == NULL) {
+                plain_chain = crt_chain_load("src/shaders/plain.slangp", werr, sizeof werr);
+            }
+            plain_gl = plain_chain != NULL && !opt.exact;
+            if (plain_chain == NULL) {
+                (void)shell_log(werr);
+            }
+            crt_gl_show(plain_gl);                              /* shown from now on: the screen does not go black when a shader is chosen */
             { char ln[96]; snprintf(ln, sizeof ln, "CRT shaders loaded in %.0f ms", (double)(pm_time_ns() - w0) / 1e6); (void)shell_log(ln); }
         }
     }
@@ -2485,6 +2563,10 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
             }
         }
         crt_chain = NULL;
+        if (plain_chain != NULL) {
+            crt_chain_free(plain_chain);
+            plain_chain = NULL;
+        }
     }
     crt_gl_close();
     free(crt_shot);
