@@ -25,12 +25,12 @@ What it does NOT cover
        file), from the libretro slang-shaders repository. They are separate
        files that the program reads when the player chooses one; the C port does
        not contain or copy them (the MIT licence of this project does not apply
-       to them, and they carry their own licence headers). The GPL text is
-       third-party/crt-shaders/COPYING-GPL-2.0.txt; where each file comes from,
-       with its SHA-256, is in third-party/crt-shaders/SOURCES.txt. Anyone who
-       passes on the shaders keeps their licence with them; anyone who builds
-       them INTO a program (not what this project does) makes that program a
-       combined work under the GPL. See third-party/README.md.
+       to them, and they carry their own licence headers). They are included
+       with credit to their authors, as the owner decided, and they are kept
+       exactly as downloaded: the licence headers stay in the files and the
+       licence text they name is third-party/crt-shaders/COPYING-GPL-2.0.txt.
+       Where each file comes from (repository, commit, date) and its SHA-256 is
+       in third-party/crt-shaders/SOURCES.txt. See third-party/README.md.
 
 What you must supply
   A legally obtained copy of the Pac-Man Atari 8-bit cartridge ROM, placed at

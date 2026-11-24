@@ -3,6 +3,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(pacman_a8 C)
 
+# without a build type asked for, the optimized one: the program does a picture every few milliseconds (docs/67, 69, 70), and an unoptimized build is too slow for it
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "build type" FORCE)
+endif()
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)

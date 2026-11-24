@@ -95,4 +95,8 @@ void interp_out_free(InterpOut *o);                  /* gives the two pictures b
  * be drawn to the window.  o->base_id is the number of the nearer frame */
 void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned long newest, InterpDirty *d);
 
+/* the picture made k times as wide (every k pixels across are one pixel of the result): the colours of each group are averaged, per channel.  With k = 1 it is a copy.  What a CRT shader is given: the picture
+ * is made at k times the width so that an object can stand a fraction of a game pixel off its place, and this brings it back to the Atari's width, the edges of a moving object averaged over 1/k of a pixel */
+void interp_box_x(const uint32_t *src, int src_w, int h, int k, uint32_t *dst);
+
 #endif

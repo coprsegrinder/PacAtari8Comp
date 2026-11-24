@@ -469,6 +469,88 @@ static void test_cost(void)
     interp_out_free(&o);
 }
 
+/* the picture made k times as wide, brought back to its width: the colours of each group averaged */
+static void test_box(void)
+{
+    uint32_t src[16], dst[4];
+    const uint32_t a = 0xFF000000u, b = 0xFF0080FFu;                    /* black and a colour: B 0xFF, G 0x80, R 0x00 */
+    int i;
+
+    for (i = 0; i < 16; i++) {
+        src[i] = i < 6 ? a : b;                                         /* black for 6 pixels, then the colour: the edge falls inside the second group of 4 */
+    }
+    interp_box_x(src, 16, 1, 4, dst);
+    CHECK(dst[0] == a && dst[3] == b);                                  /* groups wholly in one colour are not changed */
+    CHECK(dst[1] == (0xFF000000u | (0u << 16) | (((2u * 0x80u + 2u) / 4u) << 8) | ((2u * 0xFFu + 2u) / 4u)));    /* two of four: half of the colour */
+    CHECK(dst[2] == b);
+    {
+        static uint32_t same[16];
+        interp_box_x(src, 16, 1, 1, same);                              /* k = 1: a copy */
+        CHECK(memcmp(same, src, sizeof same) == 0);
+    }
+}
+
+/* what a CRT shader is given: the in-between picture made 8 times as wide, averaged back to 384 x 240.  On a still screen it is the game's picture exactly; with a ghost on its way it differs from the picture of
+ * the nearer frame only around that ghost, and only in the pixels at its left and right edges (the average of a ghost colour and the background), never inside it */
+static void test_crt_source(void)
+{
+    enum { K = 8, W = 384 * K };
+    static uint32_t wide[W * 240], narrow[384 * 240], ref[384 * 240];
+    InterpOut o;
+    InterpDirty d;
+    int x, y, found = 0, k = 0;
+    unsigned long n, e0 = 0;
+
+    CHECK(interp_out_init(&o) == 0 && interp_out_size(&o, W, 240) == 0);
+    g_limit = 90;
+    interp_render(&o, get_game, NULL, 70.3, 90, &d);
+    interp_box_x(o.work, W, 240, K, narrow);
+    for (y = 0; y < 240; y++) {
+        for (x = 0; x < 384; x++) {
+            ref[y * 384 + x] = rgb_of(frames[70].colour[y * 384 + x]);
+        }
+    }
+    CHECK(memcmp(narrow, ref, sizeof ref) == 0);                              /* a still screen: the game's picture, pixel for pixel */
+    for (n = 450; n + 8 < NFRAMES && !found; n++) {                           /* a ghost between two steps */
+        for (k = 0; k < 4; k++) {
+            if (frames[n].mv[k] && frames[n + 3].mv[k] && !frames[n + 1].mv[k] && !frames[n + 2].mv[k] && frames[n + 3].run[k] == frames[n].run[k] && frames[n + 3].obj[k].present && frames[n + 3].px[k] != frames[n].px[k] && frames[n + 3].py[k] == frames[n].py[k]) {
+                e0 = n;
+                found = 1;
+                break;
+            }
+        }
+    }
+    CHECK(found);
+    if (found) {
+        long outside = 0, edge_blend = 0;
+        g_limit = e0 + 5;
+        interp_render(&o, get_game, NULL, (double)e0 + 1.0 + 0.0, g_limit, &d);        /* the frame after the step: the ghost is on the way to the next step */
+        interp_render(&o, get_game, NULL, (double)e0 + 1.4, g_limit, &d);
+        memcpy(wide, o.work, sizeof wide);
+        interp_box_x(wide, W, 240, K, narrow);
+        for (y = 0; y < 240; y++) {
+            for (x = 0; x < 384; x++) {
+                uint32_t want = rgb_of(frames[o.base_id].colour[y * 384 + x]);
+                if (narrow[y * 384 + x] != want) {
+                    int near_object = 0, q;
+                    for (q = 0; q < INTERP_OBJECTS; q++) {                        /* around any of the objects: they all glide */
+                        const InterpObject *oq = &frames[o.base_id].obj[q];
+                        near_object |= oq->present && x >= oq->x0 - 4 && x <= oq->x1 + 4 && y >= oq->y0 - 1 && y <= oq->y1 + 1;
+                    }
+                    if (!near_object) {
+                        outside++;
+                    } else {
+                        edge_blend++;
+                    }
+                }
+            }
+        }
+        printf("  a ghost on its way: %ld pixels differ from the nearer frame's picture around it (the edges of the objects on their way), %ld elsewhere\n", edge_blend, outside);
+        CHECK(outside == 0 && edge_blend > 0 && edge_blend < 400);
+    }
+    interp_out_free(&o);
+}
+
 int main(void)
 {
     if (assets_load(&assets, ASSET_DEFAULT_PATH, blob_buf, sizeof blob_buf) != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {
@@ -485,6 +567,8 @@ int main(void)
     test_glide();
     test_smoothness();
     test_no_mixing();
+    test_box();
+    test_crt_source();
     test_jumps();
     test_score_replaces_pacman();
     test_cost();

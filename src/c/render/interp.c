@@ -121,6 +121,26 @@ void interp_pair(const InterpFrame *a, const InterpFrame *b, InterpPair *p)
     }
 }
 
+void interp_box_x(const uint32_t *src, int src_w, int h, int k, uint32_t *dst)
+{
+    int x, y, i, dw = src_w / k;
+
+    for (y = 0; y < h; y++) {
+        const uint32_t *row = src + (size_t)y * (size_t)src_w;
+        uint32_t *out = dst + (size_t)y * (size_t)dw;
+        for (x = 0; x < dw; x++) {
+            unsigned b = 0, g = 0, r = 0;
+            for (i = 0; i < k; i++) {
+                uint32_t p = row[x * k + i];
+                b += p & 0xFFu;
+                g += (p >> 8) & 0xFFu;
+                r += (p >> 16) & 0xFFu;
+            }
+            out[x] = 0xFF000000u | (((r + (unsigned)k / 2u) / (unsigned)k) << 16) | (((g + (unsigned)k / 2u) / (unsigned)k) << 8) | ((b + (unsigned)k / 2u) / (unsigned)k);
+        }
+    }
+}
+
 int interp_out_init(InterpOut *o)
 {
     int c;

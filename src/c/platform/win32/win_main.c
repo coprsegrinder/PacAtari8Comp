@@ -318,6 +318,7 @@ static void layout(int cw, int ch, DisplayRect *r)
 
 /* ---------------------------------------------------------------- the FPS option: in-between pictures (docs/69) */
 
+#define CRT_SUB 8                         /* with a CRT shader the in-between picture is made 8 times as wide and brought back to 384: an eighth of a game pixel across */
 #define RING 32                          /* the game frames kept for the in-between pictures (the moves of an object are looked for up to 20 frames back) */
 #define SAMPLES_PER_FRAME (AUDIO_RATE / FRAME_HZ)
 #define PICTURE_AHEAD 0.6                /* the picture is of the game time the sound device is at plus this many frames.  The native picture is the newest game frame, which is 1.3 frames ahead of the sound on average: the further a picture is behind it, the later it shows what a key did.  An in-between picture needs the game a frame ahead of it to know where an object is going, so it cannot be as new: 0.6 puts it 0.7 frames (11 ms) behind the native one on average, 0 to 1.6 (measured: docs/69).  0 would be 21 ms behind, 1.0 only 5 ms but with an uneven game time */
@@ -461,6 +462,7 @@ static int crt_errors;                   /* pictures the chain failed to make (t
 static int crt_shot_req;                 /* a test asks for the pixels of the next picture */
 static uint8_t *crt_shot;
 static int crt_shot_w, crt_shot_h;
+static double crt_ms_render, crt_ms_swap;   /* how long the last picture took to give to OpenGL, and to swap (the trace shows them) */
 static char crt_why[2000];                /* why the shaders are not available, for the log */
 
 static void crt_render_last(void)
@@ -468,6 +470,7 @@ static void crt_render_last(void)
     RECT rc;
     DisplayRect pr;
     char err[300];
+    uint64_t t_start_ns = pm_time_ns(), t_mid;
 
     if (!crt_active || crt_chain == NULL || !crt_have_last || hwnd == NULL) {
         return;
@@ -502,7 +505,10 @@ static void crt_render_last(void)
         }
         crt_shot_req = 0;
     }
+    t_mid = pm_time_ns();
     crt_gl_swap();
+    crt_ms_render = (double)(t_mid - t_start_ns) / 1e6;
+    crt_ms_swap = (double)(pm_time_ns() - t_mid) / 1e6;
 }
 
 /* the chosen shader on (or off): the chain is made, the OpenGL window shown; when the machine cannot, the choice goes back to off and says so in the menu and the log */
@@ -987,7 +993,7 @@ static int interp_step(uint64_t t_start_ns)
         }
         GetClientRect(hwnd, &rc);
         layout(rc.right, rc.bottom, &pr);
-        if (pr.w < 1 || pr.h < 1 || interp_out_size(&iout, crt_active ? RENDER_W : pr.w, crt_active ? RENDER_H : pr.h) != 0) {          /* a CRT shader works on the picture as the Atari made it: 384 x 240 */
+        if (pr.w < 1 || pr.h < 1 || interp_out_size(&iout, crt_active ? RENDER_W * CRT_SUB : pr.w, crt_active ? RENDER_H : pr.h) != 0) {          /* a CRT shader works on the picture as the Atari made it, 384 x 240: made 8 times as wide here, and averaged back */
             Sleep(1);
             return 0;
         }
@@ -1000,7 +1006,7 @@ static int interp_step(uint64_t t_start_ns)
             for (k = 0; k < INTERP_OBJECTS; k++) {
                 pm_fs_printf(trace_file, " %.3f %.3f %.3f %.3f", nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 + iout.last_offx[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 + iout.last_offy[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 : -1.0);
             }
-            pm_fs_printf(trace_file, "\n");
+            pm_fs_printf(trace_file, " %.3f %.3f\n", crt_ms_render, crt_ms_swap);
         }
     }
     iout_have = 1;
@@ -1008,7 +1014,9 @@ static int interp_step(uint64_t t_start_ns)
     tick_count++;
     if (crt_active) {
         if (changed || target != MENU_FPS_UNCAPPED) {
-            memcpy(crt_last, iout.work, sizeof crt_last);
+            if (changed || !crt_have_last) {
+                interp_box_x(iout.work, RENDER_W * CRT_SUB, RENDER_H, CRT_SUB, crt_last);
+            }
             crt_have_last = 1;
             crt_render_last();
             blit_count += changed ? 1u : 0u;
