@@ -60,6 +60,21 @@ static void toggle_mode(Menu *m)
 
 void menu_key(Menu *m, MenuKey k)
 {
+    if (k == MK_HELP) {                                    /* F1: the help from anywhere, and F1 again closes it */
+        if (m->screen == MENU_HELP) {
+            m->screen = m->help_from;
+        } else {
+            m->help_from = m->screen;
+            m->screen = MENU_HELP;
+        }
+        return;
+    }
+    if (m->screen == MENU_HELP) {                          /* nothing else does anything in the help except closing it */
+        if (k == MK_BACK || k == MK_SELECT) {
+            m->screen = m->help_from;
+        }
+        return;
+    }
     if (m->screen == MENU_CLOSED) {
         if (k == MK_BACK) {
             m->screen = MENU_MAIN;
@@ -126,6 +141,15 @@ static void put_line(MenuLine *l, const char *text, int heading, int item, int s
     l->selected = selected;
 }
 
+/* a help line: the key and what it does, padded to one width so that the centred lines are lined up */
+static void put_key_line(MenuLine *l, const char *key, const char *what)
+{
+    snprintf(l->text, sizeof l->text, "%-4s %-23s", key, what);
+    l->heading = 0;
+    l->item = 0;
+    l->selected = 0;
+}
+
 int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
 {
     int n = 0, w, h;
@@ -140,6 +164,16 @@ int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
         put_line(&out[n++], "QUIT GAME", 0, 1, m->cursor == 2);
         put_line(&out[n++], "", 0, 0, 0);
         put_line(&out[n++], "ESC: RESUME", 0, 0, 0);
+    } else if (m->screen == MENU_HELP) {                   /* the function keys and what they do; the lines are as wide as each other so that centring lines them up */
+        put_line(&out[n++], "FUNCTION KEYS", 1, 0, 0);
+        put_line(&out[n++], "", 0, 0, 0);
+        put_key_line(&out[n++], "F1", "THIS HELP");
+        put_key_line(&out[n++], "F2", "START A NEW GAME");
+        put_key_line(&out[n++], "F3", "ONE OR TWO PLAYERS");
+        put_key_line(&out[n++], "F4", "STARTING LEVEL");
+        put_key_line(&out[n++], "F11", "FULL SCREEN / WINDOWED");
+        put_line(&out[n++], "", 0, 0, 0);
+        put_line(&out[n++], "F1: CLOSE", 0, 0, 0);
     } else if (m->screen == MENU_GRAPHICS) {
         menu_size(m, &w, &h);
         put_line(&out[n++], "GRAPHICS OPTIONS", 1, 0, 0);

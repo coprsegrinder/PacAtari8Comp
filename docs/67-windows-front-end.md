@@ -13,7 +13,7 @@ Stage J of `PROGRESS.md`: "Native Windows 11 port" - the playable program. `pacm
 | **Pads** | XInput, loaded when the program starts (no import library, no failure without it); pad 1 is player 1, pad 2 player 2; the keyboard drives both ports (hot-seat play on one keyboard) |
 | **Save and record** | The high score under `save/` through `platform/fs.c` like the headless shell; `--record FILE` writes the game played as a replay |
 
-Keys: arrows / WASD stick; Ctrl, Z, X, Enter fire (Enter is also START); F2 START, F3 SELECT, F4 OPTION; Space or P pause; Alt+Enter or F11 full screen; **Esc the pause menu (docs/68; it was quit before)**. Pads: D-pad or left stick, A / B fire, Start = START, Back = SELECT, X / Y = OPTION.
+Keys: arrows / WASD stick; Ctrl, Z, X, Enter fire (Enter is also START); F1 the help (docs/68); F2 START, F3 SELECT, F4 OPTION; Space or P pause; Alt+Enter or F11 full screen; **Esc the pause menu (docs/68; it was quit before)**. Pads: D-pad or left stick, A / B fire, Start = START, Back = SELECT, X / Y = OPTION.
 
 ## 2. How it was checked (`tools/check_front_end.py`, `analysis/evidence-front-end-summary.txt`)
 

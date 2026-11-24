@@ -84,6 +84,54 @@ static void test_navigation(void)
     CHECK(m.res == 0);
 }
 
+static void test_help(void)
+{
+    Menu m;
+    MenuLine l[MENU_MAX_LINES];
+    int n, i, k;
+    static const char *const none[] = {"ARROW", "WASD", "FIRE", "STICK", "JOYSTICK", "ESC", "ENTER", "SPACE", "CTRL", "MOVE", "PAUSE"};
+
+    menu_init(&m, 0, 5, 0, 0);                             /* from the game */
+    menu_key(&m, MK_HELP);
+    CHECK(m.screen == MENU_HELP && menu_is_open(&m) && !m.changed && !m.quit);
+    menu_key(&m, MK_UP);                                   /* nothing but closing does anything in the help */
+    menu_key(&m, MK_RIGHT);
+    menu_key(&m, MK_DOWN);
+    CHECK(m.screen == MENU_HELP && !m.changed && !m.quit);
+    menu_key(&m, MK_HELP);                                 /* F1 closes it, back to the game */
+    CHECK(m.screen == MENU_CLOSED);
+    menu_key(&m, MK_HELP);
+    menu_key(&m, MK_BACK);                                 /* ESC closes it too */
+    CHECK(m.screen == MENU_CLOSED);
+    menu_key(&m, MK_BACK);                                 /* from the pause menu: back to the pause menu, on the same item */
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_HELP);
+    CHECK(m.screen == MENU_HELP);
+    menu_key(&m, MK_SELECT);
+    CHECK(m.screen == MENU_MAIN && m.cursor == 1);
+    menu_key(&m, MK_SELECT);                               /* from the graphics options */
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_HELP);
+    menu_key(&m, MK_HELP);
+    CHECK(m.screen == MENU_GRAPHICS && m.cursor == 1 && !m.changed);
+    menu_key(&m, MK_BACK);
+    menu_key(&m, MK_BACK);
+    CHECK(!menu_is_open(&m));
+    menu_key(&m, MK_HELP);                                 /* the text: only function keys */
+    n = menu_lines(&m, l);
+    CHECK(n > 3 && l[0].heading);
+    for (i = 1; i < n; i++) {
+        CHECK(!l[i].item && !l[i].selected);
+        for (k = 0; k < (int)(sizeof none / sizeof none[0]); k++) {
+            CHECK(strstr(l[i].text, none[k]) == NULL);
+        }
+    }
+    CHECK(strstr(l[2].text, "F1 ") && strstr(l[3].text, "F2 ") && strstr(l[4].text, "F3 ") && strstr(l[5].text, "F4 ") && strstr(l[6].text, "F11 "));
+    for (i = 2; i <= 6; i++) {
+        CHECK(l[i].text[0] == 'F' && strlen(l[i].text) == strlen(l[2].text));
+    }
+}
+
 static void test_text(void)
 {
     Menu m;
@@ -189,6 +237,7 @@ static void test_fit(void)
 int main(void)
 {
     test_navigation();
+    test_help();
     test_text();
     test_list();
     test_fit();

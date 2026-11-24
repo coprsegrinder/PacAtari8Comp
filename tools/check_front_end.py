@@ -116,7 +116,7 @@ def one(cc):
     step("%s: the menu test: every check passed (menu keys, frozen game, both display modes, every resolution, F11, Alt+Enter, Quit Game)" % cc,
          r.returncode == 0 and bool(m) and m.group(2) == "0" and int(m.group(1)) >= 60 and "script finished: yes" in text, "%s passed, %s failed, %.0f s" % (m.group(1) if m else "?", m.group(2) if m else "?", time.time() - t))
     frozen = re.findall(r"PASS  game frozen: .*", text)
-    step("%s: the game was frozen while a menu was open (frames run and the whole state hash unchanged), twice" % cc, len(frozen) == 2, "%d checks" % len(frozen))
+    step("%s: the game was frozen while the help or a menu was open (frames run and the whole state hash unchanged), three times" % cc, len(frozen) == 3, "%d checks" % len(frozen))
     pics = re.findall(r"^PASS  (?:windowed|fullscreen) \d+x\d+.*aspect 1\.6:1, centred yes, outside the picture 0 pixels not black, inside \d+ of \d+ differ from the centre rule, 0 blended", text, re.M)
     step("%s: all 20 resolutions in both display modes: 1.6:1, centred, black around, nearest pixel (nothing blended)" % cc, len(pics) >= 40, "%d pictures checked" % len(pics))
     h = run([head, "run", "logs/menutest.pmrp", "--video", "--audio", "--root", root])

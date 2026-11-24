@@ -1,4 +1,4 @@
-# 68 - The pause menu and the graphics options (an addition to stage J)
+# 68 - The pause menu, the graphics options and the help (an addition to stage J)
 
 Asked for by the owner on 2026-11-24, after playing the stage J program (docs/67). `pacman_a8_play.exe` gets a pause menu on **Esc** and a graphics options page: the display mode and the resolution. Nothing of the game changes: while a menu is open the front end runs **no game frame at all**, so every gameplay process (movement, ghosts, timers, animation, sound) is stopped by not being called, and the World is never touched by the menu. Source: the portable model `src/c/shell/menu.[ch]` (`ctest menu_check`), and `src/c/platform/win32/win_main.c` (the window, the drawing and the keys).
 
@@ -7,6 +7,7 @@ Asked for by the owner on 2026-11-24, after playing the stage J program (docs/67
 | | |
 |---|---|
 | **Esc** | in the game: opens the **Pause Menu**; in the Pause Menu: resumes; in Graphics Options: back to the Pause Menu (on the item "Graphics Options") |
+| **F1: the help** | from anywhere (in the game, in the Pause Menu, in the Graphics Options): shows **only what the function keys do**, no other controls: F1 this help, F2 start a new game, F3 one or two players, F4 starting level, F11 full screen / windowed. Like the menu it is a pause (no game frame runs). F1 again, or Esc, closes it and goes back to where it was (the game, or the menu on the same item); no other key does anything in it, except F11 |
 | **Pause Menu** | Resume Game, Graphics Options, Quit Game |
 | **Graphics Options** | **Display Mode**: Windowed / Borderless Fullscreen; **Resolution**: 20 standard resolutions, 5 of 4:3, 6 of 16:9, 5 of 16:10, 4 of 21:9 (640x480 ... 1600x1200; 1280x720 ... 3840x2160; 1280x800 ... 2560x1600; 2560x1080, 3440x1440, 3840x1600, 5120x2160). Nothing else |
 | **Keys in the menu** | Up / Down (or W / S) move; Left / Right (or A / D) change a value; Enter or Space selects (and changes a value); Esc goes back. A pad: D-pad or left stick, A selects, B goes back; Start + Back together open the menu (a pad has no Esc) |
@@ -36,7 +37,9 @@ The start-up window is 1280 x 720 (the list's 16:9 entry holding the 3 x picture
 | **The menu adds nothing to the game**: the game recorded through the menu run by the headless `pacman_a8 run --video --audio` gives the same state, run, video and audio digests | `check_front_end.py` | equal |
 | The rest of the front end: the stage J checks (22) again, and the 30 golden games | `check_front_end.py`, `run_regression.py` | pass |
 
-The pictures of the two menu screens are made by the test (`logs/menu_main.ppm`, `logs/menu_graphics.ppm`).
+**The help** (F1, added 2026-11-24): `menu_check` covers opening it from the game and from each menu, closing it with F1 and with Esc, that game keys do nothing in it, that every line of it is a function key's line (F1, F2, F3, F4, F11) and that no control word (arrows, WASD, fire, stick, Esc, Enter, Space, Ctrl, move, pause) is in it; `--menutest` presses the real F1 in the running game (frozen: the frame count and the state hash are unchanged over 500 ms; a game key does nothing; F1 again resumes) and in the Pause Menu (Esc closes it and the menu is as it was): 80 checks each compiler in all.
+
+The pictures of the menu screens are made by the test (`logs/menu_main.ppm`, `logs/menu_graphics.ppm`, `logs/menu_help.ppm`).
 
 ## 3. Limits (OV-77)
 

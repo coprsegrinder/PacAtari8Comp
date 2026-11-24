@@ -6,7 +6,7 @@
  *   - the picture: the renderer's 384 x 240 pixels (1.6 : 1) at a whole-number scale when that fills the area well, else as large as fits, nearest pixel, centred, black around it, never stretched (shell/menu.c display_fit);
  *   - the pause menu (ESC) and the graphics options (display mode, resolution): while a menu is open no game frame runs (shell/menu.c; docs/68);
  *   - the high score under save/, the replay of the game under --record (a recorded game replays headlessly to the same digests: the proof that this front end adds nothing to the game).
- * Keys: arrows / WASD stick, Ctrl / Z / X / Enter fire (Enter also START), F2 START, F3 SELECT, F4 OPTION, Space / P pause, Alt+Enter or F11 full screen, Esc the pause menu.  Pads (XInput): D-pad or left stick,
+ * Keys: arrows / WASD stick, Ctrl / Z / X / Enter fire (Enter also START), F1 help, F2 START, F3 SELECT, F4 OPTION, Space / P pause, Alt+Enter or F11 full screen, Esc the pause menu.  Pads (XInput): D-pad or left stick,
  * A / B fire, Start = START, Back = SELECT, X / Y = OPTION; pad 2 is player 2; the keyboard drives both ports (hot-seat play on one keyboard).
  * --selftest FRAMES: plays a built-in scenario by posting real key messages to its own window, runs FRAMES frames, writes logs/selftest.txt (the digests, the timing, the sound device's underruns, a comparison of
  * the window's pixels with the frame) and quits.  --exact makes the window client exactly 384 x 240 pixels with no stretching (the pixel comparison needs it).
@@ -445,6 +445,12 @@ static LRESULT CALLBACK wnd_proc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
             }
             return 0;
         }
+        if (vk == VK_F1) {                                        /* the help, from anywhere: a pause, like the menu */
+            if (!repeat) {
+                menu_event(MK_HELP);
+            }
+            return 0;
+        }
         if (menu_is_open(&menu) || vk == VK_ESCAPE) {             /* ESC opens the menu; while it is open the keys are its keys, not the game's */
             MenuKey mk;
             if (menu_key_of(vk, &mk) && (!repeat || (mk != MK_BACK && mk != MK_SELECT))) {
@@ -812,11 +818,28 @@ static void mt_build(void)
     int pass, i;
 
     mt_add(OP_FRAMES, 640, 0);                         /* the game is running (START at 150, then the stick) */
+    mt_add(OP_KEY, VK_F1, 0);                          /* F1 in the game: the help, a pause */
+    mt_add(OP_WAIT, 100, 0);
+    mt_add(OP_CHECK, CK_SNAPSHOT, 0);
+    mt_add(OP_WAIT, 500, 0);
+    mt_add(OP_CHECK, CK_FROZEN, 0);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_HELP);
+    mt_key(VK_UP);                                     /* a game key does nothing in the help */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_HELP);
+    mt_key(VK_F1);                                     /* F1 again: back to the game */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_CLOSED);
+    mt_add(OP_WAIT, 400, 0);
+    mt_add(OP_CHECK, CK_RUNNING, 0);
     mt_add(OP_KEY, VK_ESCAPE, 0);                      /* ESC opens the menu */
     mt_add(OP_WAIT, 100, 0);
     mt_add(OP_CHECK, CK_SNAPSHOT, 0);
     mt_add(OP_WAIT, 700, 0);
     mt_add(OP_CHECK, CK_FROZEN, 0);                    /* 700 ms of the menu: not one frame, not one bit of the game's state */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_key(VK_F1);                                     /* F1 in the pause menu: the help; ESC closes it and the menu is as it was */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_HELP);
+    mt_key(VK_ESCAPE);
     mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
     mt_add(OP_CHECK, CK_CURSOR, 0);
     mt_key(VK_ESCAPE);                                 /* ESC in the main menu resumes */
@@ -1049,11 +1072,11 @@ static void mt_check(int id, int arg)
     }
     case CK_SCREEN:
         mt_result(menu.screen == arg, "menu screen", "screen %d, expected %d", menu.screen, arg);
-        if (arg == MENU_MAIN || arg == MENU_GRAPHICS) {          /* the picture of the menu, for the eye (the first time each screen is shown) */
-            static int shot[3];
+        if (arg == MENU_MAIN || arg == MENU_GRAPHICS || arg == MENU_HELP) {   /* the picture of the menu, for the eye (the first time each screen is shown) */
+            static int shot[4];
             if (!shot[arg]) {
                 shot[arg] = 1;
-                dump_bgra(arg == MENU_MAIN ? "logs/menu_main.ppm" : "logs/menu_graphics.ppm");
+                dump_bgra(arg == MENU_MAIN ? "logs/menu_main.ppm" : (arg == MENU_HELP ? "logs/menu_help.ppm" : "logs/menu_graphics.ppm"));
             }
         }
         break;
