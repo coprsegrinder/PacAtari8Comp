@@ -131,6 +131,18 @@ def golden_games(d, cc, replays, update):
          ("differ: " + ", ".join(bad[:6])) if bad else ("not played: " + ", ".join(missing[:6])) if missing else "state, run, video and audio digests equal")
 
 
+def interp_audit(d, cc, replays):
+    """the in-between pictures of the FPS option (docs/69) over every game of the set: no object is shown anywhere the native picture does not have it (tests/interp_audit.c: checks C1 to C4)"""
+    exe = os.path.join(d, "tests", EXE.replace("pacman_a8", "interp_audit"))
+    t0 = time.time()
+    if not os.path.exists(exe):
+        step("in-between pictures audit", False, "no interp_audit in the build")
+        return
+    r = subprocess.run([exe, "--root", ROOT, "--quiet"] + [os.path.relpath(replays[n], ROOT) for n in sorted(replays)], capture_output=True, text=True, timeout=1800)
+    total = [l for l in r.stdout.splitlines() if l.startswith("TOTAL")]
+    step("in-between pictures audit with %s (%d games, %.0f s)" % (cc, len(replays), time.time() - t0), r.returncode == 0 and "interp_audit: OK" in r.stdout, total[0][7:200] if total else r.stdout[-200:])
+
+
 # every test that says a generated chapter or a generated source is current: they take about 30 seconds together, and each caught a stale chapter at some time (stage 98: docs/32 had been stale since a harness was added in stage 80b)
 FRESHNESS = ["test_behaviour_docs", "test_binary_docs", "test_build_docs", "test_c_world", "test_cfg", "test_constants", "test_correlation", "test_data_docs", "test_functions", "test_io", "test_locals", "test_original_architecture", "test_pointers",
              "test_relationships", "test_resources_docs", "test_source_docs", "test_stack", "test_states", "test_structures", "test_testing_docs", "test_tracing", "test_two_players", "test_variables"]
@@ -190,6 +202,7 @@ def main():
         ctest(d, cc)
     golden_games(d, cc, replays, update)
     if not update:
+        interp_audit(d, cc, replays)
         python_tests(full)
     if full and not update:
         c2 = build("clang") if cc != "clang" else build("gcc")

@@ -140,3 +140,10 @@ if(UNIX)
 endif()
 add_test(NAME interp_check COMMAND interp_check WORKING_DIRECTORY ${PM_MAIN_DIR})
 set_tests_properties(interp_check PROPERTIES FIXTURES_REQUIRED asset_blob PASS_REGULAR_EXPRESSION "interp_check: OK")
+
+# the audit of the in-between pictures over whole games (docs/69, tools/check_interp.py): not a ctest, it needs replays
+add_executable(interp_audit interp_audit.c)
+target_link_libraries(interp_audit pm_shell pm_render pm_assets pm_app pm_core pm_platform)
+if(UNIX)
+  target_link_libraries(interp_audit m)
+endif()

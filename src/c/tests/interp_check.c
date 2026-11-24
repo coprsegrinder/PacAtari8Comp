@@ -401,6 +401,44 @@ static void test_jumps(void)
     free(ref);
 }
 
+/* Pac-Man is eaten away and a score takes his place (a ghost eaten): the score is not Pac-Man moved, so it does not glide from his place (the owner saw it as a rubber band) */
+static void test_score_replaces_pacman(void)
+{
+    static InterpFrame two[2];
+    Two ctx;
+    InterpOut o;
+    InterpDirty d;
+    double x = 0, y = 0;
+    int px, py, k = 4, kept = 0;
+
+    two[0] = frames[500];
+    CHECK(two[0].obj[k].present && two[0].obj[k].count > 60);
+    two[1] = two[0];
+    memset(two[1].layers.cov, 0, sizeof two[1].layers.cov);
+    for (py = two[0].obj[k].y0; py < two[0].obj[k].y1; py++) {                 /* frame 2: only the first rows of the shape, 6 pixels to the left: a small shape, as digits are */
+        for (px = two[0].obj[k].x0; px < two[0].obj[k].x1; px++) {
+            if ((two[0].layers.cov[py * RENDER_W + px] & 0xF0u) && py < two[0].obj[k].y0 + 4 && px >= 6) {
+                two[1].layers.cov[py * RENDER_W + px - 6] |= two[0].layers.cov[py * RENDER_W + px] & 0xF0u;
+                kept++;
+            }
+        }
+    }
+    CHECK(kept > 8 && kept < two[0].obj[k].count * 6 / 10);
+    interp_prepare(&two[1]);
+    interp_follow(&two[0], NULL);
+    interp_follow(&two[1], &two[0]);
+    CHECK(two[1].run[k] != two[0].run[k]);                                    /* not the same object: a new run */
+    ctx.f[0] = &two[0];
+    ctx.f[1] = &two[1];
+    CHECK(interp_place(get_two, &ctx, 0.25, 1, k, &x, &y) && x == two[0].px[k] && y == two[0].py[k]);
+    CHECK(interp_place(get_two, &ctx, 0.75, 1, k, &x, &y) && x == two[0].px[k] && y == two[0].py[k]);     /* no way between the two: it stays where the game has it */
+    CHECK(interp_out_init(&o) == 0 && interp_out_size(&o, OW, OH) == 0);
+    interp_render(&o, get_two, &ctx, 0.25, 1, &d);
+    interp_render(&o, get_two, &ctx, 0.45, 1, &d);
+    CHECK(!d.full && d.n == 0);                                                /* not a pixel of it moved before the other frame is the nearer one */
+    interp_out_free(&o);
+}
+
 /* a 2304 x 1440 picture (a 6 x scale) takes how long: a picture of the same nearest frame, and one when the nearest frame changes */
 static void test_cost(void)
 {
@@ -448,6 +486,7 @@ int main(void)
     test_smoothness();
     test_no_mixing();
     test_jumps();
+    test_score_replaces_pacman();
     test_cost();
     free(frames);
     if (failures == 0) {

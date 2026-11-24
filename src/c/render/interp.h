@@ -20,6 +20,10 @@
 
 #define INTERP_OBJECTS 5          /* the four players, and the four missiles together (Pac-Man's body and the pop-up score) */
 #define INTERP_MAX_MOVE 8         /* the longest move between two frames that is a move (picture pixels); a longer one is a jump */
+#define INTERP_SIMILAR 45         /* two shapes are the same object moved only when this share (percent) of their joined pixels is on both: a ghost and the eyes it becomes, Pac-Man and the score that takes his place are not */
+
+/* the share above, a variable only so that the audit (tests/interp_audit.c) can try other values; the program leaves it alone */
+extern int interp_similar_percent;
 
 /* where an object is in a frame */
 typedef struct InterpObject {
@@ -42,6 +46,7 @@ typedef struct InterpFrame {
 typedef struct InterpPair {
     int ok[INTERP_OBJECTS];
     int dx[INTERP_OBJECTS], dy[INTERP_OBJECTS];
+    int similar[INTERP_OBJECTS];  /* the share of the joined pixels of the two shapes that is on both, at the best shift (percent) */
 } InterpPair;
 
 /* the picture shown: BGRA, ow x oh, made of the nearest frame's picture with the moving objects drawn again */
@@ -65,6 +70,9 @@ void interp_follow(InterpFrame *cur, const InterpFrame *prev);
 
 /* how a frame is found by its number (NULL when it is not kept) */
 typedef const InterpFrame *(*InterpGet)(void *ctx, unsigned long id);
+
+/* where object k is drawn at the game time t, in the units of the frames' px and py (the audit looks at it); 0 when the object is not in a run at t */
+int interp_place(InterpGet get, void *ctx, double t, unsigned long newest, int k, double *x, double *y);
 
 /* how the objects of `a` moved to `b` */
 void interp_pair(const InterpFrame *a, const InterpFrame *b, InterpPair *p);

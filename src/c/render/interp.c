@@ -9,6 +9,8 @@
 
 #define FIX 1024                  /* fixed-point steps in a picture pixel */
 
+int interp_similar_percent = INTERP_SIMILAR;
+
 /* the bits of the layers' cov that make object o: player o, or the four missiles */
 static uint8_t object_mask(int o)
 {
@@ -21,17 +23,22 @@ void interp_prepare(InterpFrame *f)
 
     for (o = 0; o < INTERP_OBJECTS; o++) {
         InterpObject *ob = &f->obj[o];
-        uint8_t m = object_mask(o);
-
         ob->present = 0;
         ob->count = 0;
         ob->x0 = RENDER_W;
         ob->y0 = RENDER_H;
         ob->x1 = ob->y1 = 0;
-        for (y = 0; y < RENDER_H; y++) {
-            const uint8_t *row = f->layers.cov + y * RENDER_W;
-            for (x = 0; x < RENDER_W; x++) {
-                if (row[x] & m) {
+    }
+    for (y = 0; y < RENDER_H; y++) {                             /* one pass: most of the picture has no object on it */
+        const uint8_t *row = f->layers.cov + y * RENDER_W;
+        for (x = 0; x < RENDER_W; x++) {
+            uint8_t v = row[x];
+            if (v == 0) {
+                continue;
+            }
+            for (o = 0; o < INTERP_OBJECTS; o++) {
+                if (v & object_mask(o)) {
+                    InterpObject *ob = &f->obj[o];
                     ob->count++;
                     if (x < ob->x0) { ob->x0 = x; }
                     if (x + 1 > ob->x1) { ob->x1 = x + 1; }
@@ -40,7 +47,9 @@ void interp_prepare(InterpFrame *f)
                 }
             }
         }
-        ob->present = ob->count > 0;
+    }
+    for (o = 0; o < INTERP_OBJECTS; o++) {
+        f->obj[o].present = f->obj[o].count > 0;
     }
 }
 
@@ -52,10 +61,26 @@ void interp_pair(const InterpFrame *a, const InterpFrame *b, InterpPair *p)
     for (o = 0; o < INTERP_OBJECTS; o++) {
         const InterpObject *oa = &a->obj[o], *ob = &b->obj[o];
         uint8_t m = object_mask(o);
-        int best_cost = 0x7FFFFFFF, best_dx = 0, best_dy = 0, best_overlap = 0;
+        int best_cost = 0x7FFFFFFF, best_dx = 0, best_dy = 0, best_overlap = 0, similar;
 
         if (!oa->present || !ob->present) {
             continue;
+        }
+        if (oa->count == ob->count && oa->x0 == ob->x0 && oa->y0 == ob->y0 && oa->x1 == ob->x1 && oa->y1 == ob->y1) {   /* the same shape in the same place (an object that did not move): no search */
+            int same = 1;
+            for (y = oa->y0; y < oa->y1 && same; y++) {
+                for (x = oa->x0; x < oa->x1; x++) {
+                    if ((a->layers.cov[y * RENDER_W + x] & m) != (b->layers.cov[y * RENDER_W + x] & m)) {
+                        same = 0;
+                        break;
+                    }
+                }
+            }
+            if (same) {
+                p->ok[o] = 1;
+                p->similar[o] = 100;
+                continue;
+            }
         }
         for (dy = -INTERP_MAX_MOVE; dy <= INTERP_MAX_MOVE; dy++) {
             for (dx = -INTERP_MAX_MOVE; dx <= INTERP_MAX_MOVE; dx++) {
@@ -85,7 +110,9 @@ void interp_pair(const InterpFrame *a, const InterpFrame *b, InterpPair *p)
         {
             int smaller = oa->count < ob->count ? oa->count : ob->count;
             int edge = best_dx == -INTERP_MAX_MOVE || best_dx == INTERP_MAX_MOVE || best_dy == -INTERP_MAX_MOVE || best_dy == INTERP_MAX_MOVE;
-            if (best_overlap * 2 >= smaller && !edge) {      /* at least half of the smaller one is on the other, and the best shift is not at the end of the range (a jump) */
+            similar = oa->count + ob->count - best_overlap > 0 ? 100 * best_overlap / (oa->count + ob->count - best_overlap) : 0;
+            p->similar[o] = similar;
+            if (best_overlap * 2 >= smaller && similar >= interp_similar_percent && !edge) {      /* the same shape, to a good share (not a ghost and its eyes, not Pac-Man and a score), moved, and the best shift is not at the end of the range (a jump) */
                 p->ok[o] = 1;
                 p->dx[o] = best_dx;
                 p->dy[o] = best_dy;
@@ -243,6 +270,13 @@ void interp_follow(InterpFrame *cur, const InterpFrame *prev)
 /* where object k is at the game time t: the moves of an object are the frames at which it changed place (the game moves each object in steps, every second or third frame); between two moves it is
  * drawn on the straight way from one place to the next (so it glides the whole time between the moves and arrives when the game put it there); when the next move is not yet made (the game is only
  * a frame or two ahead of the picture) the way is the one of the move before it.  Positions are counted from the start of the object's run (interp_follow).  Returns 0 when the object is not in a run at t */
+static int object_target(InterpGet get, void *ctx, unsigned long f, unsigned long newest, double t, int k, double *tx, double *ty);
+
+int interp_place(InterpGet get, void *ctx, double t, unsigned long newest, int k, double *x, double *y)
+{
+    return t >= 0.0 && object_target(get, ctx, (unsigned long)floor(t), newest, t, k, x, y);
+}
+
 static int object_target(InterpGet get, void *ctx, unsigned long f, unsigned long newest, double t, int k, double *tx, double *ty)
 {
     const InterpFrame *ff = get(ctx, f), *fj;
@@ -254,6 +288,14 @@ static int object_target(InterpGet get, void *ctx, unsigned long f, unsigned lon
         return 0;
     }
     run = ff->run[k];
+    if (f + 1 <= newest) {                                       /* the next frame is made: when the object is not the same object in it (it appears, vanishes, jumps, becomes another shape) it stays where the game has it */
+        fj = get(ctx, f + 1);
+        if (fj != NULL && (!fj->obj[k].present || fj->run[k] != run)) {
+            *tx = ff->px[k];
+            *ty = ff->py[k];
+            return 1;
+        }
+    }
     for (j = f; j > 0 && j + EVENT_SPAN > f; j--) {              /* the last move at or before f */
         fj = get(ctx, j);
         if (fj == NULL || !fj->obj[k].present || fj->run[k] != run) {

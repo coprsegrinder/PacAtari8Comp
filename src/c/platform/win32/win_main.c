@@ -313,6 +313,7 @@ static void layout(int cw, int ch, DisplayRect *r)
 
 #define RING 32                          /* the game frames kept for the in-between pictures (the moves of an object are looked for up to 20 frames back) */
 #define SAMPLES_PER_FRAME (AUDIO_RATE / FRAME_HZ)
+#define PICTURE_AHEAD 0.6                /* the picture is of the game time the sound device is at plus this many frames.  The native picture is the newest game frame, which is 1.3 frames ahead of the sound on average: the further a picture is behind it, the later it shows what a key did.  An in-between picture needs the game a frame ahead of it to know where an object is going, so it cannot be as new: 0.6 puts it 0.7 frames (11 ms) behind the native one on average, 0 to 1.6 (measured: docs/69).  0 would be 21 ms behind, 1.0 only 5 ms but with an uneven game time */
 static InterpFrame *ring;                /* the last RING game frames, with their layers */
 static unsigned long ring_id[RING];
 static int ring_ok[RING];
@@ -764,7 +765,7 @@ static double game_time(uint64_t now, uint64_t t_start_ns)
     if (q < 0) {
         q = 0;
     }
-    meas = (audio_written - (double)q) / SAMPLES_PER_FRAME;
+    meas = (audio_written - (double)q) / SAMPLES_PER_FRAME + PICTURE_AHEAD;
     if (!tau_valid) {
         tau_a = meas;
         tau_t0 = now;
@@ -857,7 +858,7 @@ static int interp_step(uint64_t t_start_ns)
         shown_colour = nf != NULL ? nf->colour : NULL;
         if (trace_file != NULL && nf != NULL) {
             int k;
-            pm_fs_printf(trace_file, "%.3f %.4f %lu", (double)now / 1e6, tau, (unsigned long)iout.base_id);
+            pm_fs_printf(trace_file, "%.3f %.4f %lu %lu", (double)now / 1e6, tau, newest, (unsigned long)iout.base_id);
             for (k = 0; k < INTERP_OBJECTS; k++) {
                 pm_fs_printf(trace_file, " %.3f %.3f %.3f %.3f", nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 + iout.last_offx[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 + iout.last_offy[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 : -1.0);
             }

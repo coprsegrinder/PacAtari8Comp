@@ -10,6 +10,8 @@ print("ticks %d, mean interval %.3f ms (%.1f /s), spread %.3f ms, worst %.2f ms,
 rate = [(tau[i+1]-tau[i])/(dts[i]/1000.0) for i in range(len(dts)) if dts[i] > 0]
 span = (tau[-1]-tau[0])/((t[-1]-t[0])/1000.0)
 print("game time: %.3f frames/s over the run (the original: 59.923); per-tick increments %.4f frames +- %.4f" % (span, sum(tau[i+1]-tau[i] for i in range(len(tau)-1))/len(dts), math.sqrt(sum(((tau[i+1]-tau[i]) - m/1000*59.9227)**2 for i in range(len(dts)))/len(dts))))
+lead = [r[2]-r[1] for r in rows]
+print("the game is ahead of the picture by %.2f frames on average (%.1f ms), from %.2f to %.2f frames" % (sum(lead)/len(lead), sum(lead)/len(lead)/59.9227*1000, min(lead), max(lead)))
 back = sum(1 for i in range(len(tau)-1) if tau[i+1] < tau[i])
 print("ticks where the game time went back: %d" % back)
 def metric(pos, label, lo=450.0, hi=1250.0):
@@ -27,7 +29,7 @@ def metric(pos, label, lo=450.0, hi=1250.0):
         tot += sdv/mean; n += 1
     return tot/n if n else float('nan'), n
 for k, name in enumerate(["ghost 0", "ghost 1", "ghost 2", "ghost 3", "Pac-Man"]):
-    drawn = lambda i, k=k: (rows[i][3+4*k], rows[i][4+4*k])
-    held = lambda i, k=k: (rows[i][5+4*k], rows[i][6+4*k])
+    drawn = lambda i, k=k: (rows[i][4+4*k], rows[i][5+4*k])
+    held = lambda i, k=k: (rows[i][6+4*k], rows[i][7+4*k])
     a, n1 = metric(drawn, name); b, n2 = metric(held, name)
     print("  %-8s speed unevenness (spread/mean, 0.2 s stretches of steady movement): the game's own steps %.2f -> in-between pictures %.2f   (%d stretches)" % (name, b, a, n1))
