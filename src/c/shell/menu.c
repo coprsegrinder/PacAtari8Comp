@@ -15,7 +15,7 @@ const int menu_resolution_count = (int)(sizeof menu_resolutions / sizeof menu_re
 const int menu_fps_values[] = {MENU_FPS_NATIVE, 75, 90, 120, 144, 165, 180, MENU_FPS_UNCAPPED};
 const int menu_fps_count = (int)(sizeof menu_fps_values / sizeof menu_fps_values[0]);
 
-const char *const menu_crt_names[] = {"NONE (OFF)", "CRT-GUEST-ADVANCED-NTSC", "ZFAST-CRT-COMPOSITE", "CRT-APERTURE"};
+const char *const menu_crt_names[] = {"OFF", "CRT-GUEST-ADVANCED-NTSC", "ZFAST-CRT-COMPOSITE", "CRT-APERTURE"};
 const char *const menu_crt_files[] = {"", "third-party/crt-shaders/crt/crt-guest-advanced-ntsc.slangp", "third-party/crt-shaders/crt/zfast-crt-composite.slangp", "third-party/crt-shaders/crt/crt-aperture.slangp"};
 const int menu_crt_count = (int)(sizeof menu_crt_names / sizeof menu_crt_names[0]);
 

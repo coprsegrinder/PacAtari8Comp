@@ -164,6 +164,62 @@ static void test_coincident_write_and_fire(void)
     CHECK(chip.dropped == 0);
 }
 
+/* the speaker's sound (audio_hq): a tone above the output's Nyquist frequency is not folded down into the hearing range, a tone below it is as loud as with the plain model, and the stream is as long */
+static double band_energy(const float *x, size_t n, double hz, double rate)
+{
+    double re = 0.0, im = 0.0;
+    size_t i;
+
+    for (i = 0; i < n; i++) {
+        double ph = 6.283185307179586 * hz * (double)i / rate;
+        re += (double)x[i] * cos(ph);
+        im += (double)x[i] * sin(ph);
+    }
+    return (re * re + im * im) / ((double)n * (double)n);
+}
+
+static void test_hq(void)
+{
+    static AudioHq hq;
+    static float all_plain[44100 * 2], all_hq[44100 * 2];
+    uint8_t reg[WRITE_CLOCK_MAX], val[WRITE_CLOCK_MAX];
+    size_t np = 0, nh = 0, n;
+    int f, pass;
+    double plain_alias = 0.0, hq_alias = 0.0, plain_low = 0.0, hq_low = 0.0;
+
+    for (pass = 0; pass < 2; pass++) {
+        /* pass 0: AUDF1 = 0 at volume 8 (a pure 31,960 Hz tone: the rest of the start tune); pass 1: AUDF1 = 70 (a tone of 450 Hz) */
+        audio_init(&audio, 44100.0);
+        audio_hq_init(&hq, 44100.0);
+        np = nh = 0;
+        for (f = 0; f < 90; f++) {
+            reg[0] = 1; val[0] = 0xA8;
+            reg[1] = 0; val[1] = pass == 0 ? 0 : 70;
+            n = audio_frame_writes(&audio, reg, val, 2, pcm, 2000);
+            if (np + n <= sizeof all_plain / sizeof all_plain[0]) {
+                memcpy(all_plain + np, pcm, n * sizeof pcm[0]);
+                np += n;
+            }
+            n = audio_hq_frame(&hq, reg, val, 2, pcm, 2000);
+            if (nh + n <= sizeof all_hq / sizeof all_hq[0]) {
+                memcpy(all_hq + nh, pcm, n * sizeof pcm[0]);
+                nh += n;
+            }
+        }
+        CHECK(nh + 200 >= np && nh <= np + 4);                              /* as long (the filter's delay is a few samples more than 0.5 ms) */
+        if (pass == 0) {
+            plain_alias = band_energy(all_plain + 8000, 30000, 44100.0 - 31960.0, 44100.0);
+            hq_alias = band_energy(all_hq + 8000, 30000, 44100.0 - 31960.0, 44100.0);
+        } else {
+            plain_low = band_energy(all_plain + 8000, 30000, 450.0 * 0.0 + 63920.0 / (2.0 * 71.0), 44100.0);
+            hq_low = band_energy(all_hq + 8000, 30000, 63920.0 / (2.0 * 71.0), 44100.0);
+        }
+    }
+    CHECK(plain_alias > 1e-6);                                               /* the plain model has the folded tone ... */
+    CHECK(hq_alias < plain_alias * 1e-4);                                    /* ... the speaker's sound has not (80 dB down) */
+    CHECK(plain_low > 1e-6 && hq_low > plain_low * 0.9 && hq_low < plain_low * 1.1);   /* a tone in the hearing range is as loud */
+}
+
 static void test_front_end(void)
 {
     size_t total = 0, n;
@@ -210,6 +266,7 @@ int main(void)
     test_unsupported_and_misuse();
     test_coincident_write_and_fire();
     test_front_end();
+    test_hq();
     if (failures == 0) {
         printf("audio_selftest: OK\n");
         return 0;

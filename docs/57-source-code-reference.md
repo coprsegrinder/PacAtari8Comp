@@ -6,8 +6,8 @@ Checklist stage 91: "Document functions, variables, structures, algorithms, modu
 
 ## 1. The source at a glance
 
-- **107 files, 15799 lines** under `src/c` (43 headers, 64 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
-- **237 functions declared in headers** (without the tests), **52 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
+- **107 files, 15944 lines** under `src/c` (43 headers, 64 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
+- **240 functions declared in headers** (without the tests), **53 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
 - **Layers** (an arrow is "uses"): `shell` -> `app` -> `core`; `shell` -> `render`, `audio`, `assets`; `app`, `assets`, `core` -> `platform`; `render`, `audio` -> `core`. Nothing in `core` or `app` includes a system header or opens a file.
 
 ```mermaid
@@ -131,8 +131,8 @@ flowchart TD
 
 | File | Lines | What it is |
 |---|---|---|
-| `audio.c` | 52 | see audio.h. |
-| `audio.h` | 38 | the sound of the game as a function of the World, frame by frame (stage 80c, docs/22, docs/44). |
+| `audio.c` | 115 | see audio.h. |
+| `audio.h` | 63 | the sound of the game as a function of the World, frame by frame (stage 80c, docs/22, docs/44). |
 | `pokey.c` | 388 | see pokey.h. |
 | `pokey.h` | 98 | the POKEY sound chip as the game uses it, from timed register writes to PCM (stage 80c, docs/22). |
 | `write_clock.c` | 12 | see write_clock.h. |
@@ -158,7 +158,7 @@ flowchart TD
 |---|---|---|
 | `assets_check.c` | 159 | Stage 80a: |
 | `audio_check.c` | 197 | Stage 80c: |
-| `audio_selftest.c` | 220 | Stage 80c: |
+| `audio_selftest.c` | 277 | Stage 80c: |
 | `boot_tables.h` | 24 | what every test program that uses the core's tables does first (stage 80a): |
 | `constants_check.c` | 44 | stage 94: |
 | `frontend_check.c` | 167 | Stage J: |
@@ -220,6 +220,7 @@ flowchart TD
 | `SlangSampler` | struct | `render/slang.h` | 2 | a texture a shader reads: its name says what to bind to it, its binding is the texture unit |
 | `SlangShader` | struct | `render/slang.h` | 6 | a shader turned into the two stages of GLSL for OpenGL, with its parameters and samplers |
 | `Audio` | struct | `audio/audio.h` | 2 | the audio front end: the POKEY model and the number of the next frame |
+| `AudioHq` | struct | `audio/audio.h` | 4 | the speaker's sound: the chip model at four times the output rate, the filter and the samples not yet used up |
 | `PokeyEvent` | struct | `audio/pokey.h` | 4 | one timed change of the POKEY model: the time, the kind (mode, AUDF or level), the channel or AUDCTL, and the value |
 | `FrontPad` | struct | `shell/frontend.h` | 1 | the five switches of one joystick: 1 = pressed |
 | `FrontKeys` | struct | `shell/frontend.h` | 3 | what is pressed at the moment of the frame; `pause` is 1 for exactly one frame per press (the edge) |
@@ -578,10 +579,13 @@ Every function declared in a header, by module. **ROM** is the routine of the or
 
 | Function | ROM | Defined | What it does |
 |---|---|---|---|
-| `audio_init` |  | `audio/audio.c:4` | the sound-chip model at power-on, making samples at `sample_rate` Hz |
-| `audio_set_origin` |  | `audio/audio.c:11` | only for tests and tools that align the audio to a recording: the cycle at which output sample 0 starts (call before the first frame) |
-| `audio_frame` |  | `audio/audio.c:34` | one frame: consumes the sound writes of `w` (and empties its log: w->pokey_n = 0, w->pokey_overflow = 0), returns the number of samples copied to `out` (at most `cap`) |
-| `audio_frame_writes` |  | `audio/audio.c:16` | the same with the writes given as a list (register 0-8 and value) instead of a World: the frame number selects the time |
+| `audio_init` |  | `audio/audio.c:7` | the sound-chip model at power-on, making samples at `sample_rate` Hz |
+| `audio_set_origin` |  | `audio/audio.c:14` | only for tests and tools that align the audio to a recording: the cycle at which output sample 0 starts (call before the first frame) |
+| `audio_frame` |  | `audio/audio.c:53` | one frame: consumes the sound writes of `w` (and empties its log: w->pokey_n = 0, w->pokey_overflow = 0), returns the number of samples copied to `out` (at most `cap`) |
+| `audio_frame_writes` |  | `audio/audio.c:19` | the same with the writes given as a list (register 0-8 and value) instead of a World: the frame number selects the time |
+| `audio_world_writes` |  | `audio/audio.c:37` | the sound writes of one frame as the chip sees them (register 0-8 and value), without taking them from the World's log; returns their number |
+| `audio_hq_init` |  | `audio/audio.c:75` | the speaker's sound at power-on, making samples at `out_rate` Hz |
+| `audio_hq_frame` |  | `audio/audio.c:96` | one frame: the writes as audio_frame_writes takes them; returns the samples at the output rate (at most `cap`) |
 
 ### `audio/pokey.h`
 

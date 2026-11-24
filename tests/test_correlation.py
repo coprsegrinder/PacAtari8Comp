@@ -26,7 +26,7 @@ class Correlation(unittest.TestCase):
         self.assertTrue(all(a in self.D["alg_beh"] for a in self.D["algs"]))
 
     def test_only_the_paths_and_machines_items_are_open(self):
-        self.assertEqual(self.D["open"], ["OV-71", "OV-72", "OV-75", "OV-76", "OV-77", "OV-78", "OV-79"])
+        self.assertEqual(self.D["open"], ["OV-71", "OV-72", "OV-75", "OV-76", "OV-77", "OV-78", "OV-79", "OV-80"])
 
     def test_instruction_totals(self):
         self.assertEqual(self.D["ntotal"], 2925)

@@ -34,4 +34,29 @@ size_t audio_frame(Audio *a, World *w, float *out, size_t cap);
 /* the same with the writes given as a list (register 0-8 and value) instead of a World: the frame number selects the time */
 size_t audio_frame_writes(Audio *a, const uint8_t *reg, const uint8_t *val, unsigned n, float *out, size_t cap);
 
+/* the sound writes of one frame as the chip sees them (register 0-8 and value), without taking them from the World's log; returns their number */
+unsigned audio_world_writes(const World *w, uint8_t reg[WRITE_CLOCK_MAX], uint8_t val[WRITE_CLOCK_MAX]);
+
+/* The sound for a speaker (docs/22 section on the output stage).  The chip model above renders straight to the output rate by averaging the chip's 63.9 kHz samples, which is what the recordings of Altirra
+ * were compared with (100 Hz - 5 kHz): above the output's Nyquist frequency it lets the tones through folded down.  The game has such a tone: between the notes of the start tune voice 1 is given AUDF = 0 at
+ * volume 8, a pure tone of 31,960 Hz that nobody hears and no speaker plays, and a rate of 44.1 kHz folds it down to 12.1 kHz, a thin ringing.  The output for a speaker therefore renders at four times the
+ * rate and takes the samples down with a low-pass filter (a Kaiser-windowed sinc, 191 taps, flat to 18 kHz, 70 dB down from 22.05 kHz): what is audible is the same, the folded tones are gone.  The model
+ * above (and so every digest) is not changed; only the front end uses this. */
+#define AUDIO_HQ_OVER 4
+#define AUDIO_HQ_TAPS 191
+#define AUDIO_HQ_MAX 8192
+
+/* the speaker's sound: the chip model at four times the output rate, the filter and the samples not yet used up */
+typedef struct AudioHq {
+    Audio audio;                                    /* the chip model at four times the output rate */
+    float coef[AUDIO_HQ_TAPS];
+    float hist[AUDIO_HQ_TAPS + AUDIO_HQ_MAX];       /* the samples of the fast rate not yet used up */
+    size_t n;
+} AudioHq;
+
+/* the speaker's sound at power-on, making samples at `out_rate` Hz */
+void audio_hq_init(AudioHq *h, double out_rate);
+/* one frame: the writes as audio_frame_writes takes them; returns the samples at the output rate (at most `cap`) */
+size_t audio_hq_frame(AudioHq *h, const uint8_t *reg, const uint8_t *val, unsigned n, float *out, size_t cap);
+
 #endif

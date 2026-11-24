@@ -65,7 +65,8 @@ static uint8_t record_buf[RECORD_CAP];
 static Assets assets;
 static Shell shell;
 static Renderer renderer;
-static Audio audio;
+static Audio audio;                      /* the chip model at the output rate: the digests of the game are made from it (as in the headless shell) */
+static AudioHq audio_hq;                 /* the same chip at four times the rate, low-passed: what the speaker plays (no tone above 22 kHz folded down into the hearing range, docs/22) */
 static Frontend front;
 static ReplayWriter writer;
 static WinAudio *wa;
@@ -332,6 +333,8 @@ static double audio_written;             /* samples handed to the sound device *
 static double tau_a;                     /* the game time (in frames) of the picture to show, as of tau_t0 */
 static uint64_t tau_t0;
 static int tau_valid;
+static int tau_grid_hz;                  /* when the pictures are made on the refreshes of the monitor: its rate; the game time then advances by whole refreshes (0: by the clock) */
+static double tau_age;                   /* seconds since the game time was set from the sound device */
 static uint64_t next_tick_ns;
 static PmFile *trace_file;                /* --trace FILE: every picture made, with the game time and where the objects are drawn (for the analysis of the motion) */
 static unsigned long still_last = ~0ul;   /* the game frame the picture shows when there are fewer pictures a second than the game makes: a picture is made when this changes */
@@ -932,8 +935,13 @@ static void run_frame(void)
         render_frame(&renderer, &shell.world, colour);
     }
     vdig = fnv64(vdig, colour, sizeof colour);
-    got = audio_frame(&audio, &shell.world, pcm, sizeof pcm / sizeof pcm[0]);
-    adig = hash_pcm(adig, pcm, got);
+    {
+        uint8_t wreg[WRITE_CLOCK_MAX], wval[WRITE_CLOCK_MAX];
+        unsigned wn = audio_world_writes(&shell.world, wreg, wval);
+        got = audio_frame(&audio, &shell.world, pcm, sizeof pcm / sizeof pcm[0]);
+        adig = hash_pcm(adig, pcm, got);
+        got = audio_hq_frame(&audio_hq, wreg, wval, wn, pcm, sizeof pcm / sizeof pcm[0]);          /* what the speaker gets */
+    }
     if (wa != NULL && got > 0) {
         if (game_pcm != NULL && game_pcm_n + got <= GAME_PCM_MAX) {
             if (game_pcm_n == 0) {
@@ -981,14 +989,26 @@ static double game_time(uint64_t now, uint64_t t_start_ns)
     if (!tau_valid) {
         tau_a = meas;
         tau_t0 = now;
+        tau_age = 0.0;
         tau_valid = 1;
         return tau_a;
     }
     dt = (double)(now - tau_t0) / 1e9;
+    if (tau_grid_hz > 0) {                                      /* pictures on the monitor's refreshes: the game time goes by whole refreshes, so that a picture that came a fraction of a millisecond early or late does not change how many pictures a game frame lasts (the mouth of Pac-Man flaps evenly) */
+        double per = 1.0 / (double)tau_grid_hz;
+        double whole = floor(dt / per + 0.5);
+        if (whole < 1.0) {
+            return tau_a + dt * FRAME_HZ;
+        }
+        dt = whole * per;
+        tau_t0 += (uint64_t)(dt * 1e9);
+    } else {
+        tau_t0 = now;
+    }
     pred = tau_a + dt * FRAME_HZ;
-    gain = 1.0 - exp(-dt / 0.25);
+    tau_age += dt;
+    gain = 1.0 - exp(-dt / (tau_age < 2.0 ? 0.25 : 3.0));       /* found quickly, then followed slowly: the device's queue is read in steps of about 10 ms, and a noisy game time makes some frames last one picture more or less than the others (the mouth of Pac-Man would not flap evenly) */
     tau_a = pred + gain * (meas - pred);
-    tau_t0 = now;
     return tau_a;
 }
 
@@ -1001,6 +1021,7 @@ static int interp_step(uint64_t t_start_ns)
     RECT rc;
     DisplayRect pr;
     double tau, still_tau = 0.0;
+    int grid_next = 0;
     long A;
     int changed;
     const int still = target > 0 && target < 55;                 /* fewer pictures a second than the game makes (30): every n-th game frame, as the game made it */
@@ -1037,11 +1058,13 @@ static int interp_step(uint64_t t_start_ns)
     } else if ((crt_active || plain_gl) && (swap_ema_ms < 0.0 || swap_ema_ms > 300.0 / (double)target) && target >= 55 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
         /* with a CRT shader the OpenGL swap waits for every n-th refresh of the monitor and so is the clock itself: the picture is drawn, the swap returns when it is on its way to the screen (not for the rates below 55: a swap that long would keep the game and the sound waiting) */
         crt_want_interval = (menu.monitor_hz + target / 2) / target;
+        grid_next = menu.monitor_hz;
     } else if (dwm_flush != NULL && target >= 30 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
         /* the monitor's refresh is the tick when the rate fits it (180 on 180 Hz, 60 or 90 on 180 Hz, 60 on 59.94): every n-th refresh, so that no picture is shown a refresh too long or too short */
         static uint64_t last_flush;
         static int flushed;
         int every = (menu.monitor_hz + target / 2) / target;
+        grid_next = menu.monitor_hz;
         (void)dwm_flush();                                      /* one refresh a call, so that the game and the sound are looked after between the refreshes of a slow rate */
         now = pm_time_ns();
         if (now - last_flush < (uint64_t)(0.4e9 / (double)menu.monitor_hz)) {   /* DwmFlush came back at once (the window is minimised or covered): do not spin */
@@ -1074,6 +1097,7 @@ static int interp_step(uint64_t t_start_ns)
     if (!((crt_active || plain_gl) && crt_want_interval > 0 && target >= 55 && menu.monitor_hz >= target)) {
         crt_want_interval = 0;                                  /* a rate the monitor's refresh does not fit (or no shader): the swap does not wait */
     }
+    tau_grid_hz = grid_next;
     tau = still ? still_tau : game_time(now, t_start_ns);
     if (tau < 0.0) {
         tau = 0.0;
@@ -2309,6 +2333,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     render_init(&renderer, ram_image);
     audio_init(&audio, AUDIO_RATE);
+    audio_hq_init(&audio_hq, AUDIO_RATE);
     front_init(&front, 0);
     ring = (InterpFrame *)malloc((size_t)RING * sizeof(InterpFrame));
     (void)interp_out_init(&iout);
