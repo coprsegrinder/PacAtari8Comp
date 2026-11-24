@@ -688,6 +688,39 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     (void)show;
     SetProcessDPIAware();
     parse_args(__argc, __argv);
+    if (opt.root == NULL) {
+        /* Started by a double click, the current folder is the program's own.
+         * Look for the main folder (the one holding original/Pac-Man.rom) in the
+         * current folder, then in the program's folder and each folder above it. */
+        static char found[MAX_PATH + 64];
+        char dir[MAX_PATH];
+        char probe[MAX_PATH + 64];
+        int pass;
+
+        for (pass = 0; pass < 2 && opt.root == NULL; pass++) {
+            DWORD n = pass == 0 ? GetCurrentDirectoryA(MAX_PATH, dir) : GetModuleFileNameA(NULL, dir, MAX_PATH);
+            if (n == 0 || n >= MAX_PATH) {
+                continue;
+            }
+            for (;;) {
+                char *cut;
+                DWORD attr;
+
+                snprintf(probe, sizeof probe, "%s\\original\\Pac-Man.rom", dir);
+                attr = GetFileAttributesA(probe);
+                if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY)) {
+                    snprintf(found, sizeof found, "%s", dir);
+                    opt.root = found;
+                    break;
+                }
+                cut = strrchr(dir, '\\');
+                if (cut == NULL || cut == dir) {
+                    break;
+                }
+                *cut = '\0';
+            }
+        }
+    }
     if (opt.root != NULL && pm_fs_set_root(opt.root) != 0) {
         MessageBoxA(NULL, "The main folder given with --root is not usable.", TITLE, MB_OK | MB_ICONERROR);
         return 2;
