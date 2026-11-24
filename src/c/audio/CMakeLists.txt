@@ -1,0 +1,7 @@
+# the audio: the POKEY model from timed register writes to PCM, and the frame-level front end with the measured write clock (stage 80c)
+add_library(pm_audio STATIC pokey.c write_clock.c audio.c)
+target_include_directories(pm_audio PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(pm_audio PUBLIC pm_core)
+if(UNIX)
+  target_link_libraries(pm_audio PUBLIC m)
+endif()

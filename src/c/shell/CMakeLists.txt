@@ -1,0 +1,10 @@
+# the headless shell: replays, state hashes, the high score and the options (stage 80d)
+add_library(pm_shell STATIC replay.c shell.c)
+target_include_directories(pm_shell PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(pm_shell PUBLIC pm_app pm_core pm_platform)
+
+add_executable(pacman_a8 main.c)
+target_link_libraries(pacman_a8 pm_shell pm_render pm_audio pm_assets pm_app pm_core pm_platform)
+if(UNIX)
+  target_link_libraries(pacman_a8 m)
+endif()

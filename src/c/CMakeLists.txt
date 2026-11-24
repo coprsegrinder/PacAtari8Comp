@@ -1,0 +1,25 @@
+# Pac-Man (Atari 8-bit) C port - owner decisions of 2026-11-18 (docs/49-owner-decisions.md):
+# faithful frame-by-frame port, C99, clang and gcc, CMake, whole-state equivalence each frame.
+cmake_minimum_required(VERSION 3.16)
+project(pacman_a8 C)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -Werror)
+endif()
+
+enable_testing()
+
+# the layers of docs/48-architecture.md section 6 are added here as they are written:
+#   platform/  core/  assets/  app/  render/
+add_subdirectory(platform)
+add_subdirectory(core)
+add_subdirectory(app)
+add_subdirectory(assets)
+add_subdirectory(render)
+add_subdirectory(audio)
+add_subdirectory(shell)
+add_subdirectory(tests)

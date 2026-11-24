@@ -1,0 +1,91 @@
+# The portability scan (docs/51 section 2a, stage 75b): cmake -DSRC=<src/c> -P portability_scan.cmake
+# Scans the C sources outside platform/ (core, app, assets, render, audio, shell, tests) and fails on:
+#   - a system header (only the headers of the C99 standard library are allowed),
+#   - __attribute__, #pragma, asm / __asm__ / __asm,
+#   - a non-standard integer type (u8, BYTE, DWORD, ssize_t, off_t, __int64 ...),
+#   - a file, process or environment function (fopen, remove, system, getenv ...): files only through platform/fs.c.
+# tests/fs_sandbox.c is the one exception for file functions (it looks for stray files with the raw C library).
+# A scan that cannot fail proves nothing: tests/portability_scan_selftest.cmake feeds it bad files.
+cmake_minimum_required(VERSION 3.16)
+
+set(ALLOWED_HEADERS assert complex ctype errno fenv float inttypes iso646 limits locale math setjmp signal stdarg stdbool stddef stdint stdio stdlib string tgmath time wchar wctype)
+set(FORBIDDEN_CALLS fopen freopen fread fwrite fclose fseek ftell rewind fgetpos fsetpos fflush remove rename tmpfile tmpnam getenv putenv setenv system popen pclose mkdir rmdir unlink open creat chdir getcwd fork exec execv execl dup)
+set(FORBIDDEN_TYPES u8 u16 u32 u64 BYTE WORD DWORD QWORD ssize_t off_t __int8 __int16 __int32 __int64 int8 int16 int32 int64 uint uchar ushort ulong)
+
+# file(READ) of one file -> findings appended to FINDINGS in the parent scope
+function(scan_text name text exempt_files)
+  set(found "")
+  # comments and string literals are removed first, so that the words in them do not count
+  string(REGEX REPLACE "/\\*([^*]|\\*+[^*/])*\\*+/" " " text "${text}")
+  string(REGEX REPLACE "//[^\n]*" " " text "${text}")
+  string(REGEX REPLACE "\"([^\"\\\\\n]|\\\\.)*\"" "\"\"" text "${text}")
+  string(REGEX REPLACE "'([^'\\\\\n]|\\\\.)*'" "' '" text "${text}")
+
+  string(REGEX MATCHALL "#[ \t]*include[ \t]*<[^>\n]*>" incs "${text}")
+  foreach(inc ${incs})
+    string(REGEX REPLACE "#[ \t]*include[ \t]*<([^>]*)>" "\\1" hdr "${inc}")
+    string(REGEX REPLACE "\\.h$" "" base "${hdr}")
+    if(NOT hdr MATCHES "\\.h$" OR "${base}" STREQUAL "" OR NOT "${base}" IN_LIST ALLOWED_HEADERS)
+      list(APPEND found "system header <${hdr}>")
+    endif()
+  endforeach()
+  if(text MATCHES "__attribute__|#[ \t]*pragma|(^|[^A-Za-z0-9_])(__asm__|__asm|asm)[ \t]*(volatile|\\(|{)")
+    list(APPEND found "attribute, pragma or inline assembly")
+  endif()
+  foreach(t ${FORBIDDEN_TYPES})
+    if(text MATCHES "(^|[^A-Za-z0-9_])${t}[ \t]+[A-Za-z_*]" OR text MATCHES "\\(${t}\\)")
+      list(APPEND found "non-standard type ${t}")
+    endif()
+  endforeach()
+  if(NOT exempt_files)
+    foreach(fn ${FORBIDDEN_CALLS})
+      if(text MATCHES "(^|[^A-Za-z0-9_.>])${fn}[ \t]*\\(")
+        list(APPEND found "file / process function ${fn}()")
+      endif()
+    endforeach()
+  endif()
+  set(FINDINGS_${name} "${found}" PARENT_SCOPE)
+endfunction()
+
+if(DEFINED SCAN_FILE)
+  # self-test mode: scan one file, print the findings
+  file(READ "${SCAN_FILE}" t)
+  scan_text(x "${t}" FALSE)
+  if(FINDINGS_x)
+    message("FOUND: ${FINDINGS_x}")
+    message(FATAL_ERROR "findings in ${SCAN_FILE}")
+  endif()
+  return()
+endif()
+
+if(NOT DEFINED SRC)
+  message(FATAL_ERROR "usage: cmake -DSRC=<src/c> -P portability_scan.cmake")
+endif()
+
+set(total 0)
+set(bad 0)
+foreach(dir core app assets render audio shell tests)
+  file(GLOB_RECURSE files "${SRC}/${dir}/*.c" "${SRC}/${dir}/*.h")
+  foreach(f ${files})
+    file(READ "${f}" t)
+    get_filename_component(nm "${f}" NAME)
+    set(exempt FALSE)
+    if(nm STREQUAL "fs_sandbox.c")
+      set(exempt TRUE)
+    endif()
+    scan_text(x "${t}" ${exempt})
+    math(EXPR total "${total}+1")
+    if(FINDINGS_x)
+      math(EXPR bad "${bad}+1")
+      list(REMOVE_DUPLICATES FINDINGS_x)
+      message("${f}: ${FINDINGS_x}")
+    endif()
+  endforeach()
+endforeach()
+if(total EQUAL 0)
+  message(FATAL_ERROR "the scan found no source files under ${SRC}")
+endif()
+if(bad GREATER 0)
+  message(FATAL_ERROR "portability scan: ${bad} of ${total} files have findings")
+endif()
+message("portability scan: ${total} files, no findings")
