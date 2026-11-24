@@ -1,0 +1,28 @@
+Pac-Man (Atari 8-bit) - preservation and C port
+================================================
+
+What the MIT licence in LICENSE covers
+  The work of this project: the C port (src/c), the Python analysis and test
+  tools (tools, tests), the documentation (docs, analysis) and the build files.
+
+What it does NOT cover
+  1. The original game. "Pac-Man" and the Atari 8-bit cartridge program are the
+     property of their owners. src/asm/pacman.s is a disassembly of that
+     program, kept for preservation and study; the MIT licence gives no right
+     in the original code, only in this project's own annotations and tooling.
+     The cartridge ROM itself is NOT part of this release.
+  2. The Atari operating system ROMs. Not part of this release.
+  3. Third-party material under third-party/, each under its own licence:
+       EightBit Atari-Regular font (Steve Boswell, 2018), SIL Open Font
+       License 1.1: third-party/EightBit-Atari-Fonts/OFL.txt. The licence and
+       credit must stay with every copy. See third-party/README.md for the
+       provenance note.
+
+What you must supply
+  A legally obtained copy of the Pac-Man Atari 8-bit cartridge ROM, placed at
+  original/Pac-Man.rom. The port reads its non-code data (maze, character
+  sets, tables) from it when it starts; nothing derived from the ROM is
+  shipped (resources/ is rebuilt on your machine, never distributed).
+
+Build and verification instructions: docs/63-build-and-dependencies.md and
+docs/65-release.md.

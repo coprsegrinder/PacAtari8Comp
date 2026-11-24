@@ -14,6 +14,7 @@ Written in Step A2 (2026-11-10). Covers checklist stage 9 (workspace preparation
 | `tools/` | Scripts and helper programs | yes |
 | `tests/` | Verification tests and records | yes |
 | `resources/` | Extracted graphics/sound/text | NO (derived from ROM) |
+| `third-party/` | Material by others used under its own licence, with licence and credit next to it: the open font `EightBit Atari-Regular` (SIL OFL 1.1, Steve Boswell), see `third-party/README.md` | YES (licence and credit must stay with it) |
 | `build/` | Build output | NO |
 
 Layout change in this step: the ROM, the methodology text and the saved forum page were moved from

@@ -48,6 +48,8 @@ indexed accesses not seen are possible, so this is an indication, not a list):
 - Suspect false positives: `JMP $D020` (A664) and `LDX $D0C8` (AE18); they are not hardware registers
   on these chips and are probably data bytes decoded as code.
 
+**Superseded (stage 57, 2026-11-16):** the complete list of the registers the cartridge code reads and writes, with the indexed forms and their live values, is `33-input-output.md` (133 instructions, 51 registers; the PIA is not touched; `JMP $D020` and `LDX $D0C8` of this scan were data bytes, not code).
+
 ## Open items
 1. Cross-check register meanings (note read vs write meaning of $D000–$D01F) against a manual.
 2. Resolve false positives and indexed accesses after the disassembly (C8).

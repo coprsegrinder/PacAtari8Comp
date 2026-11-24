@@ -46,3 +46,10 @@ desktop.ini
 
 # Emulator OS ROM sets (copyrighted)
 /a800.zip
+tools/wcet_sets/*.exe
+tools/wcet_sets/input_*.txt
+tools/wcet_sets/in_diff.txt
+tools/wcet_sets/program.txt
+
+# The owner's personal notes: never part of any commit, build, release or archive (2026-11-23)
+/Personal notes.txt

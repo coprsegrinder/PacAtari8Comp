@@ -27,6 +27,8 @@ The machine-readable manifest is `docs/original-manifest.txt`; check it any time
 inspection*. They do NOT prove the ROM is an unaltered retail dump: no published checksum for
 Pac-Man could be found to compare against (assumption A1, see `01-scope-and-methodology.md`).
 
+**The PAL OS ROM (decision of 2026-11-23).** `original/Atari OS Rev B (19xx)(Atari)(PAL)[a800.zip MAME].rom` has been in this folder since the PAL sound verification (2026-11-13, register C-24 to C-26), the one run that needed a PAL machine in the emulator. By the owner's decision of 2026-11-23 **the project uses only the NTSC OS ROM**: the PAL file is not a project material, is not in the manifest and is not checked; the evidence it produced stays in `analysis/`. It may be deleted from the folder.
+
 ## 3. Duplicates and dependencies (stage 8)
 
 - **Duplicates:** none. The ROM's two 4 KB halves are different, so it is not a doubled 4 KB image
