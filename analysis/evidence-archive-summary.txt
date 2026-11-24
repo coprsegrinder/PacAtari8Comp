@@ -1,0 +1,19 @@
+Stage 100 (docs/66-preservation.md): the preservation archive made and verified (tools/make_archive.py), 2026-11-24
+
+archive of commit 5799c360c2ab2e15c5105b9815b571450e34faca in build/archive/
+  pacman-a8-dependencies.zip                       36221414 bytes  sha256 4ec45879a6299c06
+  pacman-a8-history.bundle                          3285299 bytes  sha256 e02b2e316e22c598
+  pacman-a8-local-evidence.zip                    153468956 bytes  sha256 ea91c0d873581e92
+  pacman-a8-owner-materials.zip                      740646 bytes  sha256 d81c62e22ef7b654
+  pacman-a8-port-0.1.0-src.zip                      3292383 bytes  sha256 6906d756ce2ce558
+PASS  1 every file of the archive equals SHA256SUMS (7 files)
+PASS  2a the bundle verifies
+PASS  2b the clone's HEAD is the recorded commit and tracks the same files (870)  (5799c360c2)
+PASS  2c every tracked file of the clone equals the working tree (line ends aside)
+PASS  3 the release archive built from the CLONE alone is byte-identical to the one in the archive  (6906d756ce2ce558)
+PASS  4 pacman-a8-owner-materials.zip: 56 members equal their source files
+PASS  4 pacman-a8-dependencies.zip: 2 members equal their source files
+PASS  4 pacman-a8-local-evidence.zip: 442 members equal their source files
+PASS  5 `Personal notes.txt` is in no archive part
+PASS  6 the manifest records the SHA-256 of the 3 original ROMs
+ALL PASSED
