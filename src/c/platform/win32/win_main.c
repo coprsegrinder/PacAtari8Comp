@@ -1,5 +1,6 @@
 /* platform/win32/win_main.c - the Windows 11 front end of the port: a window, the keyboard and XInput pads, the sound device (stage J, docs/67).
  *   pacman_a8_play [--root DIR] [--fps N|native|uncapped] [--no-audio] [--seed N] [--record FILE] [--ppm FILE]   (the game always starts in borderless fullscreen, at the monitor's resolution and refresh rate)
+ *   [--crt off|guest|zfast|aperture]   (the CRT shader of the Graphics Options at the start)
  *   test options: [--windowed [--scale N]] [--trace FILE] [--selftest FRAMES] [--menutest] [--startuptest] [--exact]
  * It is the interactive twin of the headless shell: the same Shell, the same renderer, the same sound model, driven by the player instead of a replay.  What it adds is only what a machine does around the game:
  *   - keyboard / pad -> FrontKeys -> FrameInput (shell/frontend.c, portable and tested), one per frame;
@@ -33,6 +34,7 @@
 #include "../fs.h"
 #include "../timer.h"
 #include "win_audio.h"
+#include "win_gl.h"
 
 #define AUDIO_RATE 44100.0
 #define FRAME_HZ 59.9227                 /* NTSC: 1,789,772.5 Hz / 29,868 cycles a frame */
@@ -44,8 +46,8 @@
 #define TITLE "Pac-Man (Atari 8-bit) - C port"
 
 typedef struct Options {
-    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest;
-    const char *fps, *trace;
+    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest;
+    const char *fps, *trace, *crt;
     long selftest;
     uint32_t seed;
     int have_seed;
@@ -281,6 +283,11 @@ static void apply_display(void)
     saved_style = GetWindowLong(hwnd, GWL_STYLE);
     InvalidateRect(hwnd, NULL, FALSE);
     menu_dirty = 1;
+    if (crt_gl_is_open()) {
+        RECT crc;
+        GetClientRect(hwnd, &crc);
+        crt_gl_resize(crc.right, crc.bottom);
+    }
 }
 
 /* F11 and Alt+Enter: the other display mode, at the resolution selected */
@@ -442,6 +449,111 @@ static void present_interp(const InterpDirty *d)
     ReleaseDC(hwnd, dc);
 }
 
+/* ---------------------------------------------------------------- the CRT shader: the picture of the game (384 x 240) goes through a chain of OpenGL passes into the child window (docs/70) */
+
+static CrtChain *crt_chain;              /* the chain of the shader chosen, or NULL when it is off */
+static int crt_active;                   /* the OpenGL child window is the one that shows the picture */
+static unsigned crt_frames;              /* pictures through the chain (the shaders' frame counter) */
+static uint32_t crt_last[RENDER_W * RENDER_H];   /* the last picture given to the chain: what a repaint of the window shows again */
+static int crt_have_last;
+static int crt_gl_w, crt_gl_h;
+static int crt_errors;                   /* pictures the chain failed to make (the test looks) */
+static int crt_shot_req;                 /* a test asks for the pixels of the next picture */
+static uint8_t *crt_shot;
+static int crt_shot_w, crt_shot_h;
+static char crt_why[2000];                /* why the shaders are not available, for the log */
+
+static void crt_render_last(void)
+{
+    RECT rc;
+    DisplayRect pr;
+    char err[300];
+
+    if (!crt_active || crt_chain == NULL || !crt_have_last || hwnd == NULL) {
+        return;
+    }
+    GetClientRect(hwnd, &rc);
+    if (rc.right != crt_gl_w || rc.bottom != crt_gl_h) {
+        crt_gl_resize(rc.right, rc.bottom);
+        crt_gl_w = rc.right;
+        crt_gl_h = rc.bottom;
+    }
+    layout(rc.right, rc.bottom, &pr);
+    if (pr.w < 1 || pr.h < 1) {
+        return;
+    }
+    err[0] = '\0';
+    if (crt_chain_render(crt_chain, crt_last, RENDER_W, RENDER_H, pr.x, pr.y, pr.w, pr.h, crt_frames++, err, sizeof err) != 0) {
+        if (crt_errors++ == 0) {
+            char line[360];
+            snprintf(line, sizeof line, "CRT shader: %s", err);
+            (void)shell_log(line);
+        }
+        return;
+    }
+    if (crt_shot_req) {
+        free(crt_shot);
+        crt_shot = (uint8_t *)malloc((size_t)pr.w * (size_t)pr.h * 4u);
+        if (crt_shot != NULL && crt_gl_readback(crt_shot, pr.w, pr.h) == 0) {
+            crt_shot_w = pr.w;
+            crt_shot_h = pr.h;
+        } else {
+            crt_shot_w = crt_shot_h = 0;
+        }
+        crt_shot_req = 0;
+    }
+    crt_gl_swap();
+}
+
+/* the chosen shader on (or off): the chain is made, the OpenGL window shown; when the machine cannot, the choice goes back to off and says so in the menu and the log */
+static void crt_apply(void)
+{
+    char err[1600];
+
+    if (crt_chain != NULL) {
+        crt_chain_free(crt_chain);
+        crt_chain = NULL;
+    }
+    crt_active = 0;
+    crt_have_last = 0;
+    iout_have = 0;
+    menu_dirty = 1;
+    if (menu.crt == 0) {
+        crt_gl_show(0);
+        if (hwnd != NULL) {
+            InvalidateRect(hwnd, NULL, TRUE);
+        }
+        return;
+    }
+    if (!crt_gl_is_open() && crt_gl_open(hwnd, err, sizeof err) != 0) {
+        snprintf(crt_why, sizeof crt_why, "the CRT shaders are not available: %.1500s", err);
+        (void)shell_log(crt_why);
+        menu.crt = 0;
+        menu.crt_unavailable = 1;
+        return;
+    }
+    crt_chain = crt_chain_load(menu_crt_files[menu.crt], err, sizeof err);
+    if (crt_chain == NULL) {
+        snprintf(crt_why, sizeof crt_why, "the CRT shader %s is not available: %.1500s", menu_crt_names[menu.crt], err);
+        (void)shell_log(crt_why);
+        menu.crt = 0;
+        menu.crt_unavailable = 1;
+        crt_gl_show(0);
+        return;
+    }
+    menu.crt_unavailable = 0;
+    crt_errors = 0;
+    {
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        crt_gl_resize(rc.right, rc.bottom);
+        crt_gl_w = rc.right;
+        crt_gl_h = rc.bottom;
+    }
+    crt_gl_show(1);
+    crt_active = 1;
+}
+
 static void present(void)
 {
     HDC dc;
@@ -451,6 +563,10 @@ static void present(void)
     int x, y, w, h;
 
     if (hwnd == NULL) {
+        return;
+    }
+    if (crt_active) {                                                   /* the CRT shader makes the picture, in the OpenGL window */
+        crt_render_last();
         return;
     }
     if (iout_have && !menu_is_open(&menu) && interp_wanted()) {         /* the picture of the FPS option is what the window shows */
@@ -503,6 +619,10 @@ static void menu_event(MenuKey k)
     if (menu.changed) {
         menu.changed = 0;
         apply_display();
+    }
+    if (menu.crt_changed) {                                   /* the CRT shader */
+        menu.crt_changed = 0;
+        crt_apply();
     }
     if (menu.fps_changed) {                                   /* the FPS: the next pictures are made the new way, from the game time the sound is at */
         menu.fps_changed = 0;
@@ -617,6 +737,24 @@ static LRESULT CALLBACK wnd_proc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
         }
         return 0;
     }
+    case WM_SYSCOMMAND:
+        if ((wp & 0xFFF0u) == SC_MINIMIZE) {                      /* who minimises the window? (it happens in long test runs, and was never found: this says what was in front) */
+            char title[120] = "", line[320];
+            HWND fg = GetForegroundWindow();
+            DWORD pid = 0;
+            if (fg != NULL) {
+                GetWindowTextA(fg, title, sizeof title);
+                GetWindowThreadProcessId(fg, &pid);
+            }
+            snprintf(line, sizeof line, "the window was told to minimise (SC_MINIMIZE); in front: \"%s\" (process %lu), this is %lu", title, (unsigned long)pid, (unsigned long)GetCurrentProcessId());
+            (void)shell_log(line);
+        }
+        break;
+    case WM_SIZE:
+        if (crt_gl_is_open()) {
+            crt_gl_resize(LOWORD(lp), HIWORD(lp));              /* the OpenGL window of the CRT shaders is as large as the client area */
+        }
+        break;
     case WM_KEYUP:
     case WM_SYSKEYUP:
         key_down[(unsigned)wp & 0xFFu] = 0;
@@ -849,7 +987,7 @@ static int interp_step(uint64_t t_start_ns)
         }
         GetClientRect(hwnd, &rc);
         layout(rc.right, rc.bottom, &pr);
-        if (pr.w < 1 || pr.h < 1 || interp_out_size(&iout, pr.w, pr.h) != 0) {
+        if (pr.w < 1 || pr.h < 1 || interp_out_size(&iout, crt_active ? RENDER_W : pr.w, crt_active ? RENDER_H : pr.h) != 0) {          /* a CRT shader works on the picture as the Atari made it: 384 x 240 */
             Sleep(1);
             return 0;
         }
@@ -868,7 +1006,17 @@ static int interp_step(uint64_t t_start_ns)
     iout_have = 1;
     changed = d.full || d.n > 0;
     tick_count++;
-    if (changed) {
+    if (crt_active) {
+        if (changed || target != MENU_FPS_UNCAPPED) {
+            memcpy(crt_last, iout.work, sizeof crt_last);
+            crt_have_last = 1;
+            crt_render_last();
+            blit_count += changed ? 1u : 0u;
+        } else {
+            tick_count--;
+            Sleep(1);
+        }
+    } else if (changed) {
         present_interp(&d);
         blit_count++;
     } else if (target == MENU_FPS_UNCAPPED) {
@@ -888,6 +1036,10 @@ static void make_bgra(void)
         bgra[4 * i + 1] = rgb[3 * i + 1];
         bgra[4 * i + 2] = rgb[3 * i];
         bgra[4 * i + 3] = 0;
+    }
+    if (crt_active) {                                                  /* the CRT shader takes this picture (the menu is drawn over it first, so it goes through the shader too) */
+        memcpy(crt_last, bgra, sizeof crt_last);
+        crt_have_last = 1;
     }
 }
 
@@ -982,6 +1134,10 @@ static void show_frame(void)
     if (menu_is_open(&menu)) {
         draw_menu();
     }
+    if (crt_active) {
+        memcpy(crt_last, bgra, sizeof crt_last);
+        crt_have_last = 1;
+    }
     present();
 }
 
@@ -1070,7 +1226,7 @@ static long compare_window(void)
 /* ---------------------------------------------------------------- the menu test: real key messages, then what the window really shows */
 
 enum { OP_KEY, OP_SYSKEY, OP_WAIT, OP_FRAMES, OP_CHECK };
-enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP };
+enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP, CK_CRT_REQ, CK_CRT };
 
 typedef struct Op {
     int kind, a, b;
@@ -1236,6 +1392,30 @@ static void mt_build(void)
         mt_key(VK_DOWN);
         mt_key(VK_DOWN);
     }
+    mt_key(VK_UP);
+    mt_key(VK_UP);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_key(VK_DOWN);                                   /* the CRT shader: each of the three, in the running game, its picture read back from the OpenGL window */
+    mt_key(VK_DOWN);
+    mt_key(VK_DOWN);
+    mt_add(OP_CHECK, CK_CURSOR, 3);
+    for (i = 1; i <= 4; i++) {
+        mt_key(VK_RIGHT);                              /* 1, 2, 3, then 0 again: off */
+        mt_add(OP_WAIT, 4000, 0);                      /* the passes are compiled when it is chosen */
+        mt_key(VK_ESCAPE);
+        mt_key(VK_ESCAPE);
+        mt_add(OP_WAIT, 900, 0);
+        mt_add(OP_CHECK, CK_CRT_REQ, 0);
+        mt_add(OP_WAIT, 300, 0);
+        mt_add(OP_CHECK, CK_CRT, i % 4);
+        mt_key(VK_ESCAPE);
+        mt_key(VK_DOWN);
+        mt_key(VK_RETURN);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+    }
+    mt_key(VK_UP);
     mt_key(VK_UP);
     mt_key(VK_UP);
     mt_add(OP_CHECK, CK_CURSOR, 0);
@@ -1476,6 +1656,37 @@ static void mt_check(int id, int arg)
         }
         break;
     }
+    case CK_CRT_REQ:
+        crt_shot_req = 1;
+        break;
+    case CK_CRT: {
+        char what[64];
+        long x, y, lit = 0, n;
+        double diff = 0.0;
+
+        snprintf(what, sizeof what, "crt shader %d (%s)", arg, menu_crt_names[arg]);
+        if (arg == 0) {
+            mt_result(menu.crt == 0 && !crt_active && crt_chain == NULL, what, "off: the window shows the picture again (no chain, no OpenGL window shown)");
+            break;
+        }
+        if (crt_shot == NULL || crt_shot_w < 1 || !crt_active || crt_chain == NULL) {
+            mt_result(0, what, "no picture from the chain (active %d, %s)", crt_active, crt_why[0] != '\0' ? crt_why : "no reason logged");
+            break;
+        }
+        n = (long)crt_shot_w * crt_shot_h;
+        for (y = 0; y < crt_shot_h; y++) {
+            for (x = 0; x < crt_shot_w; x++) {
+                const uint8_t *g = crt_shot + 4 * ((size_t)y * (size_t)crt_shot_w + (size_t)x);
+                const uint8_t *pl = (const uint8_t *)crt_last + 4 * ((size_t)(y * RENDER_H / crt_shot_h) * RENDER_W + (size_t)(x * RENDER_W / crt_shot_w));   /* plain: the picture stretched by nearest pixel (BGRA) */
+                lit += (g[0] + g[1] + g[2]) / 3 > 12;
+                diff += (double)(abs(g[0] - pl[2]) + abs(g[1] - pl[1]) + abs(g[2] - pl[0])) / 3.0;
+            }
+        }
+        diff /= (double)n;
+        mt_result(menu.crt == arg && crt_errors == 0 && lit * 100 > n * 3/2 && diff > 2.0, what, "%dx%d picture from the chain (%d passes): %.1f %% of the pixels lit, %.1f of 255 different from the plain picture, %d failed pictures",
+                  crt_shot_w, crt_shot_h, crt_chain_passes(crt_chain), 100.0 * (double)lit / (double)n, diff, crt_errors);
+        break;
+    }
     case CK_STARTUP: {
         int mw, mh, mhz;
         MONITORINFO mi;
@@ -1518,6 +1729,14 @@ static void menutest_step(void)
     if (mt_i >= mt_n || (LONG)(now - mt_until) < 0) {
         return;
     }
+    if (IsIconic(hwnd)) {                                        /* the window was minimised by something outside the program (it happens in long runs): the test needs it on the screen */
+        if (mt_log != NULL) {
+            pm_fs_printf(mt_log, "NOTE  the window was minimised before step %d (by something else); restored\n", mt_i);
+        }
+        ShowWindow(hwnd, SW_RESTORE);
+        mt_until = now + 400u;
+        return;
+    }
     o = &mt_ops[mt_i++];
     switch (o->kind) {
     case OP_FRAMES:
@@ -1540,6 +1759,101 @@ static void menutest_step(void)
         mt_check(o->a, o->b);
         break;
     }
+}
+
+/* ---------------------------------------------------------------- the CRT shaders: a test that runs each preset on a frame of the game and writes the picture (logs/crt_*.ppm) */
+
+static const char *const crt_presets[3][2] = {
+    {"crt-guest-advanced-ntsc", "third-party/crt-shaders/crt/crt-guest-advanced-ntsc.slangp"},
+    {"zfast-crt-composite", "third-party/crt-shaders/crt/zfast-crt-composite.slangp"},
+    {"crt-aperture", "third-party/crt-shaders/crt/crt-aperture.slangp"},
+};
+
+static void crt_write_ppm(const char *path, const uint8_t *rgba, int w, int h)
+{
+    PmFile *pf = pm_fs_open(path, "wb");
+    int i;
+
+    if (pf != NULL) {
+        pm_fs_printf(pf, "P6\n%d %d\n255\n", w, h);
+        for (i = 0; i < w * h; i++) {
+            pm_fs_write(pf, rgba + 4 * (size_t)i, 3);
+        }
+        pm_fs_close(pf);
+    }
+}
+
+static void crt_test_run(void)
+{
+    char err[2000];
+    RECT rc;
+    DisplayRect pr;
+    int k, f;
+    uint8_t *img;
+    PmFile *log = pm_fs_open("logs/crttest.txt", "wb");
+    int pass = 0, fail = 0;
+
+    GetClientRect(hwnd, &rc);
+    layout(rc.right, rc.bottom, &pr);
+    if (log == NULL) {
+        return;
+    }
+    pm_fs_printf(log, "client %ldx%ld, picture %dx%d at %d,%d\n", rc.right, rc.bottom, pr.w, pr.h, pr.x, pr.y);
+    if (crt_gl_open(hwnd, err, sizeof err) != 0) {
+        pm_fs_printf(log, "FAIL  OpenGL: %s\n", err);
+        pm_fs_close(log);
+        return;
+    }
+    crt_gl_resize(rc.right, rc.bottom);
+    pm_fs_printf(log, "PASS  OpenGL: %s\n", crt_gl_renderer());
+    img = (uint8_t *)malloc((size_t)pr.w * (size_t)pr.h * 4u);
+    make_bgra();
+    for (k = 0; k < 3 && img != NULL; k++) {
+        CrtChain *c;
+        long lit = 0, i;
+        double sum = 0.0;
+        char path[80];
+        uint64_t t_load = pm_time_ns();
+
+        c = crt_chain_load(crt_presets[k][1], err, sizeof err);
+        t_load = pm_time_ns() - t_load;
+        if (c == NULL) {
+            pm_fs_printf(log, "FAIL  %s: %s\n", crt_presets[k][0], err);
+            fail++;
+            continue;
+        }
+        err[0] = '\0';
+        for (f = 0; f < 6; f++) {                                       /* a few pictures, so that the passes that look at the one before have something */
+            if (crt_chain_render(c, (const uint32_t *)bgra, RENDER_W, RENDER_H, pr.x, pr.y, pr.w, pr.h, (unsigned)f, err, sizeof err) != 0) {
+                break;
+            }
+        }
+        if (err[0] != '\0') {
+            pm_fs_printf(log, "FAIL  %s: render: %s\n", crt_presets[k][0], err);
+            fail++;
+            crt_chain_free(c);
+            continue;
+        }
+        crt_gl_readback(img, pr.w, pr.h);
+        for (i = 0; i < (long)pr.w * pr.h; i++) {
+            double l = (img[4 * i] + img[4 * i + 1] + img[4 * i + 2]) / 3.0;
+            sum += l;
+            lit += l > 12.0;
+        }
+        snprintf(path, sizeof path, "logs/crt_%s.ppm", crt_presets[k][0]);
+        crt_write_ppm(path, img, pr.w, pr.h);
+        pm_fs_printf(log, "%s  %s: %d passes compiled in %.0f ms, picture %dx%d, mean brightness %.1f, %.1f %% of the pixels lit\n", (lit > (long)pr.w * pr.h / 20) ? "PASS" : "FAIL", crt_presets[k][0], crt_chain_passes(c), (double)t_load / 1e6, pr.w, pr.h, sum / ((double)pr.w * pr.h),
+                     100.0 * (double)lit / ((double)pr.w * pr.h));
+        if (lit > (long)pr.w * pr.h / 20) {
+            pass++;
+        } else {
+            fail++;
+        }
+        crt_chain_free(c);
+    }
+    free(img);
+    pm_fs_printf(log, "RESULT: %d passed, %d failed\n", pass, fail);
+    pm_fs_close(log);
 }
 
 /* ---------------------------------------------------------------- the main loop */
@@ -1670,6 +1984,10 @@ static void parse_args(int argc, char **argv)
             opt.windowed = 1;
         } else if (strcmp(argv[i], "--fps") == 0 && i + 1 < argc) {
             opt.fps = argv[++i];
+        } else if (strcmp(argv[i], "--crt") == 0 && i + 1 < argc) {
+            opt.crt = argv[++i];
+        } else if (strcmp(argv[i], "--crttest") == 0) {
+            opt.crttest = 1;
         } else if (strcmp(argv[i], "--startuptest") == 0) {
             opt.startuptest = 1;
             opt.menutest = 1;
@@ -1829,17 +2147,30 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         mt_log = pm_fs_open(opt.startuptest ? "logs/startuptest.txt" : "logs/menutest.txt", "wb");
         mt_build();
     }
+    if (opt.crt != NULL && !opt.crttest) {
+        menu.crt = strcmp(opt.crt, "guest") == 0 ? 1 : (strcmp(opt.crt, "zfast") == 0 ? 2 : (strcmp(opt.crt, "aperture") == 0 ? 3 : 0));
+        if (menu.crt != 0) {
+            crt_apply();
+        }
+    }
     if (opt.trace != NULL) {
         trace_file = pm_fs_open(opt.trace, "wb");
     }
     t_start = t_prev = pm_time_ns();
     while (!quit) {
+        if (opt.crttest && frames_run >= 700u) {                  /* the CRT shaders on a frame of the game */
+            crt_test_run();
+            break;
+        }
         unsigned n = 0;
 
         pump();
         wl_poll(wloop);
         if (opt.selftest > 0) {
             post_scenario(frames_run);
+            pump();
+        } else if (opt.crttest) {
+            post_scenario(frames_run);                               /* START, then the stick: a frame of play */
             pump();
         } else if (opt.menutest) {
             post_scenario(frames_run < 639 ? frames_run : 639);     /* the game is played up to the frame the menu test opens the menu at */
@@ -1983,6 +2314,12 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     if (trace_file != NULL) {
         pm_fs_close(trace_file);
     }
+    if (crt_chain != NULL) {
+        crt_chain_free(crt_chain);
+        crt_chain = NULL;
+    }
+    crt_gl_close();
+    free(crt_shot);
     wl_close(wloop);
     wa_close(wa);
     free(game_pcm);

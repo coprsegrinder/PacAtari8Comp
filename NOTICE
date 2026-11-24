@@ -18,6 +18,20 @@ What it does NOT cover
        credit must stay with every copy. See third-party/README.md for the
        provenance note.
 
+       The CRT shaders of the Graphics Options (docs/70), third-party/crt-shaders/:
+       crt-guest-advanced-ntsc (guest.r) and zfast_crt_composite (Greg Hogan,
+       SoltanGris42; blur by metallic77) under the GNU GPL version 2 or later,
+       crt-aperture (EasyMode) under "GPL" (the version is not stated in the
+       file), from the libretro slang-shaders repository. They are separate
+       files that the program reads when the player chooses one; the C port does
+       not contain or copy them (the MIT licence of this project does not apply
+       to them, and they carry their own licence headers). The GPL text is
+       third-party/crt-shaders/COPYING-GPL-2.0.txt; where each file comes from,
+       with its SHA-256, is in third-party/crt-shaders/SOURCES.txt. Anyone who
+       passes on the shaders keeps their licence with them; anyone who builds
+       them INTO a program (not what this project does) makes that program a
+       combined work under the GPL. See third-party/README.md.
+
 What you must supply
   A legally obtained copy of the Pac-Man Atari 8-bit cartridge ROM, placed at
   original/Pac-Man.rom. The port reads its non-code data (maze, character

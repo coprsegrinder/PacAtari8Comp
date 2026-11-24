@@ -64,6 +64,7 @@ exe shell_selftest "" $S/tests/shell_selftest.c
 exe frontend_check "" $S/tests/frontend_check.c
 exe menu_check "" $S/tests/menu_check.c
 exe interp_check "" $S/tests/interp_check.c
+exe slang_check "" $S/tests/slang_check.c
 
 B="$OUT/bin"
 run_expect() { # name, regex, command...
@@ -94,6 +95,7 @@ run_expect shell_selftest "shell_selftest: OK" $B/shell_selftest
 run_expect frontend_check "frontend_check: OK" $B/frontend_check
 run_expect menu_check "menu_check: OK" $B/menu_check
 run_expect interp_check "interp_check: OK" $B/interp_check
+run_expect slang_check "slang_check: OK" $B/slang_check
 
 vecset() { # name, prefix, args
   n=$1; p=$2; a=$3

@@ -147,3 +147,9 @@ target_link_libraries(interp_audit pm_shell pm_render pm_assets pm_app pm_core p
 if(UNIX)
   target_link_libraries(interp_audit m)
 endif()
+
+# the CRT shader presets and shaders, and the PNG reader for their lookup textures (docs/70): reads third-party/crt-shaders/, no OpenGL
+add_executable(slang_check slang_check.c)
+target_link_libraries(slang_check pm_render pm_platform)
+add_test(NAME slang_check COMMAND slang_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(slang_check PROPERTIES PASS_REGULAR_EXPRESSION "slang_check: OK")

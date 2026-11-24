@@ -7,8 +7,8 @@ Checklist stage 98: "Record testing procedures, results, compatibility informati
 ## 1. The result in short
 
 - **The C port equals the original ROM, frame by frame, in the whole state, the ordered sound-chip writes and the RANDOM reads: 709,116 frames, 0 differences** (`52`-`56`), and in the frame classes, the state variables and the outputs on 171,300 frames (`53`). Every difference found along the way had a cause and was corrected (`56`: 19 items, none a difference in what the game does).
-- **The register holds 73 verification items (OV-nn): 67 closed, 7 of them closed as a documented limit, 6 open** (section 6), and 144 numbered results (C-nn). **122 evidence summaries** are kept in `analysis/`.
-- **103 test modules with 880 test functions** in `tests/` (Python) and **42 tests** under `ctest` (C); every one passes (`run_regression.py`: ALL PASSED).
+- **The register holds 74 verification items (OV-nn): 67 closed, 7 of them closed as a documented limit, 7 open** (section 6), and 145 numbered results (C-nn). **122 evidence summaries** are kept in `analysis/`.
+- **103 test modules with 880 test functions** in `tests/` (Python) and **43 tests** under `ctest` (C); every one passes (`run_regression.py`: ALL PASSED).
 - **Nothing was verified on real hardware**: every measurement is against Altirra 4.40 (NTSC, Atari 800, OS Rev B), by the owner's decision (OV-01, OV-42b; C-27).
 
 ## 2. The chain of verification
@@ -65,7 +65,7 @@ Each arrow is a comparison that was made and shown to see a difference (a corrup
 
 ### 4.1 The C tests (`ctest`)
 
-42 tests: `toolchain_check`, `world_check`, `vectors_make_identity`, `vectors_identity`, `vectors_broken_state`, `vectors_broken_random`, `vectors_byte_order_swapped`, `fs_sandbox`, `portability_scan`, `portability_scan_selftest`, `platform_check`, `assets_install`, `assets_check`, `audio_selftest`, `shell_selftest`, `constants_check`, `assets_install_nested_clean`, `assets_install_nested`, `frontend_check`, `menu_check`, `interp_check`, `vectors_core_ref`, `vectors_core_ghost`, `vectors_core_pacman`, `vectors_core_score`, `vectors_core_draw`, `vectors_core_sound`, `vectors_core_frame`, `vectors_core_play`, `vectors_core_play_chain`, `vectors_gtia`, `vectors_gtia_world`, `vectors_run_frame`, `vectors_run_frame_chain`, `vectors_core_app_init`, `vectors_core_app_board`, `vectors_seq_app_board`, `vectors_core_app_frame`, `vectors_seq_app_frame`, `vectors_sessions`, `vectors_keyloop_states`, `vectors_power_on`.
+43 tests: `toolchain_check`, `world_check`, `vectors_make_identity`, `vectors_identity`, `vectors_broken_state`, `vectors_broken_random`, `vectors_byte_order_swapped`, `fs_sandbox`, `portability_scan`, `portability_scan_selftest`, `platform_check`, `assets_install`, `assets_check`, `audio_selftest`, `shell_selftest`, `constants_check`, `assets_install_nested_clean`, `assets_install_nested`, `frontend_check`, `menu_check`, `interp_check`, `slang_check`, `vectors_core_ref`, `vectors_core_ghost`, `vectors_core_pacman`, `vectors_core_score`, `vectors_core_draw`, `vectors_core_sound`, `vectors_core_frame`, `vectors_core_play`, `vectors_core_play_chain`, `vectors_gtia`, `vectors_gtia_world`, `vectors_run_frame`, `vectors_run_frame_chain`, `vectors_core_app_init`, `vectors_core_app_board`, `vectors_seq_app_board`, `vectors_core_app_frame`, `vectors_seq_app_frame`, `vectors_sessions`, `vectors_keyloop_states`, `vectors_power_on`.
 
 ### 4.2 The Python tests, by area
 
@@ -100,6 +100,7 @@ Each arrow is a comparison that was made and shown to see a difference (a corrup
 | OV-76 | One unexplained observation (docs/67 section 4): the first self test of stage J had 8,916 of 92,160 window pixels differing from the frame; | OPEN |
 | OV-77 | What the pause menu and graphics options could not test (docs/68 section 3): one machine and one monitor (2560 x 1440, 100 % scaling: a monitor smaller than a resoluti... | PARTIAL |
 | OV-78 | What the FPS option could not test (docs/69 section 6; | PARTIAL |
+| OV-79 | What the CRT shaders could not test (docs/70 section 5): one graphics card (NVIDIA RTX 5070, OpenGL 4.5.0, driver 621.24; | PARTIAL |
 | OV-71 | Execution paths were compared as routine call counts for the routines of the vertical-blank handler only (stage 87, C-123, `53` section 3). | OPEN |
 | OV-72 | What stage 88 could not test (docs/54 section 1.3): macOS; | OPEN |
 

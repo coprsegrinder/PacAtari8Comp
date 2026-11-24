@@ -15,8 +15,12 @@ const int menu_resolution_count = (int)(sizeof menu_resolutions / sizeof menu_re
 const int menu_fps_values[] = {MENU_FPS_NATIVE, 30, 60, 75, 90, 120, 144, 165, 180, MENU_FPS_UNCAPPED};
 const int menu_fps_count = (int)(sizeof menu_fps_values / sizeof menu_fps_values[0]);
 
+const char *const menu_crt_names[] = {"OFF", "CRT-GUEST-ADVANCED-NTSC", "ZFAST-CRT-COMPOSITE", "CRT-APERTURE"};
+const char *const menu_crt_files[] = {"", "third-party/crt-shaders/crt/crt-guest-advanced-ntsc.slangp", "third-party/crt-shaders/crt/zfast-crt-composite.slangp", "third-party/crt-shaders/crt/crt-aperture.slangp"};
+const int menu_crt_count = (int)(sizeof menu_crt_names / sizeof menu_crt_names[0]);
+
 #define MAIN_ITEMS 3        /* Resume Game, Graphics Options, Quit Game */
-#define GRAPHICS_ITEMS 3    /* Display Mode, Resolution, FPS */
+#define GRAPHICS_ITEMS 4    /* Display Mode, Resolution, FPS, CRT Shader */
 
 void menu_init(Menu *m, int fullscreen, int res, int custom_w, int custom_h)
 {
@@ -105,6 +109,12 @@ int menu_fps_nearest(int hz)
     return best;
 }
 
+static void step_crt(Menu *m, int dir)
+{
+    m->crt = (m->crt + dir + menu_crt_count) % menu_crt_count;
+    m->crt_changed = 1;
+}
+
 static void toggle_mode(Menu *m)
 {
     m->fullscreen = !m->fullscreen;
@@ -179,8 +189,10 @@ void menu_key(Menu *m, MenuKey k)
             toggle_mode(m);
         } else if (m->cursor == 1) {
             step_resolution(m, k == MK_LEFT ? -1 : 1);
-        } else {
+        } else if (m->cursor == 2) {
             step_fps(m, k == MK_LEFT ? -1 : 1);
+        } else {
+            step_crt(m, k == MK_LEFT ? -1 : 1);
         }
         break;
     default:
@@ -248,6 +260,8 @@ int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
             }
             put_line(&out[n++], buf, 0, 1, m->cursor == 2);
         }
+        snprintf(buf, sizeof buf, "CRT SHADER: < %s >%s", menu_crt_names[m->crt], m->crt_unavailable && m->crt == 0 ? " NOT AVAILABLE" : "");
+        put_line(&out[n++], buf, 0, 1, m->cursor == 3);
         put_line(&out[n++], "", 0, 0, 0);
         put_line(&out[n++], "ESC: BACK", 0, 0, 0);
     }

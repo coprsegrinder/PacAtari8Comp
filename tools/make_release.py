@@ -34,6 +34,7 @@ MANIFEST = "RELEASE-MANIFEST.json"
 EXCLUDE_DIRS = ("original/", "resources/", "build/", "external-tools/")
 EXCLUDE_FILES = ("Personal notes.txt", "a800.zip")
 EXCLUDE_SUFFIX = (".rom", ".bin", ".car", ".atr", ".xex", ".a8", ".5200", ".os", ".exe", ".obj", ".o", ".lst", ".lab", ".pyc", ".log", ".png", ".jpg")
+KEEP_PREFIX = ("third-party/crt-shaders/",)        # the CRT shaders of docs/70 with their lookup textures (small PNG files the shaders read): kept whatever the suffix
 REQUIRED = ("LICENSE", "NOTICE", "docs/63-build-and-dependencies.md", "docs/65-release.md", "src/c/CMakeLists.txt", "third-party/EightBit-Atari-Fonts/OFL.txt", "tools/check_clean_build.py")
 ROMS = ("Pac-Man.rom", "Atari OS Rev B (19xx)(Atari)(NTSC)[400-800].rom", "Atari OS Rev B (19xx)(Atari)(PAL)[a800.zip MAME].rom")
 
@@ -46,7 +47,7 @@ def selected():
         path = os.path.join(ROOT, *f.split("/"))
         if not os.path.isfile(path):
             continue
-        if f in EXCLUDE_FILES or f.startswith(EXCLUDE_DIRS) or f.lower().endswith(EXCLUDE_SUFFIX):
+        if f in EXCLUDE_FILES or f.startswith(EXCLUDE_DIRS) or (f.lower().endswith(EXCLUDE_SUFFIX) and not f.startswith(KEEP_PREFIX)):
             left.append(f)
         else:
             keep.append((f, path))
@@ -127,7 +128,7 @@ def verify(arc, man_expected_count, report):
             b = z.read(zi)
             if n != MANIFEST and hashlib.sha256(b).hexdigest() != want.get(n):
                 bad_hash.append(n)
-            if n.startswith(EXCLUDE_DIRS) or n in EXCLUDE_FILES or n.lower().endswith(EXCLUDE_SUFFIX):
+            if n.startswith(EXCLUDE_DIRS) or n in EXCLUDE_FILES or (n.lower().endswith(EXCLUDE_SUFFIX) and not n.startswith(KEEP_PREFIX)):
                 forbidden.append(n)
             for rn, off, w in pieces:
                 if w in b:

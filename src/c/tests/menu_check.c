@@ -118,7 +118,7 @@ static void test_fps(void)
     menu_key(&m, MK_DOWN);
     CHECK(m.cursor == 2 && !m.fps_changed && !m.changed);
     n = menu_lines(&m, l);
-    CHECK(n == 7 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < 180 >") != NULL);
+    CHECK(n == 8 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < 180 >") != NULL && l[5].item && !l[5].selected && strstr(l[5].text, "CRT SHADER: < OFF >") != NULL);
     start = m.fps;
     menu_key(&m, MK_RIGHT);
     CHECK(m.fps == start + 1 && m.fps_changed && !m.changed && menu_fps(&m) == MENU_FPS_UNCAPPED);
@@ -144,8 +144,48 @@ static void test_fps(void)
     menu_key(&m, MK_UP);
     menu_key(&m, MK_RIGHT);
     CHECK(m.fullscreen == 1 && m.fps == 1);
-    menu_key(&m, MK_UP);                                   /* wrap: up from the display mode is the FPS */
+    menu_key(&m, MK_UP);                                   /* wrap: up from the display mode is the last item, the CRT shader */
+    CHECK(m.cursor == 3);
+    menu_key(&m, MK_UP);
     CHECK(m.cursor == 2);
+}
+
+static void test_crt(void)
+{
+    Menu m;
+    MenuLine l[MENU_MAX_LINES];
+    int i;
+
+    CHECK(menu_crt_count == 4 && strcmp(menu_crt_names[0], "OFF") == 0 && strcmp(menu_crt_files[0], "") == 0);
+    CHECK(strstr(menu_crt_files[1], "crt-guest-advanced-ntsc.slangp") && strstr(menu_crt_files[2], "zfast-crt-composite.slangp") && strstr(menu_crt_files[3], "crt-aperture.slangp"));
+    menu_init(&m, 0, 5, 0, 0);
+    CHECK(m.crt == 0 && !m.crt_changed);                    /* off to start with */
+    menu_key(&m, MK_BACK);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    CHECK(m.cursor == 3 && !m.changed && !m.fps_changed && !m.crt_changed);
+    for (i = 1; i <= 3; i++) {                              /* the three shaders in turn */
+        menu_key(&m, MK_RIGHT);
+        CHECK(m.crt == i && m.crt_changed && !m.changed && !m.fps_changed);
+        menu_lines(&m, l);
+        CHECK(strstr(l[5].text, menu_crt_names[i]) != NULL && l[5].selected);
+        m.crt_changed = 0;
+    }
+    menu_key(&m, MK_RIGHT);                                 /* round to off */
+    CHECK(m.crt == 0 && m.crt_changed);
+    menu_key(&m, MK_LEFT);                                  /* and back */
+    CHECK(m.crt == 3);
+    menu_key(&m, MK_SELECT);
+    CHECK(m.crt == 0);
+    m.crt_unavailable = 1;                                  /* the front end could not start them */
+    menu_lines(&m, l);
+    CHECK(strstr(l[5].text, "NOT AVAILABLE") != NULL);
+    m.crt = 2;
+    menu_lines(&m, l);
+    CHECK(strstr(l[5].text, "NOT AVAILABLE") == NULL);
 }
 
 static void test_nearest_resolution(void)
@@ -239,7 +279,7 @@ static void test_text(void)
         items += l[i].item;
         sel += l[i].selected;
     }
-    CHECK(items == 3 && sel == 1);
+    CHECK(items == 4 && sel == 1);
     CHECK(strstr(l[2].text, "BORDERLESS FULLSCREEN") != NULL);
     CHECK(strstr(l[3].text, "1920 X 1080 (16:9)") != NULL);
     menu_key(&m, MK_LEFT);
@@ -322,6 +362,7 @@ int main(void)
     test_navigation();
     test_help();
     test_fps();
+    test_crt();
     test_nearest_resolution();
     test_text();
     test_list();

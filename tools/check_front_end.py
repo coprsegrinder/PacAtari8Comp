@@ -72,6 +72,7 @@ def one(cc):
     root = os.path.join(d, "root")
     os.makedirs(os.path.join(root, "original"))
     shutil.copy2(os.path.join(ROOT, "original", "Pac-Man.rom"), os.path.join(root, "original", "Pac-Man.rom"))
+    shutil.copytree(os.path.join(ROOT, "third-party", "crt-shaders"), os.path.join(root, "third-party", "crt-shaders"))        # the CRT shaders the program reads (docs/70)
     for label, extra, tol in (("sound device is the clock", [], 0.5), ("system timer is the clock", ["--no-audio"], 1.0)):
         if os.path.exists(os.path.join(root, "logs")):
             shutil.rmtree(os.path.join(root, "logs"))
@@ -109,12 +110,16 @@ def one(cc):
     if os.path.exists(os.path.join(root, "logs")):
         shutil.rmtree(os.path.join(root, "logs"))
     t = time.time()
-    r = run([play, "--root", root, "--menutest", "--windowed", "--seed", "7"], timeout=300)
-    rep = os.path.join(root, "logs", "menutest.txt")
-    text = open(rep, encoding="utf-8").read() if os.path.exists(rep) else ""
+    for attempt in (1, 2):
+        r = run([play, "--root", root, "--menutest", "--windowed", "--seed", "7"], timeout=300)
+        rep = os.path.join(root, "logs", "menutest.txt")
+        text = open(rep, encoding="utf-8").read() if os.path.exists(rep) else ""
+        if r.returncode == 0 or "NOTE" not in text:
+            break
+        print("      (the window was minimised by something outside the program during the menu test: once more)", flush=True)       # Windows does this in long runs; the program notes it and restores the window, a measurement it spoiled is made again
     m = re.search(r"RESULT: (\d+) passed, (\d+) failed", text)
     step("%s: the menu test: every check passed (menu keys, frozen game, both display modes, every resolution, F11, Alt+Enter, Quit Game)" % cc,
-         r.returncode == 0 and bool(m) and m.group(2) == "0" and int(m.group(1)) >= 90 and "script finished: yes" in text, "%s passed, %s failed, %.0f s" % (m.group(1) if m else "?", m.group(2) if m else "?", time.time() - t))
+         r.returncode == 0 and bool(m) and m.group(2) == "0" and int(m.group(1)) >= 95 and "script finished: yes" in text, "%s passed, %s failed, %.0f s" % (m.group(1) if m else "?", m.group(2) if m else "?", time.time() - t))
     frozen = re.findall(r"PASS  game frozen: .*", text)
     step("%s: the game was frozen while the help or a menu was open (frames run and the whole state hash unchanged), three times" % cc, len(frozen) == 3, "%d checks" % len(frozen))
     pics = re.findall(r"^PASS  (?:windowed|fullscreen) \d+x\d+.*aspect 1\.6:1, centred yes, outside the picture 0 pixels not black, inside \d+ of \d+ differ from the centre rule, 0 blended", text, re.M)
@@ -130,6 +135,18 @@ def one(cc):
     st = open(st_path, encoding="utf-8").read() if os.path.exists(st_path) else ""
     m3 = re.search(r"RESULT: (\d+) passed, (\d+) failed", st)
     step("%s: started with nothing set: borderless fullscreen, the monitor's resolution and refresh rate chosen from the lists (exact or nearest)" % cc, r2.returncode == 0 and bool(m3) and m3.group(2) == "0" and m3.group(1) == "4", "; ".join(re.findall(r"PASS  (?:starts at the monitor.s \w+|starts in borderless fullscreen): (.*)", st))[:260])
+    crts = re.findall(r"^PASS  crt shader \d \(.*", text, re.M)
+    step("%s: each CRT shader (guest-advanced-ntsc, zfast-crt-composite, aperture) and off, chosen through the menu in the running game: the picture read back from the OpenGL window is lit, differs from the plain picture, no pass failed" % cc, len(crts) == 4, "%d of 4: %s" % (len(crts), "; ".join(re.findall(r"PASS  crt shader \d \((\S+)\): (\d+x\d+) picture from the chain \((\d+) passes\)", text) and ["%s %s %s passes" % t for t in re.findall(r"PASS  crt shader \d \((\S+)\): (\d+x\d+) picture from the chain \((\d+) passes\)", text)])))
+    r3 = run([play, "--root", root, "--crttest", "--seed", "7"], timeout=200)
+    ct_path = os.path.join(root, "logs", "crttest.txt")
+    ct = open(ct_path, encoding="utf-8").read() if os.path.exists(ct_path) else ""
+    m4 = re.search(r"RESULT: (\d+) passed, (\d+) failed", ct)
+    step("%s: the three CRT shaders on a frame of play at the monitor's resolution, fullscreen: all compiled and linked, every pass ran, the pictures are lit" % cc, r3.returncode == 0 and bool(m4) and m4.group(1) == "3" and m4.group(2) == "0", "; ".join(re.findall(r"PASS  (\S+): (\d+ passes compiled in \d+ ms, picture \d+x\d+)", ct) and ["%s %s" % t for t in re.findall(r"PASS  (\S+): (\d+ passes compiled in \d+ ms, picture \d+x\d+)", ct)]))
+    for nm in ("crt-guest-advanced-ntsc", "zfast-crt-composite", "crt-aperture"):                  # the pictures, for the eye
+        src_ppm = os.path.join(root, "logs", "crt_%s.ppm" % nm)
+        if os.path.exists(src_ppm):
+            os.makedirs(os.path.join(WORK, "pictures"), exist_ok=True)
+            shutil.copy2(src_ppm, os.path.join(WORK, "pictures", "%s-%s.ppm" % (cc, nm)))
     h = run([head, "run", "logs/menutest.pmrp", "--video", "--audio", "--root", root])
     a2, b2 = digests(text), digests(h.stdout)
     step("%s: the game recorded through the menu run headless gives the same state, run, video and audio digests" % cc, a2 == b2 and "?" not in a2.values(), "%s" % a2["run"])

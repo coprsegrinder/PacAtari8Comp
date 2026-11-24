@@ -3,7 +3,7 @@
  *   - the menu is a pause: while it is open the front end runs no game frame at all, so nothing of the game moves (the menu never touches the World);
  *   - F1 opens the help (what the function keys do; nothing about the other controls) from anywhere, the game and both menus; F1 or ESC closes it and goes back to where it was;
  *   - ESC opens it; in the main menu ESC resumes; in the graphics options ESC goes back to the main menu;
- *   - the graphics options are three settings: the display mode (windowed / borderless fullscreen), the resolution (the size of the area the picture may use) and the FPS (how many pictures a second are
+ *   - the graphics options are four settings: the CRT shader (off, or one of three: docs/70), and the display mode (windowed / borderless fullscreen), the resolution (the size of the area the picture may use) and the FPS (how many pictures a second are
  *     shown: the game's own 59.92 ("native"), a number from 30 to 180, or as many as there are).  There is no "default" choice: the front end finds the monitor's size and refresh rate and starts with the
  *     entry of each list that is exactly them or the nearest (menu_res_nearest, menu_fps_nearest);
  *   - display_fit() is the layout: the 384 x 240 picture (1.6 : 1) at the largest whole-number scale when that uses the area well, otherwise as large as the area allows, never stretched, centred, nearest
@@ -34,6 +34,11 @@ extern const int menu_resolution_count;
 extern const int menu_fps_values[];
 extern const int menu_fps_count;
 
+/* the CRT shader choices: off, then the three presets (docs/70); the text each shows in the menu, and the preset file (relative to the main folder) */
+extern const char *const menu_crt_names[];
+extern const char *const menu_crt_files[];
+extern const int menu_crt_count;
+
 /* which screen of the menu is shown (closed: the game runs) */
 typedef enum MenuScreen { MENU_CLOSED = 0, MENU_MAIN = 1, MENU_GRAPHICS = 2, MENU_HELP = 3 } MenuScreen;
 /* the keys the menu understands (the front end maps keyboard and pad onto them) */
@@ -49,6 +54,9 @@ typedef struct Menu {
     int fps;                     /* index into menu_fps_values */
     int monitor_hz;              /* the monitor's refresh rate, set by the front end (0: not known) */
     int fps_changed;             /* set when the FPS changed: the front end applies it and clears this */
+    int crt;                     /* index into menu_crt_names: 0 off */
+    int crt_changed;             /* set when the CRT shader changed: the front end applies it and clears this */
+    int crt_unavailable;         /* set by the front end when the shaders cannot run on this machine (no OpenGL 4.5, or the files are missing): the menu says so */
     int help_from;               /* the screen the help was opened from (MENU_CLOSED: the game), where closing it goes back to */
     int quit;                    /* set by Quit Game */
     int changed;                 /* set when the display mode or the resolution changed: the front end applies it and clears this */

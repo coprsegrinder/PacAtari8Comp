@@ -1,0 +1,2 @@
+# the CRT shader files are kept byte for byte (SOURCES.txt has their SHA-256): no line-end changes
+third-party/crt-shaders/** -text
