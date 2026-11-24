@@ -92,23 +92,23 @@ static void test_fps(void)
 
     /* the list: native, 30 to 180, uncapped: no "monitor" or "default" entry */
     CHECK(menu_fps_values[0] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_count - 1] == MENU_FPS_UNCAPPED);
-    CHECK(menu_fps_values[1] == 30 && menu_fps_values[menu_fps_count - 2] == 180 && menu_fps_count == 10);
+    CHECK(menu_fps_values[1] == 75 && menu_fps_values[menu_fps_count - 2] == 180 && menu_fps_count == 8);   /* no 30, no 60 */
     for (i = 2; i < menu_fps_count - 1; i++) {
         CHECK(menu_fps_values[i] > menu_fps_values[i - 1] && menu_fps_values[i] <= 180);
     }
-    /* the entry for a monitor: its rate when the list has it, else the nearest number (a tie to the higher); native and uncapped are never picked */
+    /* the entry for a monitor: its rate when the list has it, else the nearest number (a tie to the higher); native counts as 60; uncapped is never picked */
     for (i = 1; i < menu_fps_count - 1; i++) {
         CHECK(menu_fps_values[menu_fps_nearest(menu_fps_values[i])] == menu_fps_values[i]);       /* every number of the list finds itself */
     }
-    CHECK(menu_fps_values[menu_fps_nearest(60)] == 60 && menu_fps_values[menu_fps_nearest(59)] == 60 && menu_fps_values[menu_fps_nearest(61)] == 60);
+    CHECK(menu_fps_values[menu_fps_nearest(60)] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_nearest(59)] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_nearest(61)] == MENU_FPS_NATIVE);
     CHECK(menu_fps_values[menu_fps_nearest(100)] == 90 && menu_fps_values[menu_fps_nearest(105)] == 120 && menu_fps_values[menu_fps_nearest(110)] == 120);
-    CHECK(menu_fps_values[menu_fps_nearest(240)] == 180 && menu_fps_values[menu_fps_nearest(360)] == 180 && menu_fps_values[menu_fps_nearest(25)] == 30);
-    CHECK(menu_fps_values[menu_fps_nearest(48)] == 60 && menu_fps_values[menu_fps_nearest(50)] == 60 && menu_fps_values[menu_fps_nearest(72)] == 75 && menu_fps_values[menu_fps_nearest(70)] == 75);
-    CHECK(menu_fps_values[menu_fps_nearest(0)] == 60 && menu_fps_values[menu_fps_nearest(-5)] == 60);   /* not known: 60 */
+    CHECK(menu_fps_values[menu_fps_nearest(240)] == 180 && menu_fps_values[menu_fps_nearest(360)] == 180 && menu_fps_values[menu_fps_nearest(25)] == MENU_FPS_NATIVE);
+    CHECK(menu_fps_values[menu_fps_nearest(48)] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_nearest(50)] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_nearest(72)] == 75 && menu_fps_values[menu_fps_nearest(70)] == 75);
+    CHECK(menu_fps_values[menu_fps_nearest(0)] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_nearest(-5)] == MENU_FPS_NATIVE);   /* not known: 60, so native */
     CHECK(menu_fps_values[menu_fps_nearest(143)] == 144 && menu_fps_values[menu_fps_nearest(165)] == 165 && menu_fps_values[menu_fps_nearest(170)] == 165 && menu_fps_values[menu_fps_nearest(175)] == 180);
 
     menu_init(&m, 0, 5, 0, 0);
-    CHECK(menu_fps(&m) == 60);                              /* before the front end has found the monitor */
+    CHECK(menu_fps(&m) == MENU_FPS_NATIVE);                 /* before the front end has found the monitor */
     m.fps = menu_fps_nearest(180);
     CHECK(menu_fps(&m) == 180);
     menu_key(&m, MK_BACK);
@@ -118,7 +118,7 @@ static void test_fps(void)
     menu_key(&m, MK_DOWN);
     CHECK(m.cursor == 2 && !m.fps_changed && !m.changed);
     n = menu_lines(&m, l);
-    CHECK(n == 8 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < 180 >") != NULL && l[5].item && !l[5].selected && strstr(l[5].text, "CRT SHADER: < OFF >") != NULL);
+    CHECK(n == 8 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < 180 >") != NULL && l[5].item && !l[5].selected && strstr(l[5].text, "CRT SHADER: < NONE (OFF) >") != NULL);
     start = m.fps;
     menu_key(&m, MK_RIGHT);
     CHECK(m.fps == start + 1 && m.fps_changed && !m.changed && menu_fps(&m) == MENU_FPS_UNCAPPED);
@@ -130,9 +130,9 @@ static void test_fps(void)
     menu_lines(&m, l);
     CHECK(strstr(l[4].text, "NATIVE (59.92)") != NULL);
     menu_key(&m, MK_RIGHT);
-    CHECK(m.fps == 1 && menu_fps(&m) == 30);
+    CHECK(m.fps == 1 && menu_fps(&m) == 75);
     menu_lines(&m, l);
-    CHECK(strstr(l[4].text, "FPS: < 30 >") != NULL);
+    CHECK(strstr(l[4].text, "FPS: < 75 >") != NULL);
     menu_key(&m, MK_LEFT);                                 /* and back */
     CHECK(menu_fps(&m) == MENU_FPS_NATIVE);
     menu_key(&m, MK_SELECT);
@@ -156,7 +156,7 @@ static void test_crt(void)
     MenuLine l[MENU_MAX_LINES];
     int i;
 
-    CHECK(menu_crt_count == 4 && strcmp(menu_crt_names[0], "OFF") == 0 && strcmp(menu_crt_files[0], "") == 0);
+    CHECK(menu_crt_count == 4 && strcmp(menu_crt_names[0], "NONE (OFF)") == 0 && strcmp(menu_crt_files[0], "") == 0);
     CHECK(strstr(menu_crt_files[1], "crt-guest-advanced-ntsc.slangp") && strstr(menu_crt_files[2], "zfast-crt-composite.slangp") && strstr(menu_crt_files[3], "crt-aperture.slangp"));
     menu_init(&m, 0, 5, 0, 0);
     CHECK(m.crt == 0 && !m.crt_changed);                    /* off to start with */
@@ -182,7 +182,7 @@ static void test_crt(void)
     CHECK(m.crt == 0);
     m.crt_unavailable = 1;                                  /* the front end could not start them */
     menu_lines(&m, l);
-    CHECK(strstr(l[5].text, "SHADERS NOT AVAILABLE") != NULL);
+    CHECK(strstr(l[5].text, "NOT AVAILABLE") != NULL);
     m.crt = 2;
     menu_lines(&m, l);
     CHECK(strstr(l[5].text, "NOT AVAILABLE") == NULL);

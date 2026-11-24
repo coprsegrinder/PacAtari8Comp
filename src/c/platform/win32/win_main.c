@@ -453,6 +453,7 @@ static void present_interp(const InterpDirty *d)
 
 /* ---------------------------------------------------------------- the CRT shader: the picture of the game (384 x 240) goes through a chain of OpenGL passes into the child window (docs/70) */
 
+static CrtChain *crt_cache[4];          /* the chains of the three shaders, loaded once and kept: choosing a shader again is instant (loading and compiling takes about a second) */
 static CrtChain *crt_chain;              /* the chain of the shader chosen, or NULL when it is off */
 static int crt_active;                   /* the OpenGL child window is the one that shows the picture */
 static unsigned crt_frames;              /* pictures through the chain (the shaders' frame counter) */
@@ -519,10 +520,7 @@ static void crt_apply(void)
 {
     char err[1600];
 
-    if (crt_chain != NULL) {
-        crt_chain_free(crt_chain);
-        crt_chain = NULL;
-    }
+    crt_chain = NULL;
     crt_active = 0;
     crt_have_last = 0;
     iout_have = 0;
@@ -530,7 +528,7 @@ static void crt_apply(void)
     if (menu.crt == 0) {
         crt_gl_show(0);
         if (hwnd != NULL) {
-            InvalidateRect(hwnd, NULL, TRUE);
+            InvalidateRect(hwnd, NULL, FALSE);                          /* not erased to black: the next picture covers it */
         }
         return;
     }
@@ -541,7 +539,10 @@ static void crt_apply(void)
         menu.crt_unavailable = 1;
         return;
     }
-    crt_chain = crt_chain_load(menu_crt_files[menu.crt], err, sizeof err);
+    if (crt_cache[menu.crt] == NULL) {
+        crt_cache[menu.crt] = crt_chain_load(menu_crt_files[menu.crt], err, sizeof err);
+    }
+    crt_chain = crt_cache[menu.crt];
     if (crt_chain == NULL) {
         snprintf(crt_why, sizeof crt_why, "the CRT shader %s is not available: %.1500s", menu_crt_names[menu.crt], err);
         (void)shell_log(crt_why);
@@ -2295,6 +2296,28 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     if (opt.trace != NULL) {
         trace_file = pm_fs_open(opt.trace, "wb");
     }
+    if (!opt.crttest) {                                         /* the three shaders are loaded and compiled now, before the game runs, so that choosing one in the menu does not stop the picture for a second */
+        char werr[400];
+        if (crt_gl_is_open() || crt_gl_open(hwnd, werr, sizeof werr) == 0) {
+            int ci;
+            uint64_t w0 = pm_time_ns();
+            for (ci = 1; ci < 4; ci++) {
+                if (crt_cache[ci] == NULL) {
+                    RECT wrc;
+                    DisplayRect wpr;
+                    crt_cache[ci] = crt_chain_load(menu_crt_files[ci], werr, sizeof werr);
+                    GetClientRect(hwnd, &wrc);
+                    layout(wrc.right, wrc.bottom, &wpr);
+                    crt_gl_resize(wrc.right, wrc.bottom);
+                    if (crt_cache[ci] != NULL && wpr.w > 0 && wpr.h > 0) {      /* one picture through it: the driver compiles at the first use, and the sizes of its buffers are made */
+                        (void)crt_chain_render(crt_cache[ci], crt_last, RENDER_W, RENDER_H, wpr.x, wpr.y, wpr.w, wpr.h, 0u, werr, sizeof werr);
+                    }
+                }
+            }
+            crt_gl_show(0);
+            { char ln[96]; snprintf(ln, sizeof ln, "CRT shaders loaded in %.0f ms", (double)(pm_time_ns() - w0) / 1e6); (void)shell_log(ln); }
+        }
+    }
     t_start = t_prev = pm_time_ns();
     while (!quit) {
         if (opt.crttest && frames_run >= 700u) {                  /* the CRT shaders on a frame of the game */
@@ -2453,8 +2476,14 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     if (trace_file != NULL) {
         pm_fs_close(trace_file);
     }
-    if (crt_chain != NULL) {
-        crt_chain_free(crt_chain);
+    {
+        int ci;
+        for (ci = 0; ci < 4; ci++) {
+            if (crt_cache[ci] != NULL) {
+                crt_chain_free(crt_cache[ci]);
+                crt_cache[ci] = NULL;
+            }
+        }
         crt_chain = NULL;
     }
     crt_gl_close();

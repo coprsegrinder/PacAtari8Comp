@@ -6,7 +6,7 @@ Checklist stage 91: "Document functions, variables, structures, algorithms, modu
 
 ## 1. The source at a glance
 
-- **107 files, 15796 lines** under `src/c` (43 headers, 64 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
+- **107 files, 15799 lines** under `src/c` (43 headers, 64 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
 - **237 functions declared in headers** (without the tests), **52 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
 - **Layers** (an arrow is "uses"): `shell` -> `app` -> `core`; `shell` -> `render`, `audio`, `assets`; `app`, `assets`, `core` -> `platform`; `render`, `audio` -> `core`. Nothing in `core` or `app` includes a system header or opens a file.
 
@@ -145,7 +145,7 @@ flowchart TD
 | `frontend.c` | 71 | see frontend.h. |
 | `frontend.h` | 43 | what any interactive front end does between the player and the game (stage J, docs/67): |
 | `main.c` | 343 | the headless shell of the Pac-Man (Atari 8-bit) port (stage 80d). |
-| `menu.c` | 315 | the pause menu and the graphics options (docs/68); |
+| `menu.c` | 318 | the pause menu and the graphics options (docs/68); |
 | `menu.h` | 98 | the pause menu and the graphics options of the interactive front end (docs/68). |
 | `replay.c` | 269 | see replay.h. |
 | `replay.h` | 82 | recorded inputs of a game, one record a frame (stage 80d, docs/51, docs/49 D3). |
@@ -613,13 +613,13 @@ Every function declared in a header, by module. **ROM** is the routine of the or
 |---|---|---|---|
 | `menu_init` |  | `shell/menu.c:25` | a closed menu with these display settings (res -1: the window size custom_w x custom_h) |
 | `menu_is_open` |  | `shell/menu.c:35` | 1 while a menu is shown: the game is paused |
-| `menu_key` |  | `shell/menu.c:124` | closed: only MK_BACK (ESC) and MK_HELP (F1) do anything, they open the menu and the help |
-| `menu_lines` |  | `shell/menu.c:220` | the text to draw; returns the number of lines |
+| `menu_key` |  | `shell/menu.c:127` | closed: only MK_BACK (ESC) and MK_HELP (F1) do anything, they open the menu and the help |
+| `menu_lines` |  | `shell/menu.c:223` | the text to draw; returns the number of lines |
 | `menu_size` |  | `shell/menu.c:40` | the selected resolution |
 | `menu_fps` |  | `shell/menu.c:69` | the FPS to show: MENU_FPS_NATIVE, MENU_FPS_UNCAPPED, or pictures a second |
 | `menu_res_nearest` |  | `shell/menu.c:74` | the index in menu_resolutions |
 | `menu_fps_nearest` |  | `shell/menu.c:90` | the index in menu_fps_values |
-| `display_fit` |  | `shell/menu.c:271` | the picture in a client area of cw x ch when the picture may use the centred area aw x ah of it (aw, ah are clamped to the client) |
+| `display_fit` |  | `shell/menu.c:274` | the picture in a client area of cw x ch when the picture may use the centred area aw x ah of it (aw, ah are clamped to the client) |
 
 ### `shell/replay.h`
 

@@ -126,7 +126,7 @@ def one(cc):
     step("%s: all 20 resolutions in both display modes: 1.6:1, centred, black around, nearest pixel (nothing blended)" % cc, len(pics) >= 40, "%d pictures checked" % len(pics))
     fpsl = re.findall(r"^PASS  fps choice \d+ \(-?\d+\): .*", text, re.M)
     cpu = [int(c) for c in re.findall(r"CPU (\d+) % of one core", text)]
-    step("%s: every FPS choice (native, 30 to 180, uncapped) measured in the running game: the pictures a second are the number chosen, the game stays at 59.92" % cc, len(fpsl) == 10 and "NOTE" not in text, "%d choices, CPU %d to %d %% of one core" % (len(fpsl), min(cpu) if cpu else 0, max(cpu) if cpu else 0))
+    step("%s: every FPS choice (native, 75 to 180, uncapped) measured in the running game: the pictures a second are the number chosen, the game stays at 59.92" % cc, len(fpsl) == 8 and "NOTE" not in text, "%d choices, CPU %d to %d %% of one core" % (len(fpsl), min(cpu) if cpu else 0, max(cpu) if cpu else 0))
     # the game as the player starts it: nothing set; it must start in borderless fullscreen at the monitor's resolution and refresh rate (or the nearest entries of the lists)
     if os.path.exists(os.path.join(root, "logs", "startuptest.txt")):
         os.remove(os.path.join(root, "logs", "startuptest.txt"))
@@ -137,7 +137,7 @@ def one(cc):
     step("%s: started with nothing set: borderless fullscreen, the monitor's resolution and refresh rate chosen from the lists (exact or nearest)" % cc, r2.returncode == 0 and bool(m3) and m3.group(2) == "0" and m3.group(1) == "4", "; ".join(re.findall(r"PASS  (?:starts at the monitor.s \w+|starts in borderless fullscreen): (.*)", st))[:260])
     # the game's own logic does not depend on how the picture is made: the same scenario with several FPS choices and CRT shaders, each recorded and replayed headless (the state, run, video and sound digests of the
     # recording equal the replay's), the game at its own speed, the sound not running dry more than the start of a shader makes it
-    for label, extra in (("native", ["--fps", "native"]), ("30", ["--fps", "30"]), ("30 + guest shader", ["--fps", "30", "--crt", "guest"]), ("native + guest shader", ["--fps", "native", "--crt", "guest"]), ("60 + zfast shader", ["--fps", "60", "--crt", "zfast"]),
+    for label, extra in (("native", ["--fps", "native"]), ("native + guest shader", ["--fps", "native", "--crt", "guest"]), ("75 + zfast shader", ["--fps", "75", "--crt", "zfast"]),
                          ("180", ["--fps", "180"]), ("180 + guest shader", ["--fps", "180", "--crt", "guest"]), ("uncapped + aperture shader", ["--fps", "uncapped", "--crt", "aperture"])):
         t = time.time()
         r5 = run([play, "--root", root, "--windowed", "--selftest", "600", "--seed", "5", "--record", "logs/mx.pmrp"] + extra, timeout=200)

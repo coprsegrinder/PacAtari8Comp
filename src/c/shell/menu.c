@@ -12,10 +12,10 @@ const MenuResolution menu_resolutions[] = {
 };
 const int menu_resolution_count = (int)(sizeof menu_resolutions / sizeof menu_resolutions[0]);
 
-const int menu_fps_values[] = {MENU_FPS_NATIVE, 30, 60, 75, 90, 120, 144, 165, 180, MENU_FPS_UNCAPPED};
+const int menu_fps_values[] = {MENU_FPS_NATIVE, 75, 90, 120, 144, 165, 180, MENU_FPS_UNCAPPED};
 const int menu_fps_count = (int)(sizeof menu_fps_values / sizeof menu_fps_values[0]);
 
-const char *const menu_crt_names[] = {"OFF", "CRT-GUEST-ADVANCED-NTSC", "ZFAST-CRT-COMPOSITE", "CRT-APERTURE"};
+const char *const menu_crt_names[] = {"NONE (OFF)", "CRT-GUEST-ADVANCED-NTSC", "ZFAST-CRT-COMPOSITE", "CRT-APERTURE"};
 const char *const menu_crt_files[] = {"", "third-party/crt-shaders/crt/crt-guest-advanced-ntsc.slangp", "third-party/crt-shaders/crt/zfast-crt-composite.slangp", "third-party/crt-shaders/crt/crt-aperture.slangp"};
 const int menu_crt_count = (int)(sizeof menu_crt_names / sizeof menu_crt_names[0]);
 
@@ -97,11 +97,14 @@ int menu_fps_nearest(int hz)
     }
     for (i = 0; i < menu_fps_count; i++) {
         long v = menu_fps_values[i], d;
-        if (v <= 0) {
-            continue;                                        /* native and uncapped are not rates */
+        if (v == MENU_FPS_UNCAPPED) {
+            continue;                                        /* uncapped is not a rate */
+        }
+        if (v == MENU_FPS_NATIVE) {
+            v = 60;                                          /* the game's own 59.92: the entry of a 60 Hz monitor (and of anything below 68) */
         }
         d = v > hz ? v - hz : hz - v;
-        if (best < 0 || d < best_d || (d == best_d && v > menu_fps_values[best])) {
+        if (best < 0 || d < best_d || (d == best_d && v > (menu_fps_values[best] == MENU_FPS_NATIVE ? 60 : menu_fps_values[best]))) {
             best = i;
             best_d = d;
         }
@@ -260,7 +263,7 @@ int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
             }
             put_line(&out[n++], buf, 0, 1, m->cursor == 2);
         }
-        snprintf(buf, sizeof buf, "CRT SHADER: < %s >%s", menu_crt_names[m->crt], m->crt_unavailable && m->crt == 0 ? " (SHADERS NOT AVAILABLE)" : "");
+        snprintf(buf, sizeof buf, "CRT SHADER: < %s >%s", menu_crt_names[m->crt], m->crt_unavailable && m->crt == 0 ? " (NOT AVAILABLE)" : "");
         put_line(&out[n++], buf, 0, 1, m->cursor == 3);
         put_line(&out[n++], "", 0, 0, 0);
         put_line(&out[n++], "ESC: BACK", 0, 0, 0);

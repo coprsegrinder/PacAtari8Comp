@@ -30,7 +30,7 @@ typedef struct MenuResolution {
 extern const MenuResolution menu_resolutions[];
 extern const int menu_resolution_count;
 
-/* the values the FPS option goes through, in order: MENU_FPS_NATIVE, 30 ... 180, MENU_FPS_UNCAPPED */
+/* the values the FPS option goes through, in order: MENU_FPS_NATIVE, 75 ... 180, MENU_FPS_UNCAPPED */
 extern const int menu_fps_values[];
 extern const int menu_fps_count;
 

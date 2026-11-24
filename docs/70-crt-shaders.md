@@ -6,7 +6,7 @@ Asked for by the owner on 2026-11-24, with permission to download, implement and
 
 | | |
 |---|---|
-| **Where** | Graphics Options, the last item: `CRT SHADER: < OFF >`; Left / Right change it, as the other items |
+| **Where** | Graphics Options, the last item: `CRT SHADER: < NONE (OFF) >`; Left / Right change it, as the other items |
 | **Off** | the picture as before (GDI, docs/67); nothing of OpenGL is started |
 | **crt-guest-advanced-ntsc** | guest.r's advanced CRT: the NTSC colour signal (the artifact colours of a composite picture) is made and decoded, afterglow of the phosphors, halation and bloom, scanlines, a shadow mask, a sharpened picture; 19 passes, 4 lookup textures |
 | **zfast-crt-composite** | a fast shader: composite (YIQ) blur and a little curvature, scanlines that vary with brightness, a monochrome aperture mask; 1 pass |
