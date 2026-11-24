@@ -48,7 +48,7 @@ class TestingDocs(unittest.TestCase):
         self.assertIn("%d numbered results (C-nn)" % len(self.cs), self.text)
 
     def test_the_open_items_are_exactly_the_two_the_other_chapters_name(self):
-        self.assertEqual(sorted(i for i, t, s, h in self.ov if s in ("OPEN", "PARTIAL")), ["OV-71", "OV-72"])
+        self.assertEqual(sorted(i for i, t, s, h in self.ov if s in ("OPEN", "PARTIAL")), ["OV-71", "OV-72", "OV-75", "OV-76"])
 
     def test_the_ledger_has_as_many_items_as_the_chapter_says(self):
         with open(os.path.join(ROOT, "docs", "56-discrepancy-analysis.md"), encoding="utf-8") as fh:

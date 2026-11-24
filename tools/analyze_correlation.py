@@ -4,7 +4,7 @@ Sources (nothing is re-measured here): the 81 routines of tools/analyze_function
 (analysis/evidence-registers-summary.txt) and the model coverage (analysis/evidence-model-coverage-summary.txt); the register docs/OPEN-VERIFICATION.md; the files of the repository.  The BEHAVIOURS table below is the one
 curated part: for each observable behaviour of the game, the routines that implement it, the chapter that states the rule, the register entries that hold the live measurement, the harness sessions and the tests.
 Mechanical checks (tests/test_correlation.py): every routine belongs to a behaviour; every behaviour has code, a chapter, live evidence (register entry C-nn, closed) and an executable check (a test file); every file and
-every register entry named exists; no verification item is open except OV-71 (the routine-path comparison of the key loop) and OV-72 (machines and compilers the port was not tried on); OV-02, the port, closed in stage 87; every algorithm is carried by a behaviour.
+every register entry named exists; no verification item is open except OV-71 (the routine-path comparison of the key loop), OV-72 (machines and compilers the port was not tried on), OV-75 and OV-76 (what stage J could not test, one unexplained window capture); OV-02, the port, closed in stage 87; every algorithm is carried by a behaviour.
 Usage: python -I tools/analyze_correlation.py [--doc docs/36-behaviour-correlation.md]
 """
 import os
@@ -144,8 +144,8 @@ def build():
         if not ts or not cs or not hs:
             problems.append("%s lacks live evidence or an executable check" % bid)
     open_items = sorted(k for k, v in ovs.items() if v != "CLOSED")
-    if open_items != ["OV-71", "OV-72"]:
-        problems.append("open verification items: %s (expected only OV-71 and OV-72)" % open_items)
+    if open_items != ["OV-71", "OV-72", "OV-75", "OV-76"]:
+        problems.append("open verification items: %s (expected only OV-71, OV-72, OV-75 and OV-76)" % open_items)
     return {"ntotal": ntotal, "nroutine": nroutine, "r_alg": r_alg, "algs": algs, "never": never, "head": head, "calls": calls, "reg": reg, "ovs": ovs, "problems": problems, "rb": rb, "alg_beh": alg_beh, "open": open_items}
 
 
