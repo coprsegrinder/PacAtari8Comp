@@ -46,7 +46,7 @@
 #define TITLE "Pac-Man (Atari 8-bit) - C port"
 
 typedef struct Options {
-    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest;
+    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest, offtest;
     const char *fps, *trace, *crt;
     long selftest;
     uint32_t seed;
@@ -334,6 +334,7 @@ static uint64_t tau_t0;
 static int tau_valid;
 static uint64_t next_tick_ns;
 static PmFile *trace_file;                /* --trace FILE: every picture made, with the game time and where the objects are drawn (for the analysis of the motion) */
+static unsigned long still_last = ~0ul;   /* the game frame the picture shows when there are fewer pictures a second than the game makes: a picture is made when this changes */
 static unsigned long tick_count, blit_count;    /* pictures made at a tick, and pictures that differed from the one before (the FPS test counts them) */
 typedef HRESULT(WINAPI *DwmFlushFn)(void);
 static DwmFlushFn dwm_flush;
@@ -632,9 +633,11 @@ static void menu_event(MenuKey k)
     if (menu.crt_changed) {                                   /* the CRT shader */
         menu.crt_changed = 0;
         crt_apply();
+        still_last = ~0ul;
     }
     if (menu.fps_changed) {                                   /* the FPS: the next pictures are made the new way, from the game time the sound is at */
         menu.fps_changed = 0;
+        still_last = ~0ul;
         next_tick_ns = 0;
         tau_valid = 0;
         iout_have = 0;
@@ -644,6 +647,7 @@ static void menu_event(MenuKey k)
         pause_edge = 0;
         if (was_open) {
             menu_resync = 1;
+            still_last = ~0ul;
             tau_valid = 0;
             next_tick_ns = 0;
         }
@@ -935,11 +939,39 @@ static int interp_step(uint64_t t_start_ns)
     InterpDirty d;
     RECT rc;
     DisplayRect pr;
-    double tau;
+    double tau, still_tau = 0.0;
     long A;
     int changed;
+    const int still = target > 0 && target < 55;                 /* fewer pictures a second than the game makes (30): every n-th game frame, as the game made it */
 
-    if (target == MENU_FPS_UNCAPPED) {
+    if (still) {
+        /* Not a picture made between two frames: that would make the objects glide through a game that is shown at half its pictures, and the playfield, the animation and the sound would not go with them.  The
+         * game frames are shown as they are, every second one for 30 (the one the picture time is at, or the one before it), a picture made as soon as that frame changes (no clock of its own to drift against
+         * the game's) and no sooner. */
+        int step = (int)floor(FRAME_HZ / (double)target + 0.5);
+        double t0 = game_time(now, t_start_ns);
+        unsigned long a = t0 < 0.0 ? 0u : (unsigned long)floor(t0), newest0 = frames_run > 0 ? frames_run - 1u : 0u, id;
+        int want_w, want_h;
+
+        if (a > newest0) {
+            a = newest0;
+        }
+        id = (a / (unsigned long)step) * (unsigned long)step;
+        GetClientRect(hwnd, &rc);
+        layout(rc.right, rc.bottom, &pr);
+        want_w = crt_active ? RENDER_W * CRT_SUB : pr.w;
+        want_h = crt_active ? RENDER_H : pr.h;
+        if (id == still_last && iout.base_valid && iout.ow == want_w && iout.oh == want_h && (!crt_active || crt_have_last)) {
+            Sleep(1);
+            return 0;
+        }
+        still_last = id;
+        still_tau = (double)id;
+    }
+    iout.still = still;
+    if (still) {
+        /* no clock: see above */
+    } else if (target == MENU_FPS_UNCAPPED) {
         /* as many pictures as there are: one whenever the picture is not the one before */
     } else if (crt_active && target >= 55 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
         /* with a CRT shader the OpenGL swap waits for every n-th refresh of the monitor and so is the clock itself: the picture is drawn, the swap returns when it is on its way to the screen (not for the rates below 55: a swap that long would keep the game and the sound waiting) */
@@ -981,7 +1013,7 @@ static int interp_step(uint64_t t_start_ns)
     if (!(crt_active && crt_want_interval > 0 && target >= 55 && menu.monitor_hz >= target)) {
         crt_want_interval = 0;                                  /* a rate the monitor's refresh does not fit (or no shader): the swap does not wait */
     }
-    tau = game_time(now, t_start_ns);
+    tau = still ? still_tau : game_time(now, t_start_ns);
     if (tau < 0.0) {
         tau = 0.0;
     }
@@ -1243,7 +1275,7 @@ static long compare_window(void)
 /* ---------------------------------------------------------------- the menu test: real key messages, then what the window really shows */
 
 enum { OP_KEY, OP_SYSKEY, OP_WAIT, OP_FRAMES, OP_CHECK };
-enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP, CK_CRT_REQ, CK_CRT };
+enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP, CK_CRT_REQ, CK_CRT, CK_CRT_SET };
 
 typedef struct Op {
     int kind, a, b;
@@ -1308,6 +1340,27 @@ static void mt_build(void)
 {
     int pass, i;
 
+    if (opt.offtest) {                                  /* in borderless fullscreen, as the player has it: a shader on, then off: the window shows the plain picture again */
+        mt_add(OP_FRAMES, 300, 0);
+        mt_add(OP_CHECK, CK_CRT_SET, 2);
+        mt_add(OP_WAIT, 1500, 0);
+        mt_add(OP_CHECK, CK_CRT_REQ, 0);
+        mt_add(OP_WAIT, 300, 0);
+        mt_add(OP_CHECK, CK_CRT, 2);
+        mt_add(OP_CHECK, CK_CRT_SET, 0);
+        mt_add(OP_WAIT, 1500, 0);
+        mt_add(OP_CHECK, CK_CRT, 0);
+        mt_add(OP_CHECK, CK_CRT_SET, 1);
+        mt_add(OP_WAIT, 1500, 0);
+        mt_add(OP_CHECK, CK_CRT_REQ, 0);
+        mt_add(OP_WAIT, 300, 0);
+        mt_add(OP_CHECK, CK_CRT, 1);
+        mt_add(OP_CHECK, CK_CRT_SET, 0);
+        mt_add(OP_WAIT, 1500, 0);
+        mt_add(OP_CHECK, CK_CRT, 0);
+        mt_add(OP_CHECK, CK_QUIT, 1);
+        return;
+    }
     if (opt.startuptest) {                              /* the game as the player starts it: nothing set */
         mt_add(OP_WAIT, 1500, 0);
         mt_add(OP_CHECK, CK_STARTUP, 0);
@@ -1600,6 +1653,49 @@ static void dump_bgra(const char *path)
     }
 }
 
+/* what this program's own window shows, as Windows composes it (children included: the OpenGL window of a CRT shader too): BGRA, client area; malloc'd.  Only this window is asked for, nothing of the desktop */
+static int capture_client(uint8_t **out, int *cw, int *ch)
+{
+    RECT rc;
+    HDC dc, mem;
+    HBITMAP bmp, old;
+    BITMAPINFO bi;
+    uint8_t *buf;
+
+    GetClientRect(hwnd, &rc);
+    *cw = rc.right;
+    *ch = rc.bottom;
+    if (rc.right < 1 || rc.bottom < 1) {
+        return 1;
+    }
+    dc = GetDC(hwnd);
+    mem = CreateCompatibleDC(dc);
+    bmp = CreateCompatibleBitmap(dc, rc.right, rc.bottom);
+    old = (HBITMAP)SelectObject(mem, bmp);
+    PrintWindow(hwnd, mem, 3u);                                /* PW_CLIENTONLY | PW_RENDERFULLCONTENT */
+    SelectObject(mem, old);
+    buf = (uint8_t *)malloc((size_t)rc.right * (size_t)rc.bottom * 4u);
+    if (buf == NULL) {
+        DeleteObject(bmp);
+        DeleteDC(mem);
+        ReleaseDC(hwnd, dc);
+        return 1;
+    }
+    memset(&bi, 0, sizeof bi);
+    bi.bmiHeader.biSize = sizeof bi.bmiHeader;
+    bi.bmiHeader.biWidth = rc.right;
+    bi.bmiHeader.biHeight = -rc.bottom;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
+    GetDIBits(mem, bmp, 0, (UINT)rc.bottom, buf, &bi, DIB_RGB_COLORS);
+    DeleteObject(bmp);
+    DeleteDC(mem);
+    ReleaseDC(hwnd, dc);
+    *out = buf;
+    return 0;
+}
+
 static void mt_check(int id, int arg)
 {
     switch (id) {
@@ -1676,14 +1772,37 @@ static void mt_check(int id, int arg)
     case CK_CRT_REQ:
         crt_shot_req = 1;
         break;
+    case CK_CRT_SET:                                   /* chosen as the menu does it */
+        menu.crt = arg;
+        crt_apply();
+        break;
     case CK_CRT: {
         char what[64];
         long x, y, lit = 0, n;
         double diff = 0.0;
 
         snprintf(what, sizeof what, "crt shader %d (%s)", arg, menu_crt_names[arg]);
-        if (arg == 0) {
-            mt_result(menu.crt == 0 && !crt_active && crt_chain == NULL, what, "off: the window shows the picture again (no chain, no OpenGL window shown)");
+        if (arg == 0) {                                                /* none: what the window really shows is the plain picture (the pictures of the FPS option, drawn by GDI), not a left-over of the shader */
+            uint8_t *cap = NULL;
+            int cw = 0, chh = 0, ok0;
+            long same = 0, total = 0;
+            ok0 = menu.crt == 0 && !crt_active && crt_chain == NULL;
+            if (ok0 && iout.work != NULL && capture_client(&cap, &cw, &chh) == 0) {
+                DisplayRect dr;
+                layout(cw, chh, &dr);
+                if (dr.w == iout.ow && dr.h == iout.oh) {
+                    for (y = 0; y < dr.h; y += 5) {
+                        for (x = 0; x < dr.w; x += 5) {
+                            const uint8_t *g = cap + 4 * ((size_t)(dr.y + y) * (size_t)cw + (size_t)(dr.x + x));
+                            const uint8_t *e = (const uint8_t *)(iout.work + (size_t)y * (size_t)iout.ow + (size_t)x);
+                            total++;
+                            same += g[0] == e[0] && g[1] == e[1] && g[2] == e[2];
+                        }
+                    }
+                }
+                free(cap);
+            }
+            mt_result(ok0 && total > 1000 && same * 100 >= total * 99, what, "none: no chain, no OpenGL window shown, and the window's own pixels (read back through Windows, the OpenGL window included) are the plain picture: %ld of %ld sampled pixels equal", same, total);
             break;
         }
         if (crt_shot == NULL || crt_shot_w < 1 || !crt_active || crt_chain == NULL) {
@@ -2005,6 +2124,9 @@ static void parse_args(int argc, char **argv)
             opt.crt = argv[++i];
         } else if (strcmp(argv[i], "--crttest") == 0) {
             opt.crttest = 1;
+        } else if (strcmp(argv[i], "--offtest") == 0) {
+            opt.offtest = 1;
+            opt.menutest = 1;
         } else if (strcmp(argv[i], "--startuptest") == 0) {
             opt.startuptest = 1;
             opt.menutest = 1;
@@ -2161,7 +2283,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     (void)rep;
     if (opt.menutest) {
-        mt_log = pm_fs_open(opt.startuptest ? "logs/startuptest.txt" : "logs/menutest.txt", "wb");
+        mt_log = pm_fs_open(opt.startuptest ? "logs/startuptest.txt" : (opt.offtest ? "logs/offtest.txt" : "logs/menutest.txt"), "wb");
         mt_build();
     }
     if (opt.crt != NULL && !opt.crttest) {
@@ -2269,7 +2391,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     if (writer.buf != NULL) {
         size_t size = 0;
-        const char *path = opt.record != NULL ? opt.record : (opt.startuptest ? "logs/startuptest.pmrp" : (opt.menutest ? "logs/menutest.pmrp" : "logs/selftest.pmrp"));
+        const char *path = opt.record != NULL ? opt.record : (opt.startuptest ? "logs/startuptest.pmrp" : (opt.offtest ? "logs/offtest.pmrp" : (opt.menutest ? "logs/menutest.pmrp" : "logs/selftest.pmrp")));
         ReplayError e = replay_writer_finish(&writer, &size);
         if (e == REPLAY_OK) {
             (void)shell_make_folders();

@@ -587,6 +587,39 @@ static void test_every_frame_shown(void)
     CHECK(left_out == 0);
 }
 
+/* fewer pictures a second than the game makes (30): the picture is the game's own frame, no object moved, at any moment: pixel for pixel the nearest-pixel picture of that frame */
+static void test_still_mode(void)
+{
+    InterpOut o;
+    InterpDirty d;
+    uint32_t *ref = (uint32_t *)malloc((size_t)OW * OH * sizeof(uint32_t));
+    unsigned long n;
+    long wrong = 0, moved = 0;
+    const size_t px = (size_t)OW * OH;
+
+    CHECK(ref != NULL && interp_out_init(&o) == 0 && interp_out_size(&o, OW, OH) == 0);
+    o.still = 1;
+    g_limit = NFRAMES - 1;
+    for (n = 500; n < 560; n += 2) {                                       /* every second frame, as the 30 choice shows them */
+        double t = (double)n + (n % 4 == 0 ? 0.0 : 0.7);                   /* whatever the moment: the frame is the one the caller names (t is its number) */
+        (void)t;
+        interp_render(&o, get_game, NULL, (double)n, g_limit, &d);
+        reference(&frames[n], ref);
+        wrong += diff(o.work, ref, px) != 0;
+        CHECK(o.base_id == n);
+    }
+    CHECK(wrong == 0);
+    o.still = 0;                                                           /* and with objects allowed to glide, some of the same pictures differ from the game's frame */
+    for (n = 500; n < 560; n += 2) {
+        interp_render(&o, get_game, NULL, (double)n + 0.3, g_limit, &d);
+        reference(&frames[n], ref);
+        moved += diff(o.work, ref, px) != 0;
+    }
+    CHECK(moved > 0);
+    interp_out_free(&o);
+    free(ref);
+}
+
 int main(void)
 {
     if (assets_load(&assets, ASSET_DEFAULT_PATH, blob_buf, sizeof blob_buf) != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {
@@ -605,6 +638,7 @@ int main(void)
     test_no_mixing();
     test_box();
     test_every_frame_shown();
+    test_still_mode();
     test_crt_source();
     test_jumps();
     test_score_replaces_pacman();

@@ -415,7 +415,7 @@ void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned lo
     for (k = 0; k < INTERP_OBJECTS; k++) {
         double tx, ty;
         offx[k] = offy[k] = 0;
-        if (near_f->obj[k].present && f <= newest && object_target(get, ctx, f, newest, t, k, &tx, &ty)) {
+        if (near_f->obj[k].present && f <= newest && !o->still && object_target(get, ctx, f, newest, t, k, &tx, &ty)) {
             /* the offset is the way the object is from the place its nearer frame has it, a whole number of pixels of the picture shown: two moments that put the object on the same pixels make the same picture */
             double dx = tx - near_f->px[k], dy = ty - near_f->py[k];
             double px, py;

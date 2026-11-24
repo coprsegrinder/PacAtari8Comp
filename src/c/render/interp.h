@@ -60,6 +60,7 @@ typedef struct InterpOut {
     int rect[INTERP_OBJECTS][4];  /* the places on work that are not base (x0, y0, x1, y1) */
     int last_offx[INTERP_OBJECTS], last_offy[INTERP_OBJECTS];   /* the offsets work was made with (1/1024 picture pixel) */
     uint32_t lut[256];            /* the GTIA colour byte as BGRA */
+    int still;                    /* set by the caller: the picture is the nearer frame as the game made it, no object moved (the choices of fewer pictures a second than the game makes) */
 } InterpOut;
 
 /* after render_frame_layers: finds the objects in f->layers.cov */

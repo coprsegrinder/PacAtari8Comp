@@ -137,7 +137,7 @@ def one(cc):
     step("%s: started with nothing set: borderless fullscreen, the monitor's resolution and refresh rate chosen from the lists (exact or nearest)" % cc, r2.returncode == 0 and bool(m3) and m3.group(2) == "0" and m3.group(1) == "4", "; ".join(re.findall(r"PASS  (?:starts at the monitor.s \w+|starts in borderless fullscreen): (.*)", st))[:260])
     # the game's own logic does not depend on how the picture is made: the same scenario with several FPS choices and CRT shaders, each recorded and replayed headless (the state, run, video and sound digests of the
     # recording equal the replay's), the game at its own speed, the sound not running dry more than the start of a shader makes it
-    for label, extra in (("native", ["--fps", "native"]), ("native + guest shader", ["--fps", "native", "--crt", "guest"]), ("60 + zfast shader", ["--fps", "60", "--crt", "zfast"]),
+    for label, extra in (("native", ["--fps", "native"]), ("30", ["--fps", "30"]), ("30 + guest shader", ["--fps", "30", "--crt", "guest"]), ("native + guest shader", ["--fps", "native", "--crt", "guest"]), ("60 + zfast shader", ["--fps", "60", "--crt", "zfast"]),
                          ("180", ["--fps", "180"]), ("180 + guest shader", ["--fps", "180", "--crt", "guest"]), ("uncapped + aperture shader", ["--fps", "uncapped", "--crt", "aperture"])):
         t = time.time()
         r5 = run([play, "--root", root, "--windowed", "--selftest", "600", "--seed", "5", "--record", "logs/mx.pmrp"] + extra, timeout=200)
