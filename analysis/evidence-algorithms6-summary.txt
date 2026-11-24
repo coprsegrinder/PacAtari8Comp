@@ -1,0 +1,4 @@
+Sixth set of algorithm models against the ROM executed in tools/cpu6502.py (tools/algorithm_models6.py, OV-58); whole memory (zero page, $0200-$9FFF, $D000-$D7FF) compared after every call
+
+display routines: 2500 calls over set_display_list, init_display2, title_clear_1p, title_clear_2p, dli1, dli2 (random zero page and every DLI band number): 0 differences
+key_loop: 5000 passes (every title state 0-5, CONSOL 7 / 6 / 5 / 3 and others, space bar, joystick buttons, demo timer, the restart with the first board; the ways taken: bounce-idle 133, demo-end 302, idle 268, ignored 442, option 219, select 218, start 2108, switch-early 1310): 0 differences

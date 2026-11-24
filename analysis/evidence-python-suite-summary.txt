@@ -1,0 +1,9 @@
+Stage 98 (docs/64-testing-and-verification.md): the whole Python test suite, run once on 2026-11-23 (python -m unittest <every tests/test_*.py module>; 100 modules at the time)
+Result: Ran 864 tests in 2009 s (33.5 minutes): 2 failures, 0 errors.
+The failures (both were generated chapters that were stale, not defects in what the tests test):
+  FAIL test_the_chapter_is_current (tests.test_build_docs.BuildDocs.test_the_chapter_is_current)
+  FAIL test_document_is_current (tests.test_tracing.Document.test_document_is_current)
+  - tests.test_tracing: docs/32 was generated before the harness altirra_rendershots.cmd (stage 80b) was added, and its generator counted the chapter itself among the places that cite a harness (a self-reference); the generator skips docs/32, the chapter was regenerated twice and is stable
+  - tests.test_build_docs: docs/63 states the number of test modules, which grew when the stage 98 test module was added; regenerated
+After the corrections: tests.test_tracing and tests.test_build_docs pass; all other 862 tests had passed in the same run.
+Reproduce: python -I tools/run_regression.py --full (runs every module as its Python step, about 35 minutes) or the command above.

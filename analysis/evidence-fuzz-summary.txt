@@ -1,0 +1,34 @@
+How heavy can a play frame of the vertical-blank handler be?  Searches for the heaviest play frame (tools/fuzz_concrete.py: the real handler on the concrete 6502, instruction cycles counted exactly, a hill climb over the memory of a random play frame; 700 s each):
+static bound of the play frame: 32,049; budget of the handler's thread on the game screen: 16,100 (docs/39)
+
+bytes kept inside their documented domains (--domains):
+  gd31: tools/fuzz_concrete.py, seed 31, 250284 handler runs in 195 restarts, 700 s
+    heaviest frame: 9228
+  gd32: tools/fuzz_concrete.py, seed 32, 247875 handler runs in 186 restarts, 700 s
+    heaviest frame: 8887
+  gd33: tools/fuzz_concrete.py, seed 33, 245765 handler runs in 190 restarts, 700 s
+    heaviest frame: 8582
+
+arbitrary memory with the dispatcher in the play state:
+  ga41: tools/fuzz_concrete.py, seed 41, 204882 handler runs in 85 restarts, 700 s
+    heaviest frame: 11806
+  ga42: tools/fuzz_concrete.py, seed 42, 202424 handler runs in 85 restarts, 700 s
+    heaviest frame: 11397
+
+
+Simulated annealing (tools/fuzz_concrete.py --anneal, 4000 steps per restart from a temperature of 400 cycles, 1,500 s each, 2-4 changes at a time and a move that copies one ghost onto another):
+  arbitrary memory with the dispatcher in the play state:
+    ha101: heaviest frame 14035 (206852 handler runs; the ghost states of that frame: C4 C4 C4 C4)
+    ha102: heaviest frame 14278 (205489 handler runs; the ghost states of that frame: D5 D5 D5 D5)
+    ha103: heaviest frame 10072 (209945 handler runs; the ghost states of that frame: 56 56 56 56)
+    ha104: heaviest frame 11500 (208533 handler runs; the ghost states of that frame: FF FF FF FF)
+    ha105: heaviest frame 10135 (208560 handler runs; the ghost states of that frame: C4 C4 C4 C4)
+  bytes kept inside their documented domains (--domains):
+    hd201: heaviest frame 10087 (276185 handler runs; the ghost states of that frame: 84 84 84 84)
+    hd202: heaviest frame 9565 (274555 handler runs; the ghost states of that frame: 08 08 08 08)
+    hd203: heaviest frame 10544 (279477 handler runs; the ghost states of that frame: 84 84 84 84)
+    hd204: heaviest frame 10944 (284459 handler runs; the ghost states of that frame: 84 84 84 84)
+    hd205: heaviest frame 11026 (270115 handler runs; the ghost states of that frame: 04 04 04 04)
+  heaviest of all: 14278 on arbitrary memory (89% of the 16,100 budget), 11026 inside the domains (68%)
+
+Adversarial frames in the emulator (tools/altirra_fuzz.cmd, tools/analyze_fuzz.py): 76,245 play frames with random ghost states, junction positions, directions and expired timers (the junction was first picked with a shift the debugger does not have, so it was always the same; the harness was corrected and rerun: same heaviest frame): heaviest 9,750 elapsed cycles of the 28,956 the handler has (the natural sessions of docs/38: 11,799).

@@ -1,0 +1,5 @@
+Cycles the handler's thread gets between its entry and the next interrupt (tools/altirra_budget*.cmd: a counting loop of 25 cycles an iteration takes the place of the handler; display, display-list interrupts and OS work are all inside it):
+screen | frames measured | iterations a frame (value: frames) | cycles (the loop's last partial iteration is below 25)
+game | 23323 | 644: 23323 | 16100
+title | 18271 | 790: 72, 791: 18199 | 19750
+copyright | 17922 | 790: 70, 791: 17852 | 19750

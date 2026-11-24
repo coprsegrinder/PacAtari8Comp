@@ -1,0 +1,129 @@
+Stage 89 (docs/55-regression-and-edge-cases.md): edge-case games against the ROM, the long games, the behaviour checks on the edge games, and the regression run; 2026-11-23, NTSC, gcc 14.2 Release
+
+=== 1. The C against the ROM, frame by frame (tools/check_c_vs_rom.py), on the 30 edge replays (tools/make_rom_edge_replays.py: 10 profiles x 3 seeds x 6,000 frames)
+clock-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 15650 (in 4930 frames), RANDOM bytes: 100
+  frame classes seen: board start 3, copyright setup 1, copyright wait 5, death 790, play 4523, ready wait 130, start idle 3, start tune 541, title menu 2, turn control 2
+clock-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 13351 (in 4208 frames), RANDOM bytes: 53
+  frame classes seen: board start 3, copyright setup 1, copyright wait 18, death 1625, game-over countdown 7, play 3371, ready wait 195, start idle 3, start tune 773, turn control 4
+clock-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 17588 (in 5314 frames), RANDOM bytes: 167
+  frame classes seen: board start 2, copyright setup 1, copyright wait 9, death 354, play 5019, ready wait 65, start idle 2, start tune 517, title menu 30, turn control 1
+console-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 42809 (in 5436 frames), RANDOM bytes: 0
+  frame classes seen: board start 29, copyright setup 1, copyright wait 22, start idle 29, start tune 687, title menu 5232
+console-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 39447 (in 5077 frames), RANDOM bytes: 0
+  frame classes seen: board start 39, copyright setup 1, copyright wait 32, start idle 39, start tune 1148, title menu 4741
+console-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 41357 (in 5283 frames), RANDOM bytes: 0
+  frame classes seen: board start 33, copyright setup 1, copyright wait 6, start idle 33, start tune 909, title menu 5018
+hold-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 18610 (in 4562 frames), RANDOM bytes: 38
+  frame classes seen: board start 2, copyright setup 1, copyright wait 255, death 1053, play 3262, ready wait 130, start idle 2, start tune 518, title menu 775, turn control 2
+hold-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 18847 (in 4585 frames), RANDOM bytes: 46
+  frame classes seen: board start 2, copyright setup 1, copyright wait 255, death 1048, play 3267, ready wait 130, start idle 2, start tune 518, title menu 775, turn control 2
+hold-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 18355 (in 4546 frames), RANDOM bytes: 34
+  frame classes seen: board start 2, copyright setup 1, copyright wait 255, death 1062, play 3245, ready wait 137, start idle 2, start tune 518, title menu 775, turn control 3
+idle-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 45960 (in 5745 frames), RANDOM bytes: 0
+  frame classes seen: copyright setup 1, copyright wait 255, title menu 5744
+idle-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 45960 (in 5745 frames), RANDOM bytes: 0
+  frame classes seen: copyright setup 1, copyright wait 255, title menu 5744
+idle-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 45960 (in 5745 frames), RANDOM bytes: 0
+  frame classes seen: copyright setup 1, copyright wait 255, title menu 5744
+mixed-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 21311 (in 4348 frames), RANDOM bytes: 29
+  frame classes seen: board start 7, copyright setup 1, copyright wait 17, death 708, paused 937, play 2334, ready wait 130, start idle 6, start tune 1339, title menu 469, turn control 52
+mixed-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 20403 (in 4430 frames), RANDOM bytes: 35
+  frame classes seen: board start 7, copyright setup 1, copyright wait 14, death 795, paused 925, play 2542, ready wait 65, start idle 7, start tune 1320, title menu 323, turn control 1
+mixed-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 24538 (in 4321 frames), RANDOM bytes: 10
+  frame classes seen: board start 10, copyright setup 1, copyright wait 7, death 708, paused 1559, play 1519, ready wait 130, start idle 8, start tune 1452, title menu 604, turn control 2
+pause-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 45960 (in 5745 frames), RANDOM bytes: 0
+  frame classes seen: copyright setup 1, copyright wait 255, title menu 5744
+pause-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 45960 (in 5745 frames), RANDOM bytes: 0
+  frame classes seen: copyright setup 1, copyright wait 255, title menu 5744
+pause-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 45960 (in 5745 frames), RANDOM bytes: 0
+  frame classes seen: copyright setup 1, copyright wait 255, title menu 5744
+rnd0-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 14208 (in 4287 frames), RANDOM bytes: 46
+  frame classes seen: board start 4, copyright setup 1, copyright wait 10, death 1416, game-over countdown 7, play 3553, ready wait 195, start idle 4, start tune 805, title menu 1, turn control 4
+rnd0-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 14946 (in 4533 frames), RANDOM bytes: 78
+  frame classes seen: board start 3, copyright setup 1, copyright wait 77, death 1062, game-over countdown 7, play 3940, ready wait 130, start idle 3, start tune 774, turn control 3
+rnd0-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 14355 (in 4405 frames), RANDOM bytes: 68
+  frame classes seen: board start 3, copyright setup 1, copyright wait 1, death 1385, game-over countdown 16, play 3653, ready wait 130, start idle 3, start tune 775, title menu 30, turn control 3
+rnd1-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 13702 (in 4235 frames), RANDOM bytes: 23
+  frame classes seen: board start 4, copyright setup 1, copyright wait 38, death 1416, game-over countdown 45, play 3485, ready wait 195, start idle 4, start tune 785, title menu 23, turn control 4
+rnd1-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 16261 (in 5021 frames), RANDOM bytes: 61
+  frame classes seen: board start 2, copyright setup 1, copyright wait 11, death 708, play 4625, ready wait 130, start idle 2, start tune 519, turn control 2
+rnd1-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 14854 (in 4432 frames), RANDOM bytes: 48
+  frame classes seen: board start 4, copyright setup 1, copyright wait 4, death 1342, game-over countdown 7, play 3700, ready wait 130, start idle 4, start tune 804, title menu 1, turn control 3
+rndalt-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 15499 (in 4608 frames), RANDOM bytes: 83
+  frame classes seen: board start 4, copyright setup 1, copyright wait 1, death 1062, game-over countdown 5, play 3988, ready wait 130, start idle 4, start tune 778, title menu 24, turn control 3
+rndalt-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 13917 (in 4299 frames), RANDOM bytes: 44
+  frame classes seen: board start 3, copyright setup 1, copyright wait 21, death 1416, game-over countdown 7, play 3575, ready wait 195, start idle 3, start tune 775, turn control 4
+rndalt-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 14864 (in 4524 frames), RANDOM bytes: 87
+  frame classes seen: board start 4, copyright setup 1, copyright wait 18, death 1062, game-over countdown 52, play 3919, ready wait 130, start idle 4, start tune 803, title menu 4, turn control 3
+sticks-1.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 12904 (in 4370 frames), RANDOM bytes: 32
+  frame classes seen: board start 2, copyright setup 1, copyright wait 1, death 1697, play 3584, ready wait 195, start idle 2, start tune 514, turn control 4
+sticks-2.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 13133 (in 4426 frames), RANDOM bytes: 50
+  frame classes seen: board start 2, copyright setup 1, copyright wait 1, death 1511, play 3769, ready wait 195, start idle 2, start tune 515, turn control 4
+sticks-3.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+  chip writes compared: 13304 (in 4469 frames), RANDOM bytes: 40
+  frame classes seen: board start 2, copyright setup 1, death 1466, play 3813, ready wait 195, start idle 2, start tune 517, turn control 4
+(30 replays, 180000 frames)
+
+=== 2. The long games (tools/make_rom_bot_replay.py --stop-after-levels 3: a player that plays the ROM itself, three boards cleared; seed 11 one player, seed 12 two players)
+long11.pmrp: 16160 of 16160 frames compared, NO DIFFERENCE
+  chip writes compared: 55906 (in 14673 frames), RANDOM bytes: 511
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, death 354, eaten pause 561, level end 561, play 13826, ready wait 260, start idle 1, start tune 260, title menu 79, turn control 1
+long12.pmrp: 17056 of 17056 frames compared, NO DIFFERENCE
+  chip writes compared: 56339 (in 15090 frames), RANDOM bytes: 439
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, death 1062, eaten pause 627, level end 374, play 13918, ready wait 325, start idle 1, start tune 260, title menu 79, turn control 153
+
+=== 3. The behaviour checks (frame classes, state variables, rules) on 9 of the edge replays (tools/check_behaviour.py)
+console-1.pmrp: 6000 frames, 224 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+console-2.pmrp: 6000 frames, 287 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+console-3.pmrp: 6000 frames, 247 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+pause-1.pmrp: 6000 frames, 2 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+hold-1.pmrp: 6000 frames, 178 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+sticks-1.pmrp: 6000 frames, 266 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+mixed-1.pmrp: 6000 frames, 191 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+mixed-2.pmrp: 6000 frames, 206 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+mixed-3.pmrp: 6000 frames, 195 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+TOTAL: 54000 frames, 1796 changes of state variables, 38 of 68 rules seen, classes: board start 129, copyright setup 9, copyright wait 609, death 4961, paused 3421, play 13241, ready wait 650, start idle 126, start tune 7887, title menu 22906, turn control 61
+changes by variable: CurrentPlayer 2, DeathAnimActive 30, DeathState 486, GameState 222, GhostState 226, IntroRequest 387, PacFrozen 28, Paused 20, PlayStarted 29, StartTuneActive 250, TurnSwitchState 3, TwoPlayers 81, WaitState 32
+rules not seen (30): `Start` after clearing the zero page: the copyright screen i; the game-over countdown ended (`CountdownTimer` = 0): the ti; no lives left for anybody: the game-over countdown starts; a new game while the countdown runs; two players: the player on turn is out of lives (or the turn; `AdvanceLevel`: the READY! wait of the new board; the last dot or pellet is eaten (dots eaten = $0104); `AdvanceLevel`; the step is finished (`inc`): 0 -> 1 -> 2 -> 3; the board is set up: advance; `AdvanceLevel` resets the sequence; 80 or 160 dots eaten: the bonus item appears; its time is over, or it was eaten; the bonus item was eaten: its score is shown; the score picture's time is over; a frightened ghost was eaten: the pause; the pause is over; the 97 frames of the freeze are over; the sound starts; a power pellet: the frightened period; another power pellet during the period: it starts again; the flash timer ran out: the next phase (an end phase of 0 i; the phase equals `FrightenEndPhase[Level]` (the values that ; the corner is reached: choose a patrol; the chase or patrol timer ran out: go to the corner; a power pellet: bit 7 is added to every ghost that is not ea; a frightened ghost is eaten: eyes; the frightened period ends: 80 -> 00 (house), the others -> ; the eyes reach the door square; the eyes are home (floor, or the side position of ghosts 2 a
+
+=== 4. The races (docs/55 section 3): the ROM's answer depends on where in its 2-3 instruction loops the interrupt lands (tools/check_app.py CHUNK = the instruction budget of the main program in a frame)
+console-2 (console 0 in frame 0, 7 in frame 1): GameState after frame 1 for budgets 796..809: 2 3 2 2 3 2 2 3 2 2 3 2 2 3 (GameState 3 = the key was taken, in 5 of the 14: period three, the length of the debounce loop)
+console-3 frame 240 (console 1,1 then 6): GameState 3 or 0 for budgets 796..805: 0 3 3 0 3 3 0 3 3 0 (period three)
+mixed-3 frame 4832 (DRKMSK changes in the frame a console press starts): DliColors[0] 0 for budget 800, $3A for 801 and 802
+
+=== 5. The regression run (python -I tools/run_regression.py: build, ctest, 30 golden games with state / run / video / audio digests, Python tests)
+PASS  replays made (30)
+PASS  build gcc (strict C99, -Werror)  (0 warnings or errors)
+PASS  ctest gcc  (100% tests passed, 0 tests failed out of 36)
+PASS  golden games with gcc (30 games, 214917 frames, 79 s)  (state, run, video and audio digests equal)
+PASS  python tests (4 modules)  (Ran 26 tests)
+ALL PASSED: 5 steps, 0 failed, 349 s

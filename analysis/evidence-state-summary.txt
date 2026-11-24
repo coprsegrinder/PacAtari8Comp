@@ -1,0 +1,46 @@
+State management (stage 65): two experiments on the concrete 6502.
+Sensitivity (tools/state_probe.py): 80 trials a byte and mode, 20 frames each, 4 modes (a game of player 1, of player 2, the title, the frame classes): 144 of the 256 zero-page bytes influence the future (outputs or the state after the frames), 112 do not
+state bytes: $14, $19-$1D, $20-$29, $2B-$37, $43-$44, $5A-$5D, $80-$99, $9B-$9F, $A1-$A3, $A6, $A8-$C5, $C7-$D5, $DE-$ED, $EF-$F1, $F3-$F8, $FA-$FD
+player 1 on turn only: $2C, $2E, $30, $32, $34, $36, $43; player 2 on turn only: $2D, $2F, $31, $33, $35, $37, $44
+
+lifetimes of docs/30 against the experiment:
+| Lifetime of docs/30 | Bytes | Influence the future | Do not |
+|---|---|---|---|
+| board | 115 | 111 | 4 |
+| game | 17 | 17 | 0 |
+| kept | 10 | 4 | 6 |
+| start-up | 6 | 5 | 1 |
+| OS | 5 | 1 | 4 |
+| frame | 2 | 0 | 2 |
+| zero at rest | 6 | 6 | 0 |
+| temporary | 23 | 0 | 23 |
+
+events (tools/state_events.py): per event and case the bytes reset to a constant / kept / computed:
+  restart       player 1 on turn                              285 trials: 144 reset, 106 kept,   6 computed
+  restart       player 2 on turn                              315 trials: 145 reset, 105 kept,   6 computed
+  InitBoard     player 1 on turn                              306 trials: 114 reset, 137 kept,   5 computed
+  InitBoard     player 2 on turn                              294 trials: 114 reset, 137 kept,   5 computed
+  NewGameInit   player 1 on turn                              300 trials:  10 reset, 241 kept,   5 computed
+  NewGameInit   player 2 on turn                              300 trials:   6 reset, 245 kept,   5 computed
+  NewBoardInit  player 1 on turn                              295 trials:   4 reset, 249 kept,   3 computed
+  NewBoardInit  player 2 on turn                              305 trials:   4 reset, 249 kept,   3 computed
+  AdvanceLevel  player 1 on turn                              295 trials:  11 reset, 238 kept,   7 computed
+  AdvanceLevel  player 2 on turn                              305 trials:  11 reset, 238 kept,   7 computed
+  turn control  game over: the countdown starts                24 trials:   2 reset, 253 kept,   1 computed
+  turn control  hand over: player 1 is next                    39 trials:   2 reset, 253 kept,   1 computed
+  turn control  hand over: player 2 is next                    26 trials:   2 reset, 253 kept,   1 computed
+  turn control  next board (same player, a life lost)          75 trials: 117 reset, 130 kept,   9 computed
+  turn control  stage 1 (the hand-over in progress)            44 trials:   2 reset, 253 kept,   1 computed
+  turn control  stage 1, waiting                               51 trials:   0 reset, 254 kept,   2 computed
+  turn control  stage 2 (the hand-over in progress)            40 trials:   2 reset, 253 kept,   1 computed
+  turn control  stage 2, waiting                               52 trials:   0 reset, 254 kept,   2 computed
+  turn control  stage 3 (the hand-over in progress)            88 trials:   1 reset, 127 kept, 128 computed
+  turn control  stage 3, waiting                               76 trials:   0 reset, 254 kept,   2 computed
+  turn control  stage 4 (the hand-over in progress)            47 trials:   2 reset, 127 kept, 127 computed
+  turn control  stage 4, waiting                               38 trials:   0 reset, 254 kept,   2 computed
+  ghost eaten   player 1 on turn                              289 trials:   4 reset, 238 kept,  14 computed
+  ghost eaten   player 2 on turn                              311 trials:   4 reset, 238 kept,  14 computed
+  power pellet  player 1 on turn                              295 trials:   3 reset, 238 kept,  15 computed
+  power pellet  player 2 on turn                              305 trials:   3 reset, 239 kept,  14 computed
+  add to score  player 1 on turn                              295 trials:   1 reset, 253 kept,   2 computed
+  add to score  player 2 on turn                              305 trials:   1 reset, 253 kept,   2 computed

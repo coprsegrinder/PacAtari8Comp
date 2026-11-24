@@ -1,0 +1,74 @@
+Register audit (tools/run_register_audit.ps1, tools/analyze_registers.py): 12 harness logs, 67 routines called (of 81), 5550868 completed calls; tail-jump chains closed 257380, stale entries dropped 522209, exits without entry 1566
+Claims checked in every call: 52 'preserved' register claims and 44 'never clobbered' register claims over the routines that ran (6180927 register checks in all)
+Violations of a claim: 0
+
+routine                      calls preserved  never chg. changed in result C (exit carry 0 / 1)
+AddToScore                    2401 -          -          A 1772 X 628 Y 2353 
+AdvanceLevel                    58 -          -          A 58 X 58 Y 58 
+AdvanceSrcPtr                15000 AXY        AXY        -          
+BlinkPlayerLabel            185370 -          -          A 179417 X 5953 
+BlinkPowerPellets           147435 -          -          A 147435   
+BonusItemUpdate             140128 -          -          A 16970 X 137728 Y 136963 
+BonusSound                  140035 -          -          A 461 X 137521 Y 465 
+ChaseTimerSirenSight        140035 -          -          A 113278 X 140035 Y 8153 
+ClearPlayerCounters             90 XY         XY         A 21       
+ClearPlayerMemory              108 Y          Y          A 108 X 80 
+ClearPokeyRegisters            270 X          X          A 181 Y 234 
+ClearReadyText                 108 Y          Y          X 108      
+ClipEntitiesOnTunnelRow     244600 -          -          A 217717 X 45974 Y 1894 
+ClipEntityAtTunnel          114017 X          X          A 113571 Y 1894 
+CompareHighScore                18 -          -          A 17 X 18 Y 15 
+Copy0800To0C00                 102 Y          Y          A 58 X 102 
+Copy0C00To1000                  32 Y          Y          A 4        
+Copy0C00To1400                  32 Y          Y          A 4 X 4    
+DeathAnimation               15520 -          -          A 11253 X 5527 Y 5609 
+DeathSequence                15520 -          -          A 14773 X 4268 Y 4312 
+DliHandler1                 956752 AXY        Y          -          
+DliHandler2                 274322 AXY        -          -          
+DotSoundSweep               140035 Y          Y          A 11175 X 11514 
+DrawAllInPlace                 169 -          -          A 108 X 135 Y 108 
+DrawLabel1UP                 47140 -          -          A 47140 X 37827 Y 37827 
+DrawLabel2UP                  9404 -          -          A 9404 X 9290 Y 9290 
+DrawLevelIndicator             108 -          -          A 108 X 108 Y 93 
+DrawLives                      175 -          -          A 175 X 4 Y 175 
+EatDotAtPacMan              140084 -          -          A 133271 X 580 Y 9180 
+ExpandData                      24 -          -          A 24       
+EyesAndHousePerFrame        141745 -          -          A 63860 X 141647 Y 7654 
+EyesReturningSound            6242 XY         XY         A 6242     
+FillPlayerPages                216 AY         AY         X 216      
+FrameDispatch               246111 -          -          A 175698 X 220637 Y 59869 
+FrightenedSound              23028 XY         XY         A 23028    
+FrightenedTick              140035 -          -          A 140035 X 27788 Y 27745 
+GhostBehaviour              177677 X          -          A 1096 Y 176581 
+GhostEaten                      49 -          -          A 49 X 33 Y 49 
+GhostEatenPause               1617 -          -          A 1606 X 49 Y 21 
+GhostSeesPacMan             150329 X          X          A 148987 Y 8268 
+GhostStartRoute              31942 X          -          A 31942 Y 31942 
+HouseBobStep                 13317 X          X          A 13317 Y 544 
+HouseEnterStep                 615 X          X          A 615 Y 324 
+HouseLeaveGhost2              1332 X          X          Y 157      
+HouseLeaveGhost3              1308 X          X          Y 158      
+HouseLeaveStep                3071 X          X          A 2068 Y 730 
+HouseWaitingTick             35027 -          -          A 25928 X 35027 Y 887 
+Init                          3792 AXY        AXY        -          
+InitBoard                      108 -          -          A 108 X 108 Y 108 
+InitDisplay2                 53603 -          -          A 53603 X 53603 Y 53603 
+JunctionLookup              359930 X          -          A 355583 Y 350812 296974 / 62956
+LifeIcon1                      126 AXY        AXY        -          
+LoadShadowColors               108 Y          Y          A 108      
+MoveDelayTick               615139 X          X          A 538807 Y 304132 
+MovePacMan                  140084 -          -          X 138521 Y 140035 
+PowerPelletCheck            139654 -          -          A 139639 X 139654 Y 139628 
+PowerPelletEaten               474 -          -          A 474 X 474 Y 474 
+SetDisplayList               53619 XY         XY         A 53619    
+SetReleaseTimers               182 -          -          A 182 X 74 Y 176 
+ShowPowerPellets             10392 -          -          A 10392 X 5720 Y 10382 
+SteerToTarget                11959 XY         XY         A 6330     
+StepAndDrawEntity           256253 X          X          A 256253 Y 225327 
+TitleClearScores1P           23691 -          -          A 23691 X 23691 Y 23691 
+TitleClearScores2P            5433 -          -          A 5433 X 5433 Y 5433 
+ToggleLegPhase              144259 XY         XY         A 136163   
+TurnControl                    509 -          -          A 313 X 509 Y 509 
+WriteDstByte                 28800 AXY        AXY        -          
+
+Routines never completed a call in these runs: DrawReadyScreen, ForceChase, GhostChase, GhostGoToCorner, GhostPatrol, GhostPatrolTravel, GhostSelectPatrol, LifeIcon2, NewBoardInit, NewGameInit, ReadSrcByte, ReadSrcHighNibble, Start, VbiHandler

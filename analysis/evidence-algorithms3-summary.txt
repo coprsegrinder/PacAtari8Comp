@@ -1,0 +1,9 @@
+Third set of algorithm models against the ROM executed in tools/cpu6502.py (tools/algorithm_models3.py, OV-58); whole memory (zero page, $0200-$9FFF, $D000-$D7FF) compared after every call
+
+step_and_draw: 8000 calls (4 directions and 4 invalid values, 5 entities, every ghost state, both leg phases, the step switch off and on): 0 differences
+house_bob: 4000 calls (direction up / down / other, y at the two ends and elsewhere): 0 differences
+house_leave: 9000 calls (ghosts 1, 2, 3 at and away from x $7C, y $64 and elsewhere, 17 states): 0 differences
+house_enter: 9000 calls (ghosts 0-3 at y $74 and elsewhere, x $70 / $88 and elsewhere): 0 differences
+house_waiting_tick: 9000 calls (states $00 / $80 waiting and others, timers 0 / 1 / any): 0 differences
+eyes_returning_sound: 3200 calls (and 200 frames in a row): 0 differences
+eyes_and_house: 6000 calls (eaten ghosts at the door square and away, ghosts leaving and entering, the paused ghost, RANDOM and the steering through the real JunctionLookup / SteerToTarget): 0 differences (1006 with steering, 2063 reaching the door)

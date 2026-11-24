@@ -1,0 +1,19 @@
+Fifth set of algorithm models against the ROM executed in tools/cpu6502.py (tools/algorithm_models5.py, OV-58); whole memory (zero page, $0200-$9FFF, $D000-$D7FF) compared after every call
+
+compare_high_score: 8000 calls (both score cells, equal / lower / higher at every digit): 0 differences (1809 replaced)
+clip_entity / clip_entities: 6000 calls (entities at the tunnel ends, wrapping right and left, Pac-Man's MazePtr, the sprite image masked): 0 differences (3439 masked)
+bonus_sound / toggle_leg_phase: 10300 calls (every step of the fruit sound and 300 frames in a row): 0 differences
+draw_level_indicator: 3000 calls (random state): 0 differences
+draw_lives: 1500 calls (random state): 0 differences
+draw_all_in_place: 2500 calls (random state): 0 differences
+labels (clear text, blink, 1UP / 2UP): 3000 calls (random state): 0 differences
+load_shadow_colors / copies / clear_player_memory / power pellets: 800 calls (random state): 0 differences
+siren: 6000 calls (random state): 0 differences
+level_complete_step: 4000 calls (random state): 0 differences
+death_sequence: 12900 calls (every state 0-7 and beyond, and a whole death frame by frame): 0 differences
+death_animation: 12160 calls (every state 0-7 and beyond, and a whole death frame by frame): 0 differences
+init_board: 300 calls (random state, every Level clamp, both players): 0 differences
+new_game_init: 300 calls (random state, every Level clamp, both players): 0 differences
+new_board_init: 300 calls (random state, every Level clamp, both players): 0 differences
+advance_level: 300 calls (random state, every Level clamp, both players): 0 differences
+draw_ready_screen: 300 calls (random state, every Level clamp, both players): 0 differences

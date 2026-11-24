@@ -1,0 +1,3 @@
+Pac-Man's movement in port form (tools/core_pacman.py) against MovePacMan $B179 on the concrete 6502 (tools/check_pacman.py, OV-67): the whole zero page (except the scratch), maze, status rows, colour shadows compared
+
+move_pacman: 40000 calls (random positions on and off the lattice, the tunnel mouths, every direction, sub-cell, hold, frozen, cornering and joystick value): 0 differences (7020 moved sideways, 418 through a tunnel, 9691 set the cornering flag, 14330 took a joystick direction)

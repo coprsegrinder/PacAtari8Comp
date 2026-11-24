@@ -1,0 +1,13 @@
+Game2P_cp0_shown   pixels  89472  exact  80046 ( 89.5 %)  neighbour   438  blend  8988  wrong    0  at sprites    0  (pellet cells   0)  shift (0, 0)  hpos [123, 124, 112, 136, 128, 126, 124, 122]
+Game2P_cp1_blank   pixels  89472  exact  79818 ( 89.2 %)  neighbour   623  blend  8986  wrong    0  at sprites   45  (pellet cells   0)  shift (0, 0)  hpos [123, 124, 112, 136, 128, 126, 124, 122]
+Item_L0            pixels  89472  exact  79675 ( 89.1 %)  neighbour   605  blend  8944  wrong    0  at sprites   79  (pellet cells 169)  shift (0, 0)  hpos [109, 124, 112, 136, 112, 110, 108, 106]
+Item_L12           pixels  89472  exact  80022 ( 89.4 %)  neighbour   401  blend  9049  wrong    0  at sprites    0  (pellet cells   0)  shift (0, 0)  hpos [99, 118, 124, 128, 104, 102, 100, 98]
+Item_L6            pixels  89472  exact  79562 ( 88.9 %)  neighbour   575  blend  9091  wrong    0  at sprites   75  (pellet cells 169)  shift (0, 0)  hpos [99, 118, 124, 128, 104, 102, 100, 98]
+Lives_1            pixels  89472  exact  80161 ( 89.6 %)  neighbour   398  blend  8913  wrong    0  at sprites    0  (pellet cells   0)  shift (0, 0)  hpos [121, 124, 112, 136, 126, 124, 122, 120]
+Overlap_A          pixels  89472  exact  80120 ( 89.5 %)  neighbour   396  blend  8956  wrong    0  at sprites    0  (pellet cells   0)  shift (0, 0)  hpos [111, 116, 120, 124, 88, 86, 84, 82]
+Overlap_B          pixels  89472  exact  80107 ( 89.5 %)  neighbour   412  blend  8941  wrong    0  at sprites   12  (pellet cells   0)  shift (0, 0)  hpos [123, 120, 116, 112, 88, 86, 84, 82]
+Popup_0            pixels  89472  exact  79861 ( 89.3 %)  neighbour   411  blend  9075  wrong    0  at sprites    1  (pellet cells 124)  shift (0, 0)  hpos [98, 118, 62, 58, 60, 58, 56, 54]
+Popup_3            pixels  89472  exact  79911 ( 89.3 %)  neighbour   441  blend  9106  wrong    0  at sprites    0  (pellet cells  14)  shift (0, 0)  hpos [63, 66, 124, 59, 64, 62, 60, 58]
+Title_1P           pixels  89472  exact  85183 ( 95.2 %)  neighbour   117  blend  4172  wrong    0  at sprites    0  (pellet cells   0)  shift (0, 0)  hpos [0, 0, 0, 0, 0, 0, 0, 0]
+Title_2P           pixels  89472  exact  85082 ( 95.1 %)  neighbour   160  blend  4230  wrong    0  at sprites    0  (pellet cells   0)  shift (0, 0)  hpos [0, 0, 0, 0, 0, 0, 0, 0]
+total              pixels 1073664  exact 969548 ( 90.3 %)  neighbour  4977  blend 98451  wrong    0  at sprites  212

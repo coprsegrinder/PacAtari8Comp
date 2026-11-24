@@ -1,0 +1,65 @@
+Stage 87 (docs/53-behavioural-equivalence.md): the C port against the ROM on frame classes, state transitions, execution paths and outputs, 2026-11-23, NTSC, ROM original/Pac-Man.rom
+Replays: the 79d sessions clock, keys, 1P, 2P; six seeded random games (tools/make_rom_fuzz_replays.py seeds 1-6, 12,000 frames); three games played on purpose (tools/make_rom_bot_replay.py seeds 1, 2 (one player) and 3 (two players)).
+Frames, classes, transitions (python -I tools/check_behaviour.py <replays> --counts-out FILE; C: gcc 14.2 Release):
+
+clock.pmrp: 700 frames, 7 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+keys.pmrp: 2600 frames, 95 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+1p.pmrp: 9000 frames, 160 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+2p.pmrp: 10617 frames, 339 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+fuzz1.pmrp: 12000 frames, 407 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+fuzz2.pmrp: 12000 frames, 462 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+fuzz3.pmrp: 12000 frames, 470 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+fuzz4.pmrp: 12000 frames, 475 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+fuzz5.pmrp: 12000 frames, 461 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+fuzz6.pmrp: 12000 frames, 431 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+bot1.pmrp: 6082 frames, 183 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+bot2.pmrp: 6560 frames, 168 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+bot3.pmrp: 9741 frames, 305 state-variable changes, class differences 0, transition differences 0, changes with no chain of rules 0, whole-state differences 0
+TOTAL: 117300 frames, 3963 changes of state variables, 65 of 68 rules seen, classes: board start 35, copyright setup 13, copyright wait 1786, death 20108, eaten pause 660, game-over countdown 3885, level end 561, paused 60, play 74142, ready wait 2925, start idle 35, start tune 8502, title after game 2879, title menu 1353, turn control 356
+changes by variable: BonusScoreShown 2, BonusVisible 29, CountdownActive 26, CurrentPlayer 6, DeathAnimActive 114, DeathState 1937, EatPause 40, FrightenPhase 268, GameState 42, GhostState 969, IntroRequest 105, LevelComplete 6, LevelEndStep 15, PacFrozen 113, Paused 2, PlayStarted 50, StartTuneActive 57, TurnSwitchState 18, TwoPlayers 4, WaitState 160
+rules not seen (3): `Start` after clearing the zero page: the copyright screen i; the 97 frames of the freeze are over; the sound starts
+
+Execution paths (the same replays through the gcc --coverage -O0 build of the C; python -I tools/check_behaviour.py --paths COUNTS GCOV_DIR):
+
+routines compared: 55 equal call counts: 46 different: 9
+  $A5FD vbi_play_frame               ROM 117300  C 0
+  $A70D copyright_wait               ROM 6018  C 1786
+  $AD0E draw_ready_screen            ROM 78  C 45
+  $B48E junction_lookup              ROM 142358  C 68198
+  $B826 ghost_start_route            ROM 341  C 21323
+  $B898 ghost_patrol                 ROM 53  C 5414
+  $B8EB ghost_chase                  ROM 48  C 18671
+  $B902 step_entity                  ROM 109435  C 109111
+  $BA00 table_rom                    ROM 137  C 2988102
+who calls them (ROM: the routine the previous instruction belongs to, named by the C function that carries its address; C: the calling function):
+  vbi_play_frame  ROM $0000 117300
+                  C   
+  copyright_wait  ROM frame_dispatch 6018
+                  C   frame_dispatch 1786
+  draw_ready_screen  ROM turn_control 42, frame_dispatch 36
+                     C   turn_control 42, advance_level 3
+  junction_lookup  ROM move_pacman 74160, ghost_behaviour 65851, eyes_and_house_per_frame 2347
+                   C   ghost_start_route 21323, ghost_chase 18671, ghost_patrol_travel 11212, ghost_go_to_corner 9236, ghost_patrol 5409, eyes_and_house_per_frame 2347
+  ghost_start_route  ROM ghost_behaviour 341
+                     C   ghost_behaviour 21323
+  ghost_patrol  ROM ghost_behaviour 53
+                C   ghost_behaviour 5414
+  ghost_chase  ROM ghost_behaviour 48
+               C   ghost_behaviour 18623, ghost_start_route 48
+  step_entity  ROM ghost_behaviour 65662, death_sequence 22116, house_bob_step 15770, house_leave_step 3216, eyes_and_house_per_frame 2347, draw_all_in_place 324
+               C   death_sequence 22116, ghost_start_route 21169, ghost_chase 18671, house_bob_step 15770, ghost_patrol_travel 11159, ghost_go_to_corner 9201, read_patrol_route 5462, set_dir_step 3216
+  table_rom  ROM steer_to_target 137
+             C   draw_rom 2003592, colours 468860, title_menu 363952, move_pacman 36499, ghost_start_route 21323, ghost_go_to_corner 18472, init_display2 16980, dot_sound_sweep 14308
+explanations, checked by number:
+  OK    ROM 65851  C 65851  junction_lookup called by GhostBehaviour = by the five C ghost functions that split it
+  OK    ROM 2347  C 2347  junction_lookup called by EyesAndHousePerFrame
+  OK    ROM 74160  C 74160  junction_lookup called by MovePacMan = ref_junction_exits called by move_pacman (the C has the Pac-Man version as a pure function)
+  OK    ROM 65662  C 65662  step_entity called by GhostBehaviour = by the C ghost functions that split it
+  OK    ROM 22116  C 22116  step_entity called by DeathSequence
+  OK    ROM 15770  C 15770  step_entity called by HouseBobStep
+  OK    ROM 3216  C 3216  step_entity called by HouseLeaveStep (set_dir_step in the C)
+  OK    ROM 2347  C 2347  step_entity called by EyesAndHousePerFrame
+  OK    ROM 78  C 78  DrawReadyScreen entered in all = the C's draw_ready_screen calls + the same three steps written inline in start_tune_step (tune step $28)
+  OK    ROM 6018  C 6018  the ROM routine at $A70D serves the copyright wait AND the title menu = the C dispatcher's copyright_wait + title_menu calls
+  left over: StepEntity called by DrawAllInPlace 324 times in the ROM, never in the C (its drawing is done inside draw_all_in_place); total difference of step_entity 324  OK
+  10 of 10 explanations hold

@@ -1,0 +1,9 @@
+The collision registers of the real game in play against the model (tools/run_collide_play_audit.ps1, tools/analyze_collide.py --play, OV-68): at the entry of the frame handler of every frame, the scene of the frame before (the GTIA positions, the player-missile pages, the maze screen) and the registers the game reads
+
+collideplay-catch.txt: 15028 frames, 14301 HITCLRs; 7622 frames compared with the model (723 of them with registers carried over from the frame before, no HITCLR in between): 0 differences; 7401 frames after a handler that overran into the objects' lines (set aside): 1 of them differ
+collideplay-death.txt: 15076 frames, 9377 HITCLRs; 12349 frames compared with the model (5695 of them with registers carried over from the frame before, no HITCLR in between): 0 differences; 2722 frames after a handler that overran into the objects' lines (set aside): 0 of them differ
+collideplay-frightened_cases.txt: 15086 frames, 12425 HITCLRs; 7222 frames compared with the model (2657 of them with registers carried over from the frame before, no HITCLR in between): 0 differences; 7859 frames after a handler that overran into the objects' lines (set aside): 1 of them differ
+
+total: 27193 frames compared, 0 differences (9075 frames with registers carried over); 17982 further frames follow a handler that was still running when the beam reached the objects, 2 of them differ (0.0%)
+frames in which the register was not zero in the hardware: M0PF 2760, M1PF 10582, M2PF 5544, M3PF 1592, P0PF 13864, P1PF 13890, P2PF 14361, P3PF 8155, M0PL 12785, M1PL 12784, M2PL 12486, M3PL 8195, P0PL 9406, P1PL 7670, P2PL 9754, P3PL 8352
+the three registers of the game: M1PL 12784 (bits: 8389 4943 1512 1222), M2PL 12486 (8156 4760 1495 1166), M2PF 5544 (3064 0 3028 0)

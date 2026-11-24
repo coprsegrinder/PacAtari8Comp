@@ -1,0 +1,9 @@
+Loop bounds of tools/static_wcet.py against the real game (8 logs of tools/run_mainloop_audit.ps1 -Loops):
+pc | bound (executions per call) | most seen | calls of the routine | calls in which the pc ran
+$ACDF | 6 | 5 | 123 | 32
+$AFF3 | 1 | 1 | 7335 | 3608
+$B018 | 1 | 1 | 7335 | 731
+$B53D | 1 | 1 | 167608 | 5911
+$B8E8 | 1 | 1 | 212674 | 195
+$B9F2 | 2 | 2 | 12460 | 7782
+every bound respected: yes

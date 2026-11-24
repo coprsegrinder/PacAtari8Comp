@@ -1,0 +1,13 @@
+Stage 97 (docs/63-build-and-dependencies.md): the build instructions run on a clean copy of the project (tools/check_clean_build.py), 2026-11-23
+
+PASS  a clean copy of the project: 857 files, no build/ and no resources/, only the cartridge ROM added
+PASS  1a configure with gcc  (1 s)
+PASS  1b build (strict C99, -Werror)  (3 s, 0 warnings or errors)
+PASS  2 ctest with no derived data  (39 tests, 0 failed, 21 skipped (the recorded vectors are not there yet), 3 s)
+PASS  2b the installer made resources/pack/assets.pmab from the ROM
+PASS  3a make the recorded vectors (tools/make_vectors.py)  (1003 s)
+PASS  3b make the application sequences and sessions (tools/make_app_sequences.py)  (111 s)
+PASS  4 ctest with the vectors: every test passes except the two that need the emulator's collision logs  (39 tests, 0 failed, skipped: vectors_gtia, vectors_gtia_world, 8 s)
+PASS  5a make a replay (tools/make_rom_fuzz_replays.py)
+PASS  5b pacman_a8 plays it and gives the digests of the golden game `fuzz1`  (state, run, video and audio digests equal; 4.0 s)
+ALL PASSED: 10 steps, 0 failed, 1134 s (compiler gcc)

@@ -1,4 +1,4 @@
-Main-loop audit (tools/run_mainloop_audit.ps1, tools/analyze_mainloop.py): 7 sessions (death 33361, frightened_cases 33368, fullgame 31198, fullgame2 28061, levels 33355, p2win 27290, pause 23777), 210410 frames of the deferred vertical-blank handler
+Main-loop audit (tools/run_mainloop_audit.ps1, tools/analyze_mainloop.py): 7 sessions (death 33361, frightened_cases 33368, fullgame 31198, fullgame2 28061, levels 33355, p2win 27290, pause 33354), 219987 frames of the deferred vertical-blank handler
 frames in a row (no handler entry missed): gaps 0; handler still running when the next entry came: 0
 
 class | frames | FrameDispatch scan lines min/median/max | handler (to XITVBV) min/median/max | run length (frames) min/median/max
@@ -16,7 +16,7 @@ turn control             822 |   2 /   2 / 219 |   2 /   3 / 225 |     1 /     1
 ready wait              6630 |   1 /   1 /  50 |   3 /   3 /  52 |    65 /    65 /    65  (102 runs)
 death                  25488 |   1 /   2 /  24 |   2 /   3 /  26 |   354 /   354 /   354  (72 runs)
 eaten pause             1023 |   3 /  11 /  42 |   3 /  11 /  44 |    33 /    33 /    33  (31 runs)
-play                  127102 |   6 /  35 /  99 |   7 /  39 / 103 |     1 /   732 / 22915  (151 runs)
+play                  136679 |   6 /  34 /  99 |   7 /  37 / 103 |     1 /   732 / 32492  (151 runs)
 
 transitions between classes (frames):
   ready wait           -> play                    102

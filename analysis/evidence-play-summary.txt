@@ -1,0 +1,4 @@
+One frame of play in port form (tools/core_play.py) against the ROM frame body $A82C (tools/check_play.py, OV-67): zero page (except the scratch), maze, status rows, shadows, sound-chip writes and RANDOM reads compared
+
+play_frame: 8000 random frames: 0 differences (reached: death 2632, eaten pause 867, ghost eaten 392, pellet 761, contact kill 396, bonus pick-up 2229, ghosts moved 3242, pacman moved 545, corner 1378, skipped 0)
+play_frame x20: 500 runs of 20 frames in a row (the clock advancing, the state carried by the port itself; 4 left the maze and were skipped): 0 differences

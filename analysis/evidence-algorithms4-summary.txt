@@ -1,0 +1,7 @@
+Fourth set of algorithm models against the ROM executed in tools/cpu6502.py (tools/algorithm_models4.py, OV-58); whole memory (zero page, $0200-$9FFF, $D000-$D7FF) compared after every call
+
+move_pacman: 15000 calls (random zero page, every direction and wanted direction, every joystick value of both players, the tunnel ends, frozen and paused, the sub-cell counters 0-3, the chomp phase; JunctionLookup run as real code): 0 differences (14935 forced steps)
+bonus_update: 15000 calls (dots 80 and 160, bonus counts 0 / 1 / 2, the time counters, both players, every Level code): 0 differences (598 appearances)
+ghost_eaten: 9000 calls (4 ghosts, Pac-Man above / level with / below, ghosts eaten so far 0-3 and beyond, both players' scores): 0 differences (2557 / 1342 / 1291 / 3810 for the 1st / 2nd / 3rd / 4th and later)
+dot_sound_sweep: 6000 calls (every step 0-7, both sweep directions): 0 differences
+ghost_eaten_pause: 12000 calls (the countdown of 2, the sweep from $84 to $14, the end with the colour restore and the Pac-Man step run as real code): 0 differences (1208 ends)

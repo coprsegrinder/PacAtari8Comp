@@ -1,0 +1,10 @@
+Door-up audit (tools/altirra_door_up.cmd, tools/analyze_door_up.py): 35 boards, 192 power pellets, 59 ghosts eaten, 103 EyesAndHousePerFrame visits of the door square
+Eaten ghosts that arrived at the door square MOVING UP (the path $B6C6-$B6CC, turned left once): 44 of 59 episodes (ghost 1: 14, ghost 2: 14, ghost 3: 16, ghost 0: 0)
+  how they were eaten (direction, y, state after the eating): dir 1 y 100 state $42: 1, dir 1 y 102 state $42: 4, dir 1 y 104 state $42: 39
+  Pac-Man's position at those eatings (the test aid keeps him on the door square): (124,100): 44
+  frames from the eating to the turn: min 34, max 36
+Door visits with the direction up: 44; turns made by the path ($B6C6): 44  (equal: the path is taken exactly when the direction is up)
+After the turn: a second visit of the door square with a direction that is not up: 44 of 44; state $44 (enters the house) exactly once: 44 of 44; home again: 44 of 44
+  frames from the turn to state $44: min 132, max 348
+All eaten ghosts: state $44 reached 59 of 59, home again 59 of 59; direction at state $44: 4: 46, 8: 13
+Eaten ghosts that did not take the path (direction when eaten): ghost 0 dir 4: 11, ghost 1 dir 8: 2, ghost 2 dir 8: 2

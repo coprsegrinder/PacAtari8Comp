@@ -1,0 +1,24 @@
+Stack depth measured in Altirra (OS-B, NTSC); the stack is page 1, S starts at $FF (256 bytes).
+  death              76516 frames;     0 writes below $01F0; none
+  extra_life         85943 frames; 25461 writes below $01F0; lowest write $01ED = 19 bytes deep (pc $A575, frame 5836)
+  frightened_cases  148452 frames;     0 writes below $01F0; none
+  fullgame          161153 frames;  1422 writes below $01F0; lowest write $01EB = 21 bytes deep (pc $A575, frame 1822)
+  p2win             121796 frames;   594 writes below $01F0; lowest write $01EB = 21 bytes deep (pc $A575, frame 1822)
+
+Bytes in use at the entry of each interrupt handler (the hardware pushes 3; the rest is what the OS pushed and what the interrupted code had on the stack):
+  VbiHandler  $A5FD   593362 entries, bytes in use 6 to 10
+  DliHandler1 $A573  1784519 entries, bytes in use 3 to 19
+  DliHandler2 $A5CE  1182300 entries, bytes in use 3 to 5
+
+Stack layout check (the interrupted pc is read from the stack): at the VBI entry it is the start of an instruction of the cartridge in 593362 of 593362 cases, so the OS pushes exactly 3 bytes before the VBI handler (and the hardware 3: 6 bytes in use with the main program idle).
+  At display-list interrupts: 2964294 of 2966819; the others ($E400-$E4FF, $E900-$E9FF) are inside the OS, so the OS pushes nothing before a display-list interrupt.
+  Interrupts that hit inside a display-list handler ($A573-$A5FC): 0 of 3560181 (a display-list interrupt or a VBI never arrives inside another handler).
+  Depth of the main program when a VBI arrives (bytes in use at the VBI entry minus 6): 0 (424763 entries, pc $A493-$A51F); 2 (112397 entries, pc $B124-$B176); 4 (56202 entries, pc $B124-$B139).
+
+Deepest call chain (FrameDispatch -> TurnControl -> InitBoard -> ClearPlayerMemory -> FillPlayerPages): the board was set up from the frame code inside the VBI 25 times; bytes in use inside FillPlayerPages: 14 bytes: 4 times, 16 bytes: 21 times (6 at the VBI entry + 5 calls of 2 bytes = 16 for this chain; 14 for the 4-call chain of the level-end board change).
+  display-list interrupts that hit inside ClearPlayerMemory / FillPlayerPages (interrupted pc in $B0F1-$B111): DliHandler1 50, bytes in use at entry 19
+  display-list interrupts that hit inside ClearPlayerMemory / FillPlayerPages (interrupted pc in $B0F1-$B111): DliHandler2 0
+
+DEEPEST STACK USE SEEN: 21 bytes (lowest address written $01EB, S = $EA): 8% of the 256 bytes.
+Model of that case: VBI entry 6 (3 hardware + 3 OS) + the deepest chain 10 + DLI hardware 3 + DliHandler1 pushes 2 = 21 bytes: equal to the measurement.
+BOUND BY CONSTRUCTION (every combination, observed or not): main program 6 (PEAK of Start) + VBI entry 6 + VbiHandler 10 + DLI hardware 3 + 3 (the larger DLI handler) = 28 bytes of 256.

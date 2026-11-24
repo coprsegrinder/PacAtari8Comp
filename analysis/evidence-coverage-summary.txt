@@ -1,0 +1,48 @@
+Execution coverage (tools/run_coverage_audit.ps1, tools/analyze_coverage.py): 36 harness logs, 2920 of 2925 instructions executed (99.8 %)
+
+harness                   own      new
+afterdeath               1945     1945
+catch                    2244      593
+death                    1945        0
+door_up                  2180       14
+eaten_dir                2231        3
+extra_life               2002       62
+extra_life2              2602      180
+frightened_cases         2196        0
+fullgame                 2066        1
+fullgame2                2171       13
+gameover                 1946        0
+house_frightened         2168        2
+humanplay                1710        0
+itemshots                 406        0
+levels                   2077       76
+ov59_row6                2251        3
+ov59_tunnel              2168       12
+p2win                    2144        0
+patrol                   1710        0
+pause                    1832        9
+player1_survives         1996        5
+player2                  2351        0
+player2_lives            1974        0
+pregame                  2420        0
+reversedir               2231        0
+sight                    2008        0
+sight_states             2302        1
+sound_bot                2413        0
+speed                    2231        0
+start_state_test          406        0
+steering                 2231        0
+titleicons                406        0
+transitions              2231        0
+tunnel_bot               2163        0
+tunnel_clip              1557        0
+two_keys                 1895        1
+
+Routines: 79 of 79 entered at least once; 75 fully executed; never entered: none
+Call sites: 124 of 124 JSR executed; jumps: 54 of 55 JMP executed
+
+Instructions never executed, by routine (address, mnemonic):
+  BonusSound                   2 of  31: ABE8 ABEA
+  GhostEatenPause              1 of  51: B0A7
+  MovePacMan                   1 of 173: B1E0
+  StepAndDrawEntity            1 of  67: B93E

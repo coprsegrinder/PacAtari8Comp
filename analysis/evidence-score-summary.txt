@@ -1,0 +1,6 @@
+Scoring, dots and power pellets on the named World (tools/core_score.py) against the ROM routines (tools/check_score.py, OV-67): zero page (except the scratch), maze, status rows, shadows compared
+
+add_to_score: AddToScore $B423 (score cells, extra life, DrawLives, the carry byte): 20000 calls: 0 differences
+draw_lives: DrawLives $AD15: 20000 calls: 0 differences
+eat_dot: EatDotAtPacMan $B33A (dot, pellet cell, cell memory, dot count, level-complete flag): 20000 calls: 0 differences
+power_pellet: PowerPelletCheck $B39F (and PowerPelletEaten $B3DE): 20000 calls: 0 differences

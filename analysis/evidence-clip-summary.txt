@@ -1,0 +1,18 @@
+Heavy calls of ClipEntityAtTunnel (an entity in a tunnel zone) in one handler frame, by frame class (8 logs of tools/run_mainloop_audit.ps1 -Clip):
+class | frames | frames with 0 / 1 / 2 / 3 / 4 / 5 heavy calls | most in one frame
+copyright setup            8 | 8 / 0 / 0 / 0 / 0 / 0 | 0
+copyright wait           992 | 992 / 0 / 0 / 0 / 0 / 0 | 0
+title menu             14821 | 14712 / 109 / 0 / 0 / 0 / 0 | 1
+title after game        8476 | 8476 / 0 / 0 / 0 / 0 / 0 | 0
+paused                   440 | 440 / 0 / 0 / 0 / 0 / 0 | 0
+board start               22 | 22 / 0 / 0 / 0 / 0 / 0 | 0
+game-over countdown    13508 | 13508 / 0 / 0 / 0 / 0 / 0 | 0
+level end               7293 | 6553 / 736 / 4 / 0 / 0 / 0 | 2
+start idle                76 | 74 / 1 / 1 / 0 / 0 / 0 | 2
+start tune              5600 | 5600 / 0 / 0 / 0 / 0 / 0 | 0
+turn control             823 | 823 / 0 / 0 / 0 / 0 / 0 | 0
+ready wait              6565 | 6565 / 0 / 0 / 0 / 0 / 0 | 0
+death                  25842 | 25842 / 0 / 0 / 0 / 0 / 0 | 0
+eaten pause              891 | 891 / 0 / 0 / 0 / 0 / 0 | 0
+play                  165908 | 158812 / 6949 / 147 / 0 / 0 / 0 | 2
+most heavy calls in any frame: 2

@@ -1,0 +1,23 @@
+Asset pack of the port (tools/asset_pack.py, tools/check_assets.py, stages 69-70): 19 checks
+
+PASS: completeness: the ROM's 8192 bytes: 5946 code (2925 instructions traced), 2246 in 79 regions; uncovered 0, in two regions 0, in a region and in code 0
+PASS: non-code total: the regions hold 2246 bytes (docs/12: 2,246 bytes are not code)
+PASS: regions equal the ROM: 79 regions, 0 differ
+PASS: loader image equals the RAM Start builds: game charset 808, title charset 192, maze 920 and tables 472 bytes, compared with the concrete 6502 after Start's expansion: equal
+PASS: maze counts equal the board-complete count of the code: 256 dots + 4 power pellets = 260; the code counts one more at each of them and ends the board at 260 (core_ref.count_dot, checked against the ROM in `44`)
+PASS: pellet cells are the pellet squares: cells [[3, 3], [3, 36], [16, 3], [16, 36]] -> (y, x) ['$3C,$3A', '$3C,$BE', '$A4,$3A', '$A4,$BE']; the code's squares ['$3C,$3A', '$3C,$BE', '$A4,$3A', '$A4,$BE']
+PASS: junction lists follow the cell formula: y = 8 * row + 36 for rows 1,4,6,8,10,12,14,16,18,20; x = 4 * col + 46 for columns 3,6,9,13,18,21,26,30,33,36
+PASS: dots and pellets are left-right symmetric: the dot and pellet cells of the 23 x 40 maze mirror about the middle (the wall glyphs do not: a left wall and a right wall are different glyphs): yes
+PASS: texts decode: 8 strings decoded with code + $20 = ASCII; those confirmed on screen in docs/12 and docs/21 match: all
+PASS: shape pointers: PacShapePtrs ['$BAFC', '$BB06', '$BB1A', '$BB2E', '$BB42'] = the first frames of full, right, left, up, down; GhostScorePtrs ['$BC1F', '$BC2B', '$BC37', '$BC43'] = the four pop-up pictures
+PASS: shape sizes: ghost and Pac-Man pictures 10 rows, the star and the pop-up pictures 12 rows (the draw routines copy 16)
+PASS: display list of the game: 23 mode-4 rows, screen memory at $2000, $0C00, ends with a jump to its own start ($BFA3)
+PASS: tune tables: two tables of 64 AUDF values, one step per 4 jiffies; the rendered tune is analysis/start-tune.wav (`22`)
+PASS: font outlines lie on the 8 x 8 grid: 64 glyphs rendered at 64 px: every 8 x 8 block of every glyph is uniform (0 mixed blocks), so the 8 px rendering has one pixel per design unit and nothing to round
+PASS: font has 64 glyphs of 8 bytes: screen codes $00-$3F = ASCII $20-$5F; the space is empty, 'A' (code $21) is not
+PASS: font equals the OS ROM font: 64 of 64 glyphs are bit-for-bit the glyphs of the character set at $E000 of the Atari OS Rev B ROM (local file, used here as evidence only; see third-party/README.md on what this means for the licence)
+PASS: font credit and licence are in place: the font file is unmodified (sha256 bd2b3397a1c3c6ef, the one in third-party/README.md); OFL.txt carries the copyright line and the full licence; README.md credits the author, the source commit and the upstream credits
+PASS: the written pack is deterministic: 6 files written twice: identical hashes
+PASS: the loader refuses another schema: schema 99 raises ValueError
+
+pack: 79 regions, 2246 bytes of region data; 101 glyphs in the game set, 24 in the title set; maze 40 x 23; 21 sprites; 8 texts; ROM sha256 a99b2dd10b546d90d14de56d73a58a9d38e19ec411e37e33dcbd7e0633d8a56a

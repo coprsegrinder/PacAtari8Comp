@@ -1,0 +1,8 @@
+The drawing routines in port form (tools/core_draw.py) against the ROM routines (tools/check_draw.py, OV-69): zero page (except the scratch), the player-missile pages, the eight positions and the picture buffers compared
+
+step_and_draw_entity: StepAndDrawEntity $B902 (the four directions, none, mixed values; DrawOnly set and clear; every ghost state, both leg phases): 4000 calls: 0 differences
+draw_pacman: MovePacMan $B2E9 (the five pictures, the mouth frame offsets): 4000 calls: 0 differences
+draw_all_in_place: DrawAllInPlace $AD49 (the four ghosts, then the full disc: its jump into MovePacMan runs to the end of the draw): 4000 calls: 0 differences
+death_animation: DeathAnimation $AEF7 (counters and pictures; every frame, every delay, the last step clears): 4000 calls: 0 differences
+clip_entities_on_tunnel_row: ClipEntitiesOnTunnelRow $AB48 (entities on the tunnel row at every X, both directions: the masks, the wrap, Pac-Man's maze pointer): 4000 calls: 0 differences
+clear_player_memory: ClearPlayerMemory $B0F1 (all five pages to 0, rows $F0-$FF to $FE): 4000 calls: 0 differences

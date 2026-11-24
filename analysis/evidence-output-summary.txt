@@ -1,0 +1,21 @@
+Write map of the output memory (tools/output_map.py): 574 store instructions of the ROM classified by the regions they can write; 188 of them can write an output region
+checked on the concrete 6502: 12000 handler frames (3000 of each of the game, play and title frame set-ups, and rare paths), 2000 display-list interrupts, the start-up expansion: 2303680 stores, 0 outside the classification
+output-region stores executed by these models: 180 of 188 (not executed: $A4A0 Start, $A4E6 Start, $A4F7 Start, $B088 GhostEatenPause, $B093 GhostEatenPause, $B098 GhostEatenPause, $B0AA GhostEatenPause, $B0AD GhostEatenPause)
+stores that land outside RAM and hardware: $B993 (InitDisplay2) 35856 stores to Rom
+
+MazeScreen      $0C00-$0FFF: 41 store instructions in 12 routines, 41 executed: BlinkPowerPellets 3/3, BonusItemUpdate 5/5, ClearReadyText 1/1, Copy0800To0C00 4/4, DrawLevelIndicator 5/5, DrawLives 4/4, EatDotAtPacMan 2/2, FrameDispatch 2/2, LifeIcon1 1/1, LifeIcon2 1/1, ShowPowerPellets 4/4, TurnControl 9/9
+TitleScreen     $1C00-$1FFF: 16 store instructions in 1 routines, 16 executed: FrameDispatch 16/16
+StatusRows      $2000-$22FF: 18 store instructions in 7 routines, 18 executed: AddToScore 1/1, CompareHighScore 1/1, DrawLabel1UP 3/3, DrawLabel2UP 3/3, Start 1/1, TitleClearScores1P 5/5, TitleClearScores2P 4/4
+PmMissiles      $2300-$23FF: 9 store instructions in 6 routines, 8 executed: ClipEntityAtTunnel 1/1, DeathAnimation 4/4, DrawAllInPlace 1/1, FillPlayerPages 1/1, GhostEaten 1/1, InitDisplay2 0/1
+PmPlayers       $2400-$27FF: 12 store instructions in 6 routines, 8 executed: ClipEntityAtTunnel 1/1, DeathAnimation 1/4, DrawAllInPlace 0/1, FillPlayerPages 4/4, GhostEaten 1/1, InitDisplay2 1/1
+PictureBuffers  $0400-$041F: 3 store instructions in 2 routines, 3 executed: DrawAllInPlace 1/1, StepAndDrawEntity 2/2
+GameCharset     $3000-$33FF: 1 store instructions in 1 routines, 1 executed: WriteDstByte 1/1
+TitleCharset    $1800-$18FF: 2 store instructions in 2 routines, 2 executed: Start 1/1, WriteDstByte 1/1
+OriginalMaze    $0800-$0BFF: 1 store instructions in 1 routines, 1 executed: WriteDstByte 1/1
+SavedMaze1      $1000-$13FF: 6 store instructions in 2 routines, 4 executed: Copy0C00To1000 4/4, DrawLevelIndicator 0/2
+SavedMaze2      $1400-$17FF: 4 store instructions in 1 routines, 4 executed: Copy0C00To1400 4/4
+RamTables       $0600-$07FF: 1 store instructions in 1 routines, 1 executed: WriteDstByte 1/1
+OsPage2         $0200-$02FF: 23 store instructions in 10 routines, 17 executed: FrameDispatch 3/3, FrightenedTick 2/2, GhostEaten 3/3, GhostEatenPause 0/3, HouseEnterStep 1/1, InitDisplay2 1/1, LoadShadowColors 1/1, SetDisplayList 4/4, Start 1/4, TurnControl 1/1
+Gtia            $D000-$D0FF: 25 store instructions in 12 routines, 24 executed: DeathSequence 1/1, DliHandler1 7/7, DliHandler2 2/2, DrawAllInPlace 4/4, FrameDispatch 2/2, GhostEaten 3/3, GhostEatenPause 0/1, InitBoard 1/1, InitDisplay2 1/1, Start 1/1, StepAndDrawEntity 1/1, TurnControl 1/1
+Antic           $D400-$D4FF: 13 store instructions in 4 routines, 13 executed: DliHandler1 5/5, DliHandler2 4/4, SetDisplayList 2/2, Start 2/2
+Pokey           $D200-$D2FF: 33 store instructions in 12 routines, 32 executed: BonusSound 2/2, ClearPokeyRegisters 1/1, DeathSequence 6/6, DotSoundSweep 2/2, EyesReturningSound 2/2, FrameDispatch 4/4, FrightenedSound 1/1, FrightenedTick 2/2, GhostEaten 1/1, GhostEatenPause 8/9, InitDisplay2 1/1, Start 2/2

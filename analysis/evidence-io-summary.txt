@@ -1,0 +1,56 @@
+I/O audit (tools/run_io_audit.ps1, tools/analyze_io.py): 11 harness logs (catch, frightened_cases, fullgame, gameover, house_frightened, inputs, inputs1, levels, p2win, pause, pregame), 133 I/O instructions in the ROM, 133 executed in these runs, 74879632 accesses printed
+
+register (as used: reads / writes, sites) | accesses | effective addresses | values (hex)
+POKMSK    $0010 rw   2 sites |       22 | 0010 | C0
+RTCLOK2   $0014 r   15 sites |   389362 | 0014 | 256 values, 00..FF
+ATRACT    $004D w    3 sites |    19144 | 004D | 00 01 02 03 04 08
+DRKMSK    $004E r    2 sites | 25982643 | 004E | FE
+COLRSH    $004F r    2 sites | 26012568 | 004F | 00
+VDSLST    $0200 w    1 sites |     1515 | 0200 | 73 CE
+$0201     $0201 w    1 sites |     1515 | 0201 | A5
+SDMCTL    $022F w    1 sites |       11 | 022F | 3E
+SDLSTL    $0230 w    1 sites |     1515 | 0230 | 81 A3
+SDLSTH    $0231 w    1 sites |     1515 | 0231 | BF
+GPRIOR    $026F w    3 sites |       25 | 026F | 11 14
+STICK0    $0278 r    1 sites |    39838 | 0278 0279 | 06 07 0A 0B 0D 0E 0F
+STRIG0    $0284 r    1 sites |   542182 | 0284 | 00 01
+STRIG1    $0285 r    1 sites |   541570 | 0285 | 00 01
+PCOLR0    $02C0 rw   7 sites |    26081 | 02C0 02C1 02C2 02C3 02C4 02C5 02C6 02C7 | 00 0C 28 2A 44 4A 84 86 D8 DC
+COLOR0    $02C4 w    3 sites |     6062 | 02C4 02C5 02C6 02C7 | 00 0C 2A 86 DA
+COLOR1    $02C5 w    1 sites |       11 | 02C5 | 00
+COLOR3    $02C7 w    3 sites |       17 | 02C7 | 2A 44 DC
+$02F1     $02F1 r    1 sites |  6077104 | 02F1 | 00
+CH        $02FC rw   3 sites |  6619695 | 02FC | 21 FF
+HPOSP0    $D000 w    5 sites |    71503 | D000 D001 D002 D003 D004 D005 D006 D007 | 256 values, 00..FF
+M2PF      $D002 r    1 sites |    39845 | D002 | 00 01 04 05 06
+HPOSM0    $D004 w    6 sites |   159521 | D004 D005 D006 D007 | 134 values, 36..BC
+M1PL      $D009 r    1 sites |   155393 | D009 | 00 01 02 03 04 05 06 08 09 0A 0B 0C
+M2PL      $D00A r    1 sites |    14126 | D00A | 00 01 02 03 04 05 06 08 09 0A 0C
+COLPM0    $D012 w    1 sites |   209204 | D012 D013 D014 D015 | 00
+COLPF0    $D016 w    1 sites |    52302 | D016 | DA
+COLPF1    $D017 w    3 sites |   107374 | D017 | 00 44 9C
+COLPF2    $D018 w    2 sites |    55072 | D018 | 3A 42
+COLPF3    $D019 w    3 sites |   104606 | D019 | 00 2A 44
+GRACTL    $D01D w    1 sites |       11 | D01D | 03
+HITCLR    $D01E w    3 sites |    39880 | D01E | 00 02 0C 30
+CONSOL    $D01F r    3 sites |  7203816 | D01F | 00 01 02 03 04 05 06 07
+AUDF1     $D200 w   10 sites |    23554 | D200 D201 D202 D203 D204 D205 D206 D207 | 70 values, 00..B4
+AUDC1     $D201 w    6 sites |     5714 | D201 | 00 A3 A4 A5 A8
+AUDF2     $D202 w    4 sites |    40537 | D202 | 38 values, 00..F3
+AUDC2     $D203 w    4 sites |    40544 | D203 | 00 A1 A3 A4 A5
+AUDF3     $D204 w    1 sites |      112 | D204 | 16 values, 14..7D
+AUDC3     $D205 w    1 sites |      112 | D205 | A8
+AUDF4     $D206 w    2 sites |      224 | D206 | 32 values, 14..80
+AUDC4     $D207 w    1 sites |      224 | D207 | A4 A8
+AUDCTL    $D208 w    2 sites |      119 | D208 | 00 84
+RANDOM    $D20A r    3 sites |     1216 | D20A | 252 values, 00..FF
+IRQEN     $D20E w    1 sites |       11 | D20E | C0
+SKCTL     $D20F w    1 sites |       11 | D20F | 07
+DLISTL    $D402 w    1 sites |     1515 | D402 | 81 A3
+DLISTH    $D403 w    1 sites |     1515 | D403 | BF
+PMBASE    $D407 w    1 sites |       11 | D407 | 20
+CHBASE    $D409 w    3 sites |    66120 | D409 | 18 30 E0
+WSYNC     $D40A w    6 sites |   223034 | D40A | 00 2A 30 3A 42 44 E0
+NMIEN     $D40E w    1 sites |       11 | D40E | C0
+
+I/O instructions not executed in these runs: 0

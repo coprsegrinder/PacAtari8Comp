@@ -1,0 +1,29 @@
+Collision registers of the real GTIA against the model of tools/gtia_collisions.py (tools/altirra_collide.cmd, tools/analyze_collide.py, OV-68)
+
+collide-s1.txt: 12625 records (scenes 0-12624), 1 differ from the stub's generator (integrity), 12622 scenes compared with the model (9075 distinct): 0 differences
+collide-s2.txt: 13395 records (scenes 0-13394), 1 differ from the stub's generator (integrity), 13392 scenes compared with the model (9174 distinct): 0 differences
+collide-s3.txt: 13422 records (scenes 0-13421), 1 differ from the stub's generator (integrity), 13419 scenes compared with the model (9174 distinct): 0 differences
+collide-s4.txt: 13428 records (scenes 0-13427), 1 differ from the stub's generator (integrity), 13425 scenes compared with the model (9297 distinct): 0 differences
+collide-s5.txt: 13422 records (scenes 0-13421), 1 differ from the stub's generator (integrity), 13419 scenes compared with the model (9631 distinct): 0 differences
+collide-s6.txt: 13439 records (scenes 0-13411), 1 differ from the stub's generator (integrity), 6834 scenes compared with the model (4750 distinct): 0 differences
+
+total: 73111 scenes compared, 0 differences (6 records differ from the generator); 44064 distinct scenes
+
+coverage (scenes in which each register bit was set / not set in the hardware, of 73111):
+register    bit0    bit1    bit2    bit3
+M0PF     32035/41076 2250/70861 18198/54913 4463/68648
+M1PF     34042/39069 2364/70747 18708/54403 4793/68318
+M2PF     33791/39320 2546/70565 18295/54816 4635/68476
+M3PF     33164/39947 2367/70744 18845/54266 4819/68292
+P0PF     56442/16669 6550/66561 37802/35309 10968/62143
+P1PF     56346/16765 6729/66382 38210/34901 11017/62094
+P2PF     56525/16586 6471/66640 38072/35039 10934/62177
+P3PF     56393/16718 6729/66382 38175/34936 10969/62142
+M0PL     12430/60681 11910/61201 12357/60754 11887/61224
+M1PL     12918/60193 12859/60252 12841/60270 12430/60681
+M2PL     12973/60138 12356/60755 13050/60061 12455/60656
+M3PL     12271/60840 12129/60982 12048/61063 12899/60212
+P0PL      0/73111 24544/48567 23552/49559 22708/50403
+P1PL     24544/48567  0/73111 23222/49889 22819/50292
+P2PL     23552/49559 23222/49889  0/73111 23573/49538
+P3PL     22708/50403 22819/50292 23573/49538  0/73111

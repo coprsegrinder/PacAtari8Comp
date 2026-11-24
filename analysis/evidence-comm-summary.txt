@@ -1,0 +1,18 @@
+Communication inside the program (tools/comm_map.py, stage 68): the contexts of the game and the variables and regions they share, from the static read / write sets of each context and every routine it calls, checked on the concrete 6502
+
+main program: the key loop: 87 instructions; reads 12 variables / regions, writes 11
+main program: the new-game sequence it starts: 231 instructions; reads 10 variables / regions, writes 105
+vertical-blank handler (the frame): 2577 instructions; reads 110 variables / regions, writes 114
+display-list interrupt, game screen: 44 instructions; reads 5 variables / regions, writes 3
+display-list interrupt, title: 25 instructions; reads 2 variables / regions, writes 3
+
+shared (written by one context and read or written by another): 103 zero-page variables, 10 memory regions
+variables / regions written by the row and read by the column:
+row\col     keynewgame    vbi   dli1   dli2
+key           -      3      8      1      1
+newgame       4      -     97      1      0
+vbi           7      5      -      2      1
+dli1          1      0      1      -      1
+dli2          1      0      1      1      -
+
+run: 1000 contexts runs (dli1 100, dli2 100, key 100, vbi 700); every cell read or written outside the stack and the ROM lies in the static set of its context: 0 outside

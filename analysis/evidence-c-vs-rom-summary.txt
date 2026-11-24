@@ -1,0 +1,52 @@
+Stage 86 (docs/52-functional-equivalence.md): the C port against the ROM on the concrete 6502, frame by frame (tools/check_c_vs_rom.py), 2026-11-23, NTSC, ROM original/Pac-Man.rom
+C build: gcc 14.2 Release for all 11 runs; clang 19.1 Release for 3 of them (at the end)
+
+clock.pmrp: 700 of 700 frames compared, NO DIFFERENCE
+  chip writes compared: 2077 (in 286 frames), RANDOM bytes: 0
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, start idle 1, start tune 211, title menu 231
+keys.pmrp: 2600 of 2600 frames compared, NO DIFFERENCE
+  chip writes compared: 9142 (in 1814 frames), RANDOM bytes: 15
+  frame classes seen: board start 3, copyright setup 1, copyright wait 104, death 227, paused 60, play 898, start idle 3, start tune 777, title menu 527
+1p.pmrp: 9000 of 9000 frames compared, NO DIFFERENCE
+  chip writes compared: 33907 (in 5943 frames), RANDOM bytes: 23
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, death 1062, game-over countdown 1803, play 2374, ready wait 130, start idle 1, start tune 260, title after game 2879, title menu 231, turn control 3
+2p.pmrp: 10617 of 10617 frames compared, NO DIFFERENCE
+  chip writes compared: 20287 (in 6444 frames), RANDOM bytes: 71
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, death 2124, game-over countdown 1805, play 5510, ready wait 325, start idle 1, start tune 258, title menu 81, turn control 256
+level.pmrp: 600 of 600 frames compared, NO DIFFERENCE
+  chip writes compared: 1973 (in 260 frames), RANDOM bytes: 0
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, start idle 1, start tune 111, title menu 231
+fuzz1.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+  chip writes compared: 30749 (in 9496 frames), RANDOM bytes: 138
+  frame classes seen: board start 5, copyright setup 1, copyright wait 78, death 2124, game-over countdown 54, play 8440, ready wait 260, start idle 5, start tune 1022, title menu 5, turn control 6
+fuzz2.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+  chip writes compared: 28099 (in 8946 frames), RANDOM bytes: 139
+  frame classes seen: board start 4, copyright setup 1, copyright wait 61, death 2832, game-over countdown 34, play 7632, ready wait 390, start idle 4, start tune 1034, turn control 8
+fuzz3.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+  chip writes compared: 28688 (in 9026 frames), RANDOM bytes: 118
+  frame classes seen: board start 4, copyright setup 1, copyright wait 2, death 2832, game-over countdown 9, play 7682, ready wait 390, start idle 4, start tune 1038, title menu 30, turn control 8
+fuzz4.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+  chip writes compared: 29294 (in 9017 frames), RANDOM bytes: 122
+  frame classes seen: board start 4, copyright setup 1, copyright wait 6, death 2832, game-over countdown 17, play 7703, ready wait 390, start idle 4, start tune 1035, turn control 8
+fuzz5.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+  chip writes compared: 28820 (in 8822 frames), RANDOM bytes: 93
+  frame classes seen: board start 5, copyright setup 1, copyright wait 5, death 2889, game-over countdown 143, play 7491, ready wait 390, start idle 5, start tune 1052, title menu 11, turn control 8
+fuzz6.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+  chip writes compared: 31412 (in 9597 frames), RANDOM bytes: 165
+  frame classes seen: board start 4, copyright setup 1, death 2124, game-over countdown 20, play 8546, ready wait 260, start idle 4, start tune 1035, turn control 6
+
+The same check with the clang 19.1 Release build (3 of the 11 runs):
+2p.pmrp: 10617 of 10617 frames compared, NO DIFFERENCE
+fuzz2.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+fuzz5.pmrp: 12000 of 12000 frames compared, NO DIFFERENCE
+
+Stage 87 (OV-70): three games played on purpose by tools/make_rom_bot_replay.py (a look-ahead player that plays the ROM itself and records only its inputs: seed 1 and 2 one player, seed 3 two players), compared the same way (gcc 14.2 Release):
+bot1.pmrp: 6082 of 6082 frames compared, NO DIFFERENCE
+  chip writes compared: 19344 (in 5093 frames), RANDOM bytes: 141
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, death 354, eaten pause 99, level end 187, play 4714, ready wait 130, start idle 1, start tune 260, title menu 79, turn control 1
+bot2.pmrp: 6560 of 6560 frames compared, NO DIFFERENCE
+  chip writes compared: 20948 (in 5571 frames), RANDOM bytes: 148
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, death 354, eaten pause 165, level end 187, play 5126, ready wait 130, start idle 1, start tune 260, title menu 79, turn control 1
+bot3.pmrp: 9741 of 9741 frames compared, NO DIFFERENCE
+  chip writes compared: 33839 (in 8702 frames), RANDOM bytes: 252
+  frame classes seen: board start 1, copyright setup 1, copyright wait 255, death 354, eaten pause 396, level end 187, play 8026, ready wait 130, start idle 1, start tune 260, title menu 79, turn control 51

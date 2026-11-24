@@ -1,0 +1,26 @@
+External interface of the ROM (tools/iface_map.py, stage 67): static classification of the 2925 instructions, and the concrete 6502 run on the frame, the display-list handlers and a pass of the key loop
+
+static: 133 instructions touch an input or an output register (35 reads, 98 writes); control transfers outside the cartridge: 2 (jsr $A460 -> $E45C, jmp $A60D -> $E462); indirect jumps: 0; BRK: 0; RTI: 2 ($A5CD, $A5FC); absolute references to page 3 (the CIO and SIO control blocks): 0, to the PIA: 0, to the serial data registers: 0, to the OS ROM data: 0; indexed instructions whose 256-byte window reaches these areas: 9, 0, 2, 4 (small indexes into page 2 and the chip registers; the run below touched none of the areas)
+accesses outside the game's memory, by area (reads / writes): OsZeroPage 25559505 / 3947, OsPage2 14292 / 52450, Gtia 30102382 / 123288, Pokey 1174 / 145067, Antic 0 / 23035; page 3, the PIA, the serial data registers, the OS ROM data and the other hardware: 0
+reads: 34 distinct (instruction, address) pairs read 3252050 times from outside the game's memory: 0 outside the static list or the declared inputs
+closure: 3000 random game states (vbi-game 300, vbi-play 300, vbi-title 300, vbi-levelend 300, vbi-death 300, vbi-eaten 300, dli-game 300, dli-title 300, keyloop 300, frame-play 300), each run twice with every undeclared external cell (page 2 and 3, the hardware, the OS ROM: up to 11,000 cells) holding other random values the second time: 0 differences in the RAM, the ordered writes to the outside, the RANDOM reads or the OS calls
+(223 runs of the key loop were still in a wait for an input (CONSOL released, the clock) after 40,000 steps and were compared there; 0 ended in an exception, the same in both runs)
+
+sensitivity: runs (of 300 per entry kind) in which changing this one input alone changed the result
+input           v:game      v:play     v:title  v:levelend     v:death     v:eaten      d:game     d:title     keyloop  frame-play
+STICK0-1            29         161           0           0           0           0           0           0           0         101
+STRIG0               0           0           0           0           0           0           0           0          34           0
+STRIG1               0           0           0           0           0           0           0           0          53           0
+KEYDEL               0           0           0           0           0           0           0           0          34           0
+CH                   0           0           0           0           0           0           0           0          18           0
+CONSOL               0           0           0           0           0           0           0           0         202           0
+M2PF                27          86           0           0           0           0           0           0           0          88
+M1PL                37         137           0           0           0           0           0           0           0          98
+M2PL                18          76           0           0           0           0           0           0           0          92
+RANDOM               0           0           0           0           0           0           0           0           0          54
+RTCLOK2             55         100           1          49          80          95           0           0           0         214
+DRKMSK               0           0           0           0           0           0          62           0         298           0
+COLRSH               0           0           0           0           0           0          65           0         288           0
+POKMSK               0           0           0           0           0           0           0           0           0           0
+PCOLR0-3             1           0           0           0           0           0           0           0           0           4
+inputs no run was sensitive to: none; POKMSK is read only by Start (`$A44D`), which these entries do not run (the power-on state is `37`)

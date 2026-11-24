@@ -1,0 +1,316 @@
+State audit (tools/run_state_audit.ps1, tools/analyze_states.py): 20 harness logs (catch, copyright_key, death, door_up, extra_life, forcechase, frightened_cases, fullgame, fullgame2, gameover, house_frightened, inputs, inputs1, itemshots, levels, p2win, pause, player1_survives, player2_lives, pregame), 243153 writes to 20 state variables printed
+
+variable (address) | changes | transitions old -> new (count)
+GameState ($19): 84 changes, 70 rewrites of the same value, 9 distinct transitions
+    00 -> 01       20   by $A3A1
+    00 -> 03        2   by $A552
+    00 -> 04        8   by $A552
+    01 -> 02       20   by $A70A
+    02 -> 00       11   by $A53B
+    02 -> 03        9   by $A552 $A70A
+    03 -> 00       10   by $A53B
+    04 -> 00        2   by $A53B
+    04 -> 03        2   by $A552
+TwoPlayers ($1A): 7 changes, 0 rewrites of the same value, 2 distinct transitions
+    00 -> 01        5   by $A54E
+    01 -> 00        2   by $A54E
+IntroRequest ($1C): 81 changes, 0 rewrites of the same value, 3 distinct transitions
+    00 -> 01       27   by $A53F
+    01 -> 02       27   by $A4B8
+    02 -> 00       27   by $A7CE
+CountdownActive ($20): 20 changes, 67 rewrites of the same value, 2 distinct transitions
+    00 -> 01       13   by $AB1A
+    01 -> 00        7   by $A539
+PlayStarted ($21): 36 changes, 65 rewrites of the same value, 2 distinct transitions
+    00 -> 01       27   by $A7FE
+    01 -> 00        9   by $A47B
+StartTuneActive ($22): 36 changes, 65 rewrites of the same value, 2 distinct transitions
+    00 -> 01       27   by $A7C8
+    01 -> 00        9   by $A47B
+TurnSwitchState ($23): 69 changes, 47 rewrites of the same value, 5 distinct transitions
+    00 -> 01        9   by $AACC $AADD
+    00 -> 02       14   by $AA9A $AAAF
+    01 -> 03        9   by $AA9A
+    02 -> 03       14   by $AA9A
+    03 -> 00       23   by $AA94
+WaitState ($24): 380 changes, 192 rewrites of the same value, 5 distinct transitions
+    00 -> 01       79   by $AEF1
+    00 -> 02       78   by $AC8C
+    01 -> 00       13   by $AB16
+    01 -> 02       66   by $A818
+    02 -> 00      144   by $A828
+LevelComplete ($26): 79 changes, 47 rewrites of the same value, 2 distinct transitions
+    00 -> 01        1   by $B39C
+    01 -> 00       78   by $AC86
+LevelEndStep ($27): 393 changes, 362 rewrites of the same value, 5 distinct transitions
+    00 -> 01       79   by $AC26
+    01 -> 02       79   by $AC26
+    02 -> 03       79   by $AC26
+    03 -> 04       78   by $AC72
+    04 -> 00       78   by $AC88
+CurrentPlayer ($2B): 24 changes, 46 rewrites of the same value, 2 distinct transitions
+    00 -> 01       14   by $AA8B
+    01 -> 00       10   by $A47B $AA61
+Paused ($9B): 6 changes, 171 rewrites of the same value, 2 distinct transitions
+    00 -> 01        3   by $A4E2
+    01 -> 00        3   by $A4E2
+BonusVisible ($9F): 48 changes, 171 rewrites of the same value, 2 distinct transitions
+    00 -> 01       24   by $B679
+    01 -> 00       24   by $A964 $B694
+BonusScoreShown ($A1): 38 changes, 171 rewrites of the same value, 2 distinct transitions
+    00 -> 01       19   by $A95C
+    01 -> 00       19   by $B638
+PacFrozen ($AA): 154 changes, 98 rewrites of the same value, 2 distinct transitions
+    00 -> 80       81   by $A927
+    80 -> 00       73   by $ADB4
+EatPause ($E5): 150 changes, 247 rewrites of the same value, 2 distinct transitions
+    00 -> 01       75   by $A8F1
+    01 -> 00       75   by $B08B
+DeathAnimActive ($EA): 159 changes, 252 rewrites of the same value, 2 distinct transitions
+    00 -> 01       80   by $AE76
+    01 -> 00       79   by $AF51
+DeathState ($ED): 2784 changes, 337 rewrites of the same value, 8 distinct transitions
+    00 -> 01       81   by $A930
+    01 -> 02       80   by $AE57
+    02 -> 03       80   by $AE7E
+    03 -> 04     1196   by $AECD
+    04 -> 03     1116   by $AECD
+    04 -> 05       79   by $AEEA
+    05 -> 06       79   by $AEEA
+    06 -> 00       73   by $ADB4
+FrightenPhase ($FC): 1393 changes, 1895 rewrites of the same value, 96 distinct transitions
+    00 -> 01       86   by $B3EF
+    01 -> 00       34   by $ADB4 $AFA7
+    01 -> 02       81   by $AFB6
+    02 -> 01       18   by $B3EF
+    02 -> 03       63   by $AFB6
+    03 -> 01        1   by $B3EF
+    03 -> 04       62   by $AFB6
+    04 -> 05       62   by $AFB6
+    05 -> 06       62   by $AFB6
+    06 -> 07       62   by $AFB6
+    07 -> 00       11   by $AFA7
+    07 -> 08       51   by $AFB6
+    08 -> 09       51   by $AFB6
+    09 -> 0A       51   by $AFB6
+    0A -> 0B       51   by $AFB6
+    0B -> 00       40   by $AFA7
+    0B -> 0C       11   by $AFB6
+    0C -> 0D       11   by $AFB6
+    0D -> 0E       11   by $AFB6
+    0E -> 0F       11   by $AFB6
+    0F -> 00        1   by $ADB4
+    0F -> 10       10   by $AFB6
+    10 -> 11       10   by $AFB6
+    11 -> 12       10   by $AFB6
+    12 -> 13       10   by $AFB6
+    13 -> 14       10   by $AFB6
+    14 -> 15       10   by $AFB6
+    15 -> 16       10   by $AFB6
+    16 -> 17       10   by $AFB6
+    17 -> 18       10   by $AFB6
+    18 -> 19       10   by $AFB6
+    19 -> 1A       10   by $AFB6
+    1A -> 1B       10   by $AFB6
+    1B -> 1C       10   by $AFB6
+    1C -> 1D       10   by $AFB6
+    1D -> 1E       10   by $AFB6
+    1E -> 1F       10   by $AFB6
+    1F -> 20       10   by $AFB6
+    20 -> 21       10   by $AFB6
+    21 -> 22       10   by $AFB6
+    22 -> 23       10   by $AFB6
+    23 -> 01        1   by $B3EF
+    23 -> 24        9   by $AFB6
+    24 -> 25        9   by $AFB6
+    25 -> 26        9   by $AFB6
+    26 -> 27        9   by $AFB6
+    27 -> 28        9   by $AFB6
+    28 -> 29        9   by $AFB6
+    29 -> 2A        9   by $AFB6
+    2A -> 2B        9   by $AFB6
+    2B -> 2C        9   by $AFB6
+    2C -> 2D        9   by $AFB6
+    2D -> 01        1   by $B3EF
+    2D -> 2E        8   by $AFB6
+    2E -> 2F        8   by $AFB6
+    2F -> 30        8   by $AFB6
+    30 -> 31        8   by $AFB6
+    31 -> 32        8   by $AFB6
+    32 -> 33        8   by $AFB6
+    33 -> 34        8   by $AFB6
+    34 -> 35        8   by $AFB6
+    35 -> 36        8   by $AFB6
+    36 -> 37        8   by $AFB6
+    37 -> 38        8   by $AFB6
+    38 -> 01        1   by $B3EF
+    38 -> 39        7   by $AFB6
+    39 -> 3A        7   by $AFB6
+    3A -> 3B        7   by $AFB6
+    3B -> 3C        7   by $AFB6
+    3C -> 3D        7   by $AFB6
+    3D -> 3E        7   by $AFB6
+    3E -> 3F        7   by $AFB6
+    3F -> 40        7   by $AFB6
+    40 -> 41        7   by $AFB6
+    41 -> 42        7   by $AFB6
+    42 -> 43        7   by $AFB6
+    43 -> 44        7   by $AFB6
+    44 -> 45        7   by $AFB6
+    45 -> 46        7   by $AFB6
+    46 -> 47        7   by $AFB6
+    47 -> 48        7   by $AFB6
+    48 -> 49        7   by $AFB6
+    49 -> 01        1   by $B3EF
+    49 -> 4A        6   by $AFB6
+    4A -> 4B        6   by $AFB6
+    4B -> 4C        6   by $AFB6
+    4C -> 4D        6   by $AFB6
+    4D -> 4E        6   by $AFB6
+    4E -> 4F        6   by $AFB6
+    4F -> 50        6   by $AFB6
+    50 -> 01        1   by $B3EF
+    50 -> 51        5   by $AFB6
+    51 -> 52        5   by $AFB6
+    52 -> 01        2   by $B3EF
+    52 -> 53        3   by $AFB6
+    53 -> 01        3   by $B3EF
+GhostState ($CE-$D1): 3775 changes, 95077 rewrites of the same value, 42 distinct transitions
+    00 -> 01      569   by $A800 $B756
+    00 -> 80      113   by $B40A
+    01 -> 00       76   by $ADB4
+    01 -> 02      122   by $B8ED
+    01 -> 08      303   by $B853
+    01 -> 81       57   by $B40A
+    02 -> 00      173   by $ADB4
+    02 -> 20      157   by $B8C7
+    02 -> 82       68   by $B40A
+    04 -> 02       67   by $B756
+    08 -> 00       96   by $ADB4
+    08 -> 02      152   by $B626 $BAB9
+    08 -> 10      379   by $B895
+    08 -> 20        6   by $B8C7
+    08 -> 88       51   by $B40A
+    10 -> 00      150   by $ADB4
+    10 -> 02       72   by $BAB9
+    10 -> 20       97   by $B8C7
+    10 -> 90       42   by $B40A
+    20 -> 00       57   by $ADB4
+    20 -> 08      397   by $B853
+    20 -> A0       28   by $B40A
+    42 -> 00        8   by $ADB4
+    42 -> 44       67   by $B6D0
+    44 -> 04       67   by $B764
+    80 -> 00       50   by $AFA0
+    80 -> 42       21   by $A888
+    80 -> 82       42   by $B756
+    81 -> 00        2   by $ADB4
+    81 -> 20       46   by $AFA0
+    81 -> 42        9   by $A888
+    82 -> 00        1   by $ADB4
+    82 -> 20       83   by $AFA0
+    82 -> 42       26   by $A888
+    88 -> 20       44   by $AFA0
+    88 -> 42        7   by $A888
+    90 -> 00        1   by $ADB4
+    90 -> 20       30   by $AFA0
+    90 -> 42       11   by $A888
+    A0 -> 00        1   by $ADB4
+    A0 -> 20       26   by $AFA0
+    A0 -> 42        1   by $A888
+
+writes that are not transitions of the game (the game's next write starts from the value they left):
+  the OS at the cold start (pc >= $C000): 760 writes in 20 sessions (the OS clears its RAM before the cartridge starts)
+  LevelComplete by the harness's own test aid: door_up 26161, extra_life 28695, frightened_cases 26172, house_frightened 26160, levels 25647
+  TwoPlayers by the harness's own test aid: player1_survives 1, player2_lives 1
+
+transitions seen that no rule of the code allows: 0
+
+rules of the code: 68, seen in the sessions: 68, not seen: 0
+
+rule counts (index in RULES of the tool, changes seen):
+RULE 0 GameState 20
+RULE 1 GameState 20
+RULE 2 GameState 8
+RULE 3 GameState 23
+RULE 4 GameState 8
+RULE 5 GameState 4
+RULE 6 GameState 1
+RULE 7 TwoPlayers 5
+RULE 8 TwoPlayers 2
+RULE 9 IntroRequest 27
+RULE 10 IntroRequest 27
+RULE 11 IntroRequest 27
+RULE 12 CountdownActive 13
+RULE 13 CountdownActive 7
+RULE 14 PlayStarted 27
+RULE 15 StartTuneActive 27
+RULE 16 TurnSwitchState 9
+RULE 17 TurnSwitchState 14
+RULE 18 TurnSwitchState 23
+RULE 19 TurnSwitchState 23
+RULE 20 WaitState 79
+RULE 21 WaitState 78
+RULE 22 WaitState 66
+RULE 23 WaitState 13
+RULE 24 WaitState 144
+RULE 25 LevelComplete 1
+RULE 26 LevelComplete 78
+RULE 27 LevelEndStep 237
+RULE 28 LevelEndStep 78
+RULE 29 LevelEndStep 78
+RULE 30 CurrentPlayer 14
+RULE 31 CurrentPlayer 9
+RULE 32 Paused 3
+RULE 33 Paused 3
+RULE 34 BonusVisible 24
+RULE 35 BonusVisible 24
+RULE 36 BonusScoreShown 19
+RULE 37 BonusScoreShown 19
+RULE 38 PacFrozen 81
+RULE 39 EatPause 75
+RULE 40 EatPause 75
+RULE 41 DeathAnimActive 80
+RULE 42 DeathAnimActive 79
+RULE 43 DeathState 81
+RULE 44 DeathState 80
+RULE 45 DeathState 80
+RULE 46 DeathState 1196
+RULE 47 DeathState 1116
+RULE 48 DeathState 79
+RULE 49 DeathState 79
+RULE 50 FrightenPhase 86
+RULE 51 FrightenPhase 115
+RULE 52 FrightenPhase 1192
+RULE 53 FrightenPhase 77
+RULE 54 GhostState 171
+RULE 55 GhostState 507
+RULE 56 GhostState 303
+RULE 57 GhostState 397
+RULE 58 GhostState 379
+RULE 59 GhostState 260
+RULE 60 GhostState 122
+RULE 61 GhostState 222
+RULE 62 GhostState 2
+RULE 63 GhostState 359
+RULE 64 GhostState 75
+RULE 65 GhostState 279
+RULE 66 GhostState 67
+RULE 67 GhostState 67
+BULK CurrentPlayer A47B 01 1
+BULK DeathState ADB4 06 73
+BULK FrightenPhase ADB4 01 8
+BULK FrightenPhase ADB4 0F 1
+BULK GhostState ADB4 01 76
+BULK GhostState ADB4 02 173
+BULK GhostState ADB4 08 96
+BULK GhostState ADB4 10 150
+BULK GhostState ADB4 20 57
+BULK GhostState ADB4 42 8
+BULK GhostState ADB4 81 2
+BULK GhostState ADB4 82 1
+BULK GhostState ADB4 90 1
+BULK GhostState ADB4 A0 1
+BULK PacFrozen ADB4 80 73
+BULK PlayStarted A47B 01 9
+BULK StartTuneActive A47B 01 9

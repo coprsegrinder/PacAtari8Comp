@@ -1,0 +1,14 @@
+The core algorithms of tools/core_ref.py (port form: plain values, no memory image) against the ROM routines on the concrete 6502 (tools/check_core.py, stage 66)
+
+pacing: MoveDelayTick $B590 (every level 0-255 x 5 entities x cycle 0-3 x count 1-3): 15360 calls: 0 differences
+release_timers: SetReleaseTimers $AE2B (every level): 256 calls: 0 differences
+frightened: PowerPelletCheck $B39F / FrightenedTick $AF54 (the solid frames of every level and both players, every phase 1-255 against every level's end phase, and the length of 242 whole periods counted frame by frame): 66034 calls: 0 differences
+bonus: the bonus item $B62E, its pop-up glyphs $A93D and its score $A972 (every level, both players): 1536 calls: 0 differences
+score: AddToScore $B423 (scores to 999,999 with the wrap, both players, flag, lives): 6000 calls: 0 differences (3255 gave an extra life)
+ghost_points: GhostEaten $A886 (the points of the 1st to 4th ghost, the count before the first): 24 calls: 0 differences
+junction: JunctionLookup $B48E (every x on 10 lattice rows and 9 other rows, 6 entity cases): 29184 calls: 0 differences
+steer: SteerToTarget $B999 (random positions, targets, 11 states, every mask; the same RANDOM values used): 30000 calls: 0 differences (RANDOM read 0 / 1 times in 14363 / 15637 calls)
+force_chase: ForceChase $B616: 8000 calls: 0 differences
+power_pellet: the reversal and frightened bit of the power pellet $B39F: 8000 calls: 0 differences
+frightened_end: the end of the frightened period in FrightenedTick $AF54: 8000 calls: 0 differences
+count_dot: the dot count in EatDotAtPacMan $B33A: 8000 calls: 0 differences

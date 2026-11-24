@@ -1,0 +1,67 @@
+Main-loop audit (tools/run_mainloop_audit.ps1, tools/analyze_mainloop.py): 7 sessions (cycmainloop-death 33367, cycmainloop-frightened_cases 30968, cycmainloop-fullgame 31354, cycmainloop-fullgame2 28064, cycmainloop-levels 33376, cycmainloop-p2win 27889, cycmainloop-pause 33381), 218399 frames of the deferred vertical-blank handler
+frames in a row (no handler entry missed): gaps 0; handler still running when the next entry came: 0
+
+class | frames | FrameDispatch scan lines min/median/max | handler (to XITVBV) min/median/max | run length (frames) min/median/max
+copyright setup            7 |  76 /  76 /  76 |  77 /  77 /  77 |     1 /     1 /     1  (7 runs)
+copyright wait           745 |   0 /   0 /   0 |   1 /   1 /   1 |     1 /     1 /   247  (7 runs)
+title menu             14249 |  18 /  18 /  18 |  19 /  19 /  19 |   171 /   171 / 12541  (8 runs)
+title after game        9235 |  16 /  16 /  16 |  17 /  17 /  17 |   109 /   200 /  8617  (5 runs)
+paused                   300 |   1 /   1 /   1 |   2 /   2 /   2 |   300 /   300 /   300  (1 runs)
+board start               17 |   3 /   3 /   4 |   5 /   5 /   6 |     1 /     1 /     1  (17 runs)
+game-over countdown    13444 |   1 /   1 /   2 |   2 /   2 /   4 |   606 /  1436 /  1808  (10 runs)
+level end               7293 |   1 /   1 / 232 |   2 /   2 / 234 |   187 /   187 /   187  (39 runs)
+start idle                59 |   1 /   1 /   1 |   1 /   1 /   3 |     3 /     3 /     4  (17 runs)
+start tune              4411 |   1 /   1 /  50 |   3 /   3 /  52 |   257 /   260 /   260  (17 runs)
+turn control             822 |   2 /   2 / 219 |   2 /   3 / 225 |     1 /     1 /    51  (72 runs)
+ready wait              6565 |   1 /   1 /  50 |   3 /   3 /  52 |    65 /    65 /    65  (101 runs)
+death                  25524 |   1 /   2 /  24 |   2 /   3 /  26 |    36 /   354 /   354  (73 runs)
+eaten pause              858 |   3 /  11 /  42 |   3 /  11 /  44 |    33 /    33 /    33  (26 runs)
+play                  134870 |   6 /  34 /  99 |   7 /  37 / 103 |     1 /   732 / 32519  (145 runs)
+
+cycles (logs of -Cycles, OV-63): handler entry to the XITVBV jump, per class min/median/max, and the cycles left to the next entry (29868 cycles per frame)
+copyright setup            7 |   8836 /   8836 /   8836
+copyright wait           745 |    150 /    153 /    160
+title menu             14249 |   2202 /   2211 /   2211
+title after game        9234 |   1977 /   1981 /   1983
+paused                   300 |    233 /    234 /    234
+board start               17 |    613 /    613 /    722
+game-over countdown    13444 |    213 /    245 /    484
+level end               7293 |    209 /    214 /  26729
+start idle                59 |    199 /    206 /    424
+start tune              4411 |    370 /    371 /   5978
+turn control             822 |    314 /    357 /  25706
+ready wait              6565 |    381 /    381 /   5897
+death                  25524 |    298 /    401 /   3038
+eaten pause              858 |    413 /   1251 /   5005
+play                  134868 |    781 /   4257 /  11799
+margin to the next handler entry: min 3138, median 26570 cycles (218392 frames); the least is 10.5% of a frame
+
+transitions between classes (frames):
+  ready wait           -> play                    101
+  play                 -> death                    73
+  death                -> turn control             72
+  turn control         -> ready wait               62
+  level end            -> ready wait               39
+  play                 -> level end                39
+  eaten pause          -> play                     26
+  play                 -> eaten pause              26
+  board start          -> start tune               17
+  start idle           -> board start              17
+  start tune           -> play                     17
+  turn control         -> game-over countdown      10
+  copyright setup      -> copyright wait            7
+  title menu           -> start idle                7
+  game-over countdown  -> title after game          5
+  copyright wait       -> start idle                4
+  copyright wait       -> title menu                3
+  game-over countdown  -> start idle                3
+  game-over countdown  -> title menu                2
+  title after game     -> start idle                2
+  title after game     -> title menu                2
+  paused               -> play                      1
+  play                 -> paused                    1
+  play                 -> start idle                1
+  play                 -> title menu                1
+
+the first session as runs (class, frames):
+  copyright setup 1; copyright wait 1; start idle 4; board start 1; start tune 260; play 175; death 354; turn control 1; ready wait 65; play 686; death 354; turn control 1; ready wait 65; play 802; death 354; turn control 1; ready wait 65; play 740; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 732; death 354; turn control 1; ready wait 65; play 894; death 354; turn control 1

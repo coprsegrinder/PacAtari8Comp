@@ -1,0 +1,56 @@
+Outcomes of the conditional branches of the key loop $A4BA-$A572 (tools/run_keyloop_audit.ps1; 11 logs: copyright_key 735 frames, fullgame 1079 frames, fullgame-targeted 59545 frames, gameover 742 frames, inputs 2533 frames, inputs1 1514 frames, keyloop-targeted 3877 frames, pause 1234 frames, pregame 625 frames, rare 1493 frames, realkey 950 frames)
+branch | target | taken: logs that saw it | not taken: logs that saw it
+$A4C6 bpl | $A4BC | 9 logs (most 65,535+ (saturated)) | 9 logs (most 65,535+ (saturated))
+$A4CA bne | $A4F5 | 9 logs (most 65,535+ (saturated)) | 7 logs (most 65,535+ (saturated))
+$A4CF bne | $A4E9 | 1 logs (most 890) | 7 logs (most 65,535+ (saturated))
+$A4D6 bne | $A4E9 | 7 logs (most 65,535+ (saturated)) | 5 logs (most 4)
+$A4DA beq | $A4E0 | 5 logs (most 2) | 5 logs (most 2)
+$A4DE beq | $A4E2 | 5 logs (most 2) | cannot happen
+$A4EB beq | $A504 | 7 logs (most 65,535+ (saturated)) | 1 logs (most 65,535+ (saturated))
+$A4EF bne | $A4F5 | 1 logs (most 65,533) | 1 logs (most 2)
+$A4F3 bne | $A552 | 1 logs (most 2) | cannot happen
+$A4FD beq | $A537 | 1 logs (most 1) | 9 logs (most 65,535+ (saturated))
+$A502 beq | $A537 | 1 logs (most 1) | 9 logs (most 65,535+ (saturated))
+$A509 beq | $A4BA | 9 logs (most 65,535+ (saturated)) | 6 logs (most 7)
+$A516 bne | $A511 | 6 logs (most 12,413) | 6 logs (most 7)
+$A51A bne | $A504 | 1 logs (most 9) | 7 logs (most 10)
+$A51F beq | $A51C | 6 logs (most 65,535+ (saturated)) | 6 logs (most 7)
+$A525 beq | $A537 | 2 logs (most 1) | 4 logs (most 7)
+$A52B bcc | $A550 | 1 logs (most 1) | 3 logs (most 7)
+$A52F beq | $A559 | 2 logs (most 1) | 3 logs (most 6)
+$A533 beq | $A544 | 3 logs (most 2) | 2 logs (most 4)
+$A535 bne | $A4BA | 2 logs (most 4) | cannot happen
+$A546 bne | $A54C | 2 logs (most 1) | 3 logs (most 1)
+$A54A bne | $A54E | 3 logs (most 1) | cannot happen
+$A55D bcs | $A563 | 1 logs (most 6) | 3 logs (most 4)
+$A561 bne | $A550 | 2 logs (most 1) | cannot happen
+$A565 beq | $A56D | 1 logs (most 1) | 1 logs (most 5)
+$A56B bne | $A550 | 1 logs (most 5) | cannot happen
+$A571 beq | $A550 | 1 logs (most 1) | cannot happen
+
+54 outcomes of 27 branches: 47 seen, 7 cannot happen ($A4DE, $A4F3, $A535, $A54A, $A561, $A56B, $A571), 0 not seen
+
+why the 'cannot happen' ones cannot:
+  $A4DE: after `lda #$00`: Z = 1, `beq` always taken (Paused := 0)
+  $A4F3: after `lda #$04`: Z = 0, `bne` always taken
+  $A535: `bne` after `cmp #$05 / beq` fell through: not equal, always taken (any other key combination: back to the top)
+  $A54A: after `lda #$01`: Z = 0, `bne` always taken
+  $A561: after `inc StartLevel` from 0 or 1: the result is 1 or 2, `bne` always taken
+  $A56B: after two `inc StartLevel` from 2 to 10 (even): the result is 4 to 12, `bne` always taken
+  $A571: after `lda #$00` / `sta`: Z = 1, `beq` always taken
+
+idle pass on a title screen (GameState not 0, trigger and console not pressed): 111 instruction cycles
+idle pass in a game (GameState 0, no key, no countdown, no console key): 114 instruction cycles
+
+passes of the key loop per frame in the sessions (the main program gets what the handler, the display and the interrupts leave: 16,100 cycles on the game screen, 19,750 on the title screen, less the handler's own work):
+log | frames | median passes a frame | 10th percentile | most
+copyright_key | 697 | 160 | 160 | 178
+fullgame | 1041 | 138 | 106 | 178
+gameover | 704 | 137 | 111 | 139
+inputs | 2495 | 114 | 98 | 178
+inputs1 | 1476 | 140 | 105 | 178
+pause | 1196 | 123 | 105 | 140
+pregame | 587 | 161 | 160 | 178
+rare | 1455 | 122 | 99 | 178
+realkey | 912 | 121 | 104 | 149
+check against the measured budgets: the most passes a frame at the median is 161: 161 x 111 cycles = 17871, within the 19,750 cycles of the title and copyright screens (the copyright wait frame costs the handler almost nothing); the logs of a game: 137 x 114 = 15618 within 16,100 (the handler's play frame takes the rest)

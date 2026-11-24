@@ -1,0 +1,8 @@
+Algorithm models against the ROM executed in tools/cpu6502.py (tools/algorithm_models.py, tests/test_algorithms.py)
+
+start_expansion: Start $A386 run from the entry to $A477 (32751 instructions): maze $0800 (920 bytes) equal; nibble tables $0600 (512 bytes) equal; charset $3000 (808 bytes) equal; title charset $1808 (160 bytes) equal; title charset tail $18A8 (32 bytes) equal
+add_to_score: 6000 additions (both players, scores 0-999,999, amounts 10 ... 99,999, extra-life flag 0/1) compared on the six cells, the flag, the lives, the other player's lives and the cleared ScoreAdd: 0 differences (3153 of them gave an extra life)
+move_delay_tick: 10241 calls (levels 0-255 x entities 0-4 x cycle 0-3 x count 1-2, and player 2's level): 0 differences
+release_timers: 256 calls (every level 0-255, Y clamped to 3): 0 differences
+junction_lookup: 29184 calls (every x on 10 lattice rows and 9 other rows, Pac-Man and ghosts in 4 directions, frightened and not): 0 differences
+steer_to_target: 30000 calls (random positions, targets with equal axes 20 %, 11 states, every mask 0-15, random POKEY values): 0 differences; RANDOM read 0 / 1 times in 14363 / 15637 calls

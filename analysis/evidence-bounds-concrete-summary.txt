@@ -1,0 +1,22 @@
+Static bounds against random concrete frames (tools/check_bounds_concrete.py, 200 frames a class, seed 1): the instruction cycles of the heaviest frame found, and its share of the bound
+class | static bound | heaviest concrete frame | share | above the bound?
+copyright setup        9205   7189    78%  no
+copyright wait         3030    731    24%  no
+title menu             4905   3048    62%  no
+title after game       4705   2344    50%  no
+paused                 3114   1310    42%  no
+board start            3881   1702    44%  no
+start idle             3123    774    25%  no
+game-over countdown    3162    769    24%  no
+level end 0            6096   3565    58%  no
+level end 1            3197   1262    39%  no
+level end 2            3165   1406    44%  no
+level end 3           10322  10310   100%  no
+level end 4           14846  14350    97%  no
+turn control          14226  13657    96%  no
+death                  5923   3085    52%  no
+eaten pause           13150   4320    33%  no
+play                  32049   6206    19%  no
+start tune            32417   3490    11%  no
+ready wait            32233   5983    19%  no
+frames above their bound: 0 classes

@@ -1,0 +1,37 @@
+Coverage of the ROM code by the model comparisons of tools/algorithm_models*.py (tools/analyze_model_coverage.py, OV-58)
+
+instructions executed: 2925 of 2925
+conditional branches taken and not taken: 500 of 615 (0 never executed)
+branches with one outcome only: 115 (88 cannot fall through by construction: the flags of an immediate load, the complement of the branch before, clc / sec; 27 explained one by one below; 0 NOT explained)
+instructions never executed: 0
+
+branches with one outcome that are explained one by one (the outcome that does not happen is impossible in the original or needs a hardware condition the model cannot make):
+  $A48F Start (never taken): `lda GameState / bne`: GameState is 0 on every way into $A477 (the START key clears it, `Start` clears the zero page): the outcome cannot happen
+  $A561 Start (never falls through): `inc StartLevel / bne`: StartLevel is 0-12, never $FF
+  $A56B Start (never falls through): `inc StartLevel / bne`: StartLevel is 0-12, never $FF
+  $A86C FrameDispatch (never falls through): `sbc / bne` in the contact test: the branch is only reached when Pac-Man's y is below the ghost's, so the difference is never 0
+  $A999 FrameDispatch (never taken): `lda EatPause / bne` after the frightened tick: EatPause is 0 here (a non-zero value returned at $A83C)
+  $AA17 FrameDispatch (never falls through): `beq` after `sta HalfSpeedToggle,x` with A = 0 from the `cmp #0 / bne` above it: always taken
+  $ABEA BonusSound (never falls through): `inc BonusSoundStep / bne`: BonusSoundStep is 1-10, never $FF
+  $ABF8 BonusSound (never falls through): `tay / beq` after `lda #$00`: always taken
+  $ACDF DrawLevelIndicator (never falls through): `dec DstPtrL / bne` (three times): the low byte is never 0 while the loop runs (it ends at the index test before)
+  $AD75 BlinkPlayerLabel (never falls through): `inc LabelBlink / bne`: the flag is 1
+  $AD85 BlinkPlayerLabel (never falls through): `tax / tay / beq` after `lda LabelBlink / bne` fell through (A = 0): always taken
+  $AD9D BlinkPlayerLabel (never falls through): `tax / tay / beq` after `lda LabelBlink / bne` fell through (A = 0): always taken
+  $AF96 FrightenedTick (never taken): `and #$BB / beq` on a state that has bit 7 set: the result keeps bit 7, never 0 (dead branch in the original)
+  $B2D1 DrawAllInPlace (never falls through): `tya / beq` after `ldy #$00`: always taken
+  $B2D9 DrawAllInPlace (never falls through): `inc ChompPhase / bne`: the counter is 1-4, never $FF
+  $B413 PowerPelletEaten (never taken): `lsr x3 / and #$3B / beq` on a state with bit 7 set: bit 7 becomes bit 4, so the result is never 0 (dead branch in the original)
+  $B454 AddToScore (never falls through): `tya / beq` after `cpy #0 / bne` fell through: Y is 0, always taken
+  $B4FE JunctionLookup (never falls through): `and #$0E / bne` in the door-square rule: the exits of the two door squares are $0D (up, left, right); after the no-reverse mask they still hold left or right ($0C, $05 -> $04, $09 -> $08), so the result is never 0
+  $B531 FrightenedTick (never falls through): `adc SirenTone / bne` of the siren: SirenStep is 2-5 and the pitch below $40, so the sum is never 0
+  $B5B6 MoveDelayTick (never falls through): `lda PacMoveDelayBase,y / bpl`: the table holds 8, 12, 16 and 20, never a value of $80 or more
+  $B6CC EyesAndHousePerFrame (never falls through): `lda EntityY,x / bne` after the up-arrival test at y $64: the y coordinate is $64, never 0
+  $B9E8 SteerToTarget (never falls through): `lda WantVert,x / bne`: reached only with a non-zero vertical wish (tested at $B9D3)
+  $B9EC SteerToTarget (never falls through): `lda WantHoriz,x / bne`: reached only with a non-zero horizontal wish (tested at $B9DB / $B9F2)
+  $BA4B GhostSeesPacMan (never falls through): `iny / bne` in the scan of the sight lists: the scan would need 256 steps; the lists are 3-6 long and end with $FF
+  $BA64 GhostSeesPacMan (never falls through): `iny / bne` in the scan of the sight lists (see above)
+  $BA90 GhostSeesPacMan (never falls through): `iny / bne` in the scan of the sight lists (see above)
+  $BAA9 GhostSeesPacMan (never falls through): `iny / bne` in the scan of the sight lists (see above)
+
+routines with every instruction executed and both outcomes of every branch, or only the explained ones missing: 79 of 79

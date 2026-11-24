@@ -1,0 +1,10 @@
+More algorithm models against the ROM executed in tools/cpu6502.py (tools/algorithm_models2.py, OV-58); whole memory (zero page, $0200-$9FFF, $D000-$D7FF) compared after every call
+
+sight_test: 20000 calls of GhostSeesPacMan (ghost and Pac-Man on lattice rows and columns, 4 directions, every RTCLOK2 value): 0 differences (719 sightings)
+sight_exhaustive: 524288 calls (every ghost x every Pac-Man position on four lattice rows and four lattice columns, the direction facing him): 0 differences (194704 sightings)
+force_chase: 4000 calls (every start index, 19 ghost states): 0 differences
+chase_timer_siren: 20000 calls (dots eaten around every threshold $B0 / $E0 / $F0 / $0100, RTCLOK2 multiples of 8, ChaseTimer 0 / 1 / any): 0 differences (8233 below $E0, 3415 in $E0-$EF, 8352 from $F0)
+frightened_sound: 12400 calls (random state of the sweep, and 400 frames in a row from the start): 0 differences
+frightened_tick: 20000 calls (phase 0 / 1 / 2 / the end phase of the Level / any, countdown, flash timer, Level 0-19, 19 ghost states): 0 differences (the period ended in 3679)
+eat_dot: 12000 calls (cell values 0 / 1 / 2 / 3 / $80, frozen and blocked flags, same-cell repeat, dot counts across 255 -> 256 and 260): 0 differences (2324 with a dot in the cell and not frozen)
+power_pellet: 15000 calls (the four squares and random squares, every PelletFlags, 19 ghost states): 0 differences (7792 pellets eaten)

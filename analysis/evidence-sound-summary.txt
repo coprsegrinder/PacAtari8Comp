@@ -1,0 +1,12 @@
+The sound and the death in port form (tools/core_sound.py) against the ROM routines (tools/check_sound.py, OV-67): zero page (except the scratch), shadows and the ordered writes to the sound chip and HITCLR compared
+
+clear_pokey: ClearPokeyRegisters $B0E6: 4000 calls: 0 differences
+dot_sound_sweep: DotSoundSweep $B0BC: 4000 calls: 0 differences
+bonus_sound: BonusSound $ABC9 (every step of the sweep, the wrap of the pitch): 4000 calls: 0 differences
+frightened_sound: FrightenedSound $AFD7: 4000 calls: 0 differences
+eyes_returning_sound: EyesReturningSound $B02C: 4000 calls: 0 differences
+siren: the siren $B508: 4000 calls: 0 differences
+ghost_eaten_pause: GhostEatenPause $B049 (both sweeps, the end with Pac-Man's step and the dot): 4000 calls: 0 differences
+death_sequence: DeathSequence $AE3D (states 1-6 and the others): 4000 calls: 0 differences
+death_animation: DeathAnimation $AEF7 (the counters and the pictures, OV-69): 4000 calls: 0 differences
+start_tune_step: the start tune block of FrameDispatch $A7D3 (steps 0-$40, the READY! step $28; every RTCLOK2): 4000 calls: 0 differences

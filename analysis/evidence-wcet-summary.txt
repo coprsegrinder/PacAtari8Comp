@@ -1,0 +1,17 @@
+Static worst case of the vertical-blank handler in instruction cycles, per frame class (tools/static_wcet.py --table; docs/39):
+class | bound | states of the largest run
+title menu             4905  (223919 states)
+title after game       4705  (223814 states)
+copyright setup        9205  (224948 states)
+copyright wait         3030  (448041 states)
+paused                 3114  (223385 states)
+board start            3881  (225889 states)
+game-over countdown    3162  (224110 states)
+level end             17581  (464524 states)   with at most 2 entities in a tunnel zone: 16003   by stage (the entry state of stage 4 proved): 14846 = max of 6096 / 3197 / 3165 / 10322 / 14846   chain check (stage 3 leaves LevelEndStep 4 at the start positions): passed
+start idle             3123  (225011 states)
+start tune            32417  (1709038 states)
+turn control          14226  (1505896 states)
+ready wait            32233  (1206752 states)
+death                  5923  (679995 states)
+eaten pause           13150  (1178980 states)
+play                  32049  (1121338 states)

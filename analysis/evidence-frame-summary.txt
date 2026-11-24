@@ -1,0 +1,5 @@
+The frightened tick, the eaten ghost and the eyes and house in port form (tools/core_frame.py) against the ROM routines (tools/check_frame.py, OV-67): zero page (except the scratch), shadows, sound-chip writes and RANDOM reads compared
+
+frightened_tick: FrightenedTick $AF54 (phase 0 with the siren, the countdown, every phase against the level's end phase, the end): 5000 calls: 0 differences
+ghost_eaten: GhostEaten $A886 (every ghost, the count before $FF .. 4 and wrapped values): 5000 calls: 0 differences
+eyes_and_house: EyesAndHousePerFrame $B69E (eyes steering to the door, the arrival, the house, the whistle, the leaving): 5000 calls: 0 differences

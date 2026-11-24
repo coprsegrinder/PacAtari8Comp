@@ -1,0 +1,6 @@
+Pause key audit (tools/altirra_pause.cmd, tools/analyze_pause.py)
+Key presses seen by the key loop (frame, Paused after, before): f=601 1<-0, f=900 0<-1
+Paused frames: 300 (frames 601-900)
+While paused, from the second paused frame: every entity keeps its position: True; the jiffy clock goes on (+1 per frame): True
+Frames that took the pause exit (jmp ClearPokeyRegisters at $A79C): 300 inside the pause, 0 outside it
+Entities moved in the 200 frames before the pause: True; in the 200 frames after the resume: True

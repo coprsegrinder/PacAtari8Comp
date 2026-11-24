@@ -1,0 +1,70 @@
+Stage 90 (docs/56-discrepancy-analysis.md): the final sweep: 60 new seeded `mixed` games (seeds 4-63) and the three `mixed` games of stage 89 as the final generator makes them (seeds 1-3), 6,000 frames each, the C against the ROM frame by frame (tools/check_c_vs_rom.py), 2026-11-23, gcc 14.2 Release
+First pass (generator before the last guard): 58 of the 60 new games equal in every frame; sweep-23 (frame 4273) and sweep-25 (frame 3059) differ in DliColors only: a change of the attract values in the frame a trigger press starts a new game (a race of the original, docs/55 section 3 kind 4: the ROM's DliColors after that frame depends on the harness's interrupt phase: [0,0,0,0], [58,68,0,0], [58,68,42,0] or all four for budgets 802-803, 799, 800, 801).
+Second pass (the generator keeps triggers and keys, like console presses, 3 frames before to 8 after a change of the attract values; the 30 verified edge games and the golden games are unchanged except mixed-1..3, which are in this sweep):
+
+sweep-01.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-02.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-03.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-04.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-05.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-06.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-07.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-08.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-09.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-10.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-11.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-12.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-13.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-14.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-15.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-16.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-17.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-18.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-19.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-20.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-21.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-22.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-23.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-24.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-25.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-26.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-27.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-28.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-29.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-30.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-31.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-32.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-33.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-34.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-35.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-36.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-37.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-38.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-39.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-40.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-41.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-42.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-43.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-44.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-45.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-46.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-47.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-48.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-49.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-50.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-51.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-52.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-53.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-54.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-55.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-56.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-57.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-58.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-59.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-60.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-61.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-62.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+sweep-63.pmrp: 6000 of 6000 frames compared, NO DIFFERENCE
+
+TOTAL: 63 games, 378000 frames, 1436192 chip writes compared, 1627 RANDOM bytes; every game NO DIFFERENCE
+frame classes seen: board start 589, copyright setup 63, copyright wait 1173, death 31232, paused 70169, play 129773, ready wait 4153, start idle 531, start tune 101502, title menu 36926, turn control 1889

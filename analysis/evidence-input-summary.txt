@@ -1,0 +1,23 @@
+Input processing (stage 63): the executable model tools/input_model.py against the real code and the real game.
+
+Joystick path `$B182-$B1C4`, EXHAUSTIVE on the concrete 6502: STICK 0-15 x open directions 0-15 x current direction 0-15 x wanted direction 0-15 x the player on turn (STICK0 / STICK1): 131072 cases, 0 mismatches (wanted direction, direction, ATRACT, corner flag and the case of the dispatch compared)
+Joystick path, the stick values the OS never gives (16-255: the high bits are kept in the wanted direction): 1440 random cases, 0 mismatches
+Contact test `$A84D-$A883`, EXHAUSTIVE on the concrete 6502: M1PL 0-15 x M2PL 0-15 x the four ghosts' state classes (bit 7, bit 6) x near / far in Y for each ghost: 1048576 cases, 0 mismatches
+
+Joystick path of MovePacMan against tools/input_model.py, in the real game (tools/altirra_stick.cmd, tools/altirra_stick2.cmd; 2 logs): 53207 passes of `$B183-$B1C4`, 0 disagree with the model
+player on turn: player 1: 49536, player 2: 3671
+stick values read (0 = pressed): $0:3314, $1:3353, $2:3388, $3:3299, $4:3266, $5:3430, $6:3320, $7:3302, $8:3408, $9:3304, $A:3241, $B:3207, $C:3332, $D:3394, $E:3360, $F:3289
+cases of the dispatch entered: blocked 362, down 2524, left 4762, none 38096, right 4775, up 2688
+distinct sets of open directions seen at Pac-Man's cell: $3, $5, $6, $7, $9, $A, $B, $C, $D, $E, $F
+passes with two directions pressed (refused): 19926; with three or four (taken as a wanted value that matches no direction): 16729; a direction pressed that was open and different from the current one (taken at once): 20120, of which a reversal: 902; buffered turns (the wanted direction became open): 97; corner flags set: 87
+
+A REAL press (tools/altirra_realstick.cmd: the arrow keys posted to Altirra's window, nothing written to STICK0):
+Joystick path of MovePacMan against tools/input_model.py, in the real game (tools/altirra_realstick.cmd; 1 logs): 19947 passes of `$B183-$B1C4`, 0 disagree with the model
+player on turn: player 1: 19947
+stick values read (0 = pressed): $7:30, $B:31, $D:29, $E:37, $F:19820
+cases of the dispatch entered: blocked 19581, down 28, left 103, right 88, up 147
+distinct sets of open directions seen at Pac-Man's cell: $3, $6, $7, $B, $C, $D, $E, $F
+passes with two directions pressed (refused): 0; with three or four (taken as a wanted value that matches no direction): 0; a direction pressed that was open and different from the current one (taken at once): 3, of which a reversal: 0; buffered turns (the wanted direction became open): 0; corner flags set: 0
+the OS's copy of the port: in 19947 passes the value the game read equals the PIA port (`$D300`) masked to four bits, 0 differ
+
+Contact test in the real game (tools/run_input_audit.ps1; 6 logs): 138104 passes, 0 disagree with the model; outcomes: death 3561, eaten 55, none 134488; passes with a ghost's bit set in both registers: 32781

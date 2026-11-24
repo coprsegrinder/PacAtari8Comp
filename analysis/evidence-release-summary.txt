@@ -1,0 +1,11 @@
+Stage 99 (docs/65-release.md): the release archive made and verified (tools/make_release.py)
+
+archive pacman-a8-port-0.1.0-src.zip  sha256 7953abc15c7c2aee37f6e50e394328c6824f5635516bf14cf37a676d5a95d308  868 files, 3284254 bytes; 0 candidate files left out; git tree not clean (uncommitted changes)
+PASS  1 the archive made twice is byte-identical  (7953abc15c7c2aee)
+PASS  2 every member equals its manifest hash; the manifest lists 867 files
+PASS  3a no forbidden path (ROMs, original/, resources/, build/, external-tools/, binaries, Personal notes.txt)
+PASS  3b no member contains a piece of the cartridge or OS ROMs (110 sampled 32-byte windows)
+PASS  3c the required files are in (LICENSE, NOTICE, docs/63-build-and-dependencies.md), ...
+PASS  4 gcc: the archive extracted to build/release/verify-gcc/tree + only the ROM: build, ctest, vectors, a replay with the golden digests  (ALL PASSED: 10 steps, 0 failed, 1043 s (compiler gcc))
+PASS  4 clang: the archive extracted to build/release/verify-clang/tree + only the ROM: build, ctest, vectors, a replay with the golden digests  (ALL PASSED: 10 steps, 0 failed, 1077 s (compiler clang))
+ALL PASSED

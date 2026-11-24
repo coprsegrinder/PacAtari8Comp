@@ -1,0 +1,31 @@
+Stage 94 follow-up (docs/60, OV-74): the named constants of docs/31 used in core/ and app/ (the owner's decision of 2026-11-23: do the readability pass, checked after each file).
+Method: every file of core/ and app/ was compiled (gcc -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Werror) before and after, at -O0 and -O2, and the disassembly of the object code was compared (addresses removed): a literal replaced by a macro of the same value gives identical code.
+A negative control (one replaced constant changed by one) changed the code of ref.c at both levels.
+
+file                   literals   machine code
+app/app.c              0          identical at -O0 and -O2
+app/board.c            0          identical at -O0 and -O2
+app/dispatch.c         4          identical at -O0 and -O2
+app/init.c             0          identical at -O0 and -O2
+app/intro.c            0          identical at -O0 and -O2
+app/keyloop.c          0          identical at -O0 and -O2
+app/levelend.c         0          identical at -O0 and -O2
+app/newgame.c          1          identical at -O0 and -O2
+app/run_frame.c        0          identical at -O0 and -O2
+app/start.c            0          identical at -O0 and -O2
+app/turn.c             5          identical at -O0 and -O2
+core/draw.c            11         identical at -O0 and -O2
+core/frame.c           9          identical at -O0 and -O2
+core/ghost.c           9          identical at -O0 and -O2
+core/gtia.c            0          identical at -O0 and -O2
+core/house.c           7          identical at -O0 and -O2
+core/pacman.c          5          identical at -O0 and -O2
+core/play.c            10         identical at -O0 and -O2
+core/ref.c             13         identical at -O0 and -O2
+core/score.c           4          identical at -O0 and -O2
+core/sound.c           8          identical at -O0 and -O2
+core/tables.c          0          identical at -O0 and -O2
+core/world.c           0          identical at -O0 and -O2
+
+86 literals replaced by names in 12 files; 19 local macros of ghost.h, pacman.h and ref.h (GHOST_*, PACMAN_*, REF_*) are now aliases of the named constants; all 23 files compile to the same code at -O0 and -O2.
+Names now used in core/ and app/ (directly or through the aliases): 50 of 51. Not used: PMBASE_PAGE, which the C never writes (PMBASE is the platform's). Found on the way: DOTS_LEVEL_COMPLETE_HI of docs/31 was mislabelled (the 1 is the value stored in LevelComplete; the test is DotsEatenHi != 0 and DotsEatenLo == 4); renamed LEVEL_COMPLETE_SET and corrected in docs/31 and core/constants.h.

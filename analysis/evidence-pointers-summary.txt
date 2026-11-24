@@ -1,0 +1,33 @@
+Pointer audit (tools/run_pointer_audit.ps1, tools/analyze_pointer_log.py): 5 harness logs, 76566 frames in the longest, 1332920 probe hits
+  death              62171 frames, 257576 hits
+  extra_life         61917 frames, 438588 hits
+  frightened_cases   76566 frames, 422383 hits
+  fullgame           60324 frames, 126193 hits
+  p2win              57651 frames, 88180 hits
+
+probe   routine                 hits  values seen
+$A3B8  Start                      5  (the rule: see tools/analyze_pointer_log.py)
+$A668  ExpandData              2885  dst $1808-$3328; src $A003-$BE74
+$A8DE  GhostEaten                64  pm $232C-$23C4; pp $242C-$27A4; src $BC1F-$BC43
+$ABBD  ClipEntityAtTunnel       6520  clip $2474-$2774
+$ACC6  DrawLevelIndicator        128  (the rule: see tools/analyze_pointer_log.py)
+$ACF9  DrawLevelIndicator         10  src $BD32-$BD3E
+$AF29  DeathAnimation          9744  dst $2374-$23B4
+$AF33  DeathAnimation          6090  (the rule: see tools/analyze_pointer_log.py)
+$AF41  DeathAnimation         11136  (the rule: see tools/analyze_pointer_log.py)
+$AF4C  DeathAnimation          1392  (the rule: see tools/analyze_pointer_log.py)
+$B301  DrawAllInPlace        181805  src $BAFC-$BB4C
+$B330  DrawAllInPlace        181813  (the rule: see tools/analyze_pointer_log.py)
+$B358  EatDotAtPacMan         11965  mz $0C31-$0EEA
+$B363  EatDotAtPacMan             9  (the rule: see tools/analyze_pointer_log.py)
+$B384  EatDotAtPacMan          1612  (the rule: see tools/analyze_pointer_log.py)
+$B4D0  JunctionLookup        100408  src $060E-$0668
+$B840  GhostStartRoute        44080  src $0686-$06A3
+$B96A  StepAndDrawEntity     351080  src $BAC0-$BAF2
+$B98F  InitDisplay2          422174  dst $242C-$A5A4
+
+Sentinel on Start (first tracepoint hit absorbed, OV-56): present in 5 of 5 logs
+Probes never reached: none
+MazePtr between two cell checks (EatDotAtPacMan, $B358): +-$28 (a row) 679, +-1 (sideways) 9818, reset to the start cell 110, same cell 1353
+Probe $B98F: InitDisplay2 jump into the tail (X=$81, DstPtr=$A5xx, a copy into ROM) 70921, StepAndDrawEntity (ghost) 351253; the pointers at the InitDisplay2 entries: src $0000 dst $A500, src $0410 dst $A578, src $0410 dst $A594, src $0410 dst $A5A4
+Hits that break the rule of their probe: 0

@@ -1,0 +1,179 @@
+Stage 88 (docs/54-performance-and-compatibility.md): the C port on a second operating system, with other compilers and optimisation levels, and what it costs; 2026-11-23
+
+=== 1. Linux: tools/build_test_posix.sh gcc (WSL2 Ubuntu 26.04, gcc 15.2.0, no CMake)
+compiler: gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0; flags: -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Werror -O2 
+system: Linux 6.18.58.1-microsoft-standard-WSL2 x86_64
+libraries built: 7
+PASS build pacman_a8
+PASS build install_assets
+PASS build toolchain_check
+PASS build world_check
+PASS build vector_runner
+PASS build vector_runner_swapped
+PASS build fs_sandbox
+PASS build platform_check
+PASS build assets_check
+PASS build render_check
+PASS build audio_check
+PASS build audio_selftest
+PASS build shell_selftest
+PASS toolchain_check
+PASS world_check
+PASS vectors_identity
+PASS vectors_broken_state
+PASS vectors_broken_random
+PASS vectors_byte_order_swapped
+PASS fs_sandbox
+PASS platform_check
+PASS assets_check
+PASS audio_selftest
+PASS shell_selftest
+PASS vectors_core_ref (16 sets)
+PASS vectors_core_ghost (11 sets)
+PASS vectors_core_pacman (1 sets)
+PASS vectors_core_score (4 sets)
+PASS vectors_core_draw (5 sets)
+PASS vectors_core_sound (10 sets)
+PASS vectors_core_frame (3 sets)
+PASS vectors_core_play (1 sets)
+PASS vectors_core_play_chain (1 sets)
+PASS vectors_gtia (3 sets)
+PASS vectors_gtia_world (3 sets)
+PASS vectors_run_frame (1 sets)
+PASS vectors_run_frame_chain (1 sets)
+PASS vectors_core_app_init (9 sets)
+PASS vectors_core_app_board (10 sets)
+PASS vectors_seq_app_board (2 sets)
+PASS vectors_core_app_frame (2 sets)
+PASS vectors_seq_app_frame (1 sets)
+PASS vectors_sessions (5 sets)
+PASS vectors_keyloop_states (1 sets)
+PASS vectors_power_on (1 sets)
+PASS assets_install: the blob made here is byte-identical to the existing one
+PASS run clock
+PASS run keys
+PASS run 1p
+PASS run 2p
+PASS run fuzz1
+PASS run fuzz2
+PASS run fuzz3
+PASS run fuzz4
+PASS run fuzz5
+PASS run fuzz6
+PASS run bot1
+PASS run bot2
+PASS run bot3
+RESULT: 59 passed, 0 failed
+
+=== 1b. The same with the sanitizers: tools/build_test_posix.sh gcc build/posix-san -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer
+compiler: gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0; flags: -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Werror -O2 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer
+system: Linux 6.18.58.1-microsoft-standard-WSL2 x86_64
+libraries built: 7
+PASS build pacman_a8
+PASS build install_assets
+PASS build toolchain_check
+PASS build world_check
+PASS build vector_runner
+PASS build vector_runner_swapped
+PASS build fs_sandbox
+PASS build platform_check
+PASS build assets_check
+PASS build render_check
+PASS build audio_check
+PASS build audio_selftest
+PASS build shell_selftest
+PASS toolchain_check
+PASS world_check
+PASS vectors_identity
+PASS vectors_broken_state
+PASS vectors_broken_random
+PASS vectors_byte_order_swapped
+PASS fs_sandbox
+PASS platform_check
+PASS assets_check
+PASS audio_selftest
+PASS shell_selftest
+PASS vectors_core_ref (16 sets)
+PASS vectors_core_ghost (11 sets)
+PASS vectors_core_pacman (1 sets)
+PASS vectors_core_score (4 sets)
+PASS vectors_core_draw (5 sets)
+PASS vectors_core_sound (10 sets)
+PASS vectors_core_frame (3 sets)
+PASS vectors_core_play (1 sets)
+PASS vectors_core_play_chain (1 sets)
+PASS vectors_gtia (3 sets)
+PASS vectors_gtia_world (3 sets)
+PASS vectors_run_frame (1 sets)
+PASS vectors_run_frame_chain (1 sets)
+PASS vectors_core_app_init (9 sets)
+PASS vectors_core_app_board (10 sets)
+PASS vectors_seq_app_board (2 sets)
+PASS vectors_core_app_frame (2 sets)
+PASS vectors_seq_app_frame (1 sets)
+PASS vectors_sessions (5 sets)
+PASS vectors_keyloop_states (1 sets)
+PASS vectors_power_on (1 sets)
+PASS assets_install: the blob made here is byte-identical to the existing one
+PASS run clock
+PASS run keys
+PASS run 1p
+PASS run 2p
+PASS run fuzz1
+PASS run fuzz2
+PASS run fuzz3
+PASS run fuzz4
+PASS run fuzz5
+PASS run fuzz6
+PASS run bot1
+PASS run bot2
+PASS run bot3
+RESULT: 59 passed, 0 failed
+
+=== 2. The state hash of every frame, the run digest, the video digest and the audio digest of the 13 replays (117,300 frames): Windows gcc 14.2 -O3 against Linux gcc 15.2 -O2: identical for all 13 (compared byte for byte, line ends aside)
+
+=== 3. Optimisation levels (clang 19.1 and gcc 14.2 on Windows, -O0 -O1 -O2 -O3 -Os), built with -std=c99 -Werror, 4 replays (1p, 2p, fuzz2, bot3, 38,358 frames) with video and audio: all 10 builds 0 warnings, outputs and every frame hash identical to the reference
+clang O0 build=0 warnings=0
+clang O1 build=0 warnings=0
+clang O2 build=0 warnings=0
+clang O3 build=0 warnings=0
+clang Os build=0 warnings=0
+gcc O0 build=0 warnings=0
+gcc O1 build=0 warnings=0
+gcc O2 build=0 warnings=0
+gcc O3 build=0 warnings=0
+gcc Os build=0 warnings=0
+
+=== 4. Language standards: the 39 sources compile with -Wall -Wextra -Wpedantic -Wconversion -Werror -fsyntax-only
+clang -std=c99: 39 of 39 sources compile
+clang -std=c11: 39 of 39 sources compile
+clang -std=c17: 39 of 39 sources compile
+clang -std=c2x: 39 of 39 sources compile
+gcc -std=c99: 39 of 39 sources compile
+gcc -std=c11: 39 of 39 sources compile
+gcc -std=c17: 39 of 39 sources compile
+gcc -std=c2x: 39 of 39 sources compile
+gcc -std=c99: 39 of 39 sources compile
+gcc -std=c11: 39 of 39 sources compile
+gcc -std=c17: 39 of 39 sources compile
+gcc -std=c2x: 39 of 39 sources compile
+(the last four lines: gcc 15.2 on Linux)
+
+=== 5. Time per frame (pacman_a8 run --time --video --audio; 10 replays, 81,300 frames, each run 3 times)
+== Windows 11, gcc 14.2 -O3
+  game  frames 81300 x3  mean 19.1 us  median of medians 18.1 us  median of 99th 42.0 us  median of worst 792.2 us  largest worst 1831.7 us
+  video frames 81300 x3  mean 169.4 us  median of medians 142.9 us  median of 99th 560.7 us  median of worst 1506.5 us  largest worst 2781.7 us
+  audio frames 81300 x3  mean 54.0 us  median of medians 36.9 us  median of 99th 113.2 us  median of worst 1031.5 us  largest worst 2396.5 us
+== Windows 11, clang 19.1 -O3
+  game  frames 81300 x3  mean 19.8 us  median of medians 18.5 us  median of 99th 44.4 us  median of worst 873.7 us  largest worst 1678.6 us
+  video frames 81300 x3  mean 341.0 us  median of medians 301.6 us  median of 99th 957.5 us  median of worst 2553.6 us  largest worst 5191.1 us
+  audio frames 81300 x3  mean 50.7 us  median of medians 33.9 us  median of 99th 103.7 us  median of worst 1022.2 us  largest worst 2692.1 us
+== WSL2 Ubuntu 26.04, gcc 15.2 -O2
+  game  frames 81300 x3  mean 22.2 us  median of medians 21.6 us  median of 99th 51.1 us  median of worst 859.9 us  largest worst 4639.6 us
+  video frames 81300 x3  mean 639.4 us  median of medians 578.5 us  median of 99th 1252.9 us  median of worst 3080.9 us  largest worst 7202.9 us
+  audio frames 81300 x3  mean 64.8 us  median of medians 48.3 us  median of 99th 126.6 us  median of worst 1131.2 us  largest worst 2578.1 us
+
+=== 6. Size
+   text	   data	    bss	    dec	    hex	filename
+ 124484	   3648	18297072	18425204	1192574	build/c82-gcc-Release/shell/pacman_a8.exe
+ 105856	   3676	18296848	18406380	118dbec	build/c82-clang-Release/shell/pacman_a8.exe

@@ -1,0 +1,9 @@
+Seventh set of algorithm models against the ROM executed in tools/cpu6502.py (tools/algorithm_models7.py, OV-58); whole memory (zero page, $0200-$9FFF, $D000-$D7FF) compared after every call, RANDOM reads counted
+
+ghost_behaviour: 15000 calls (21 ghost states, lattice and other positions, timers 0 / any, start-route steps through the end marker, every patrol route and step, RANDOM and the steering through the real JunctionLookup / SteerToTarget): 0 differences
+turn_control: 6000 calls (both players, lives 0-3, the 1UP / 2UP hand-over, the board copies, the high score; 1208 different end states): 0 differences
+frame_dispatch, title screens: 3000 calls (states 1-5, one and two players, every start level): 0 differences
+frame_dispatch, game frame: 12000 calls (648 different combinations of the state flags: pause, demo, level complete, intro tune, turn control, death, eaten-ghost pause; contacts with ghosts, the bonus item, the frightened tick, Pac-Man, the pacing of every ghost; RANDOM count compared): 0 differences
+frame_dispatch, frames of play: 12000 calls (the same, with the intro and the turn handling finished, so that every call runs the play frame: dots and pellets eaten, the level complete flag, contacts, eaten ghosts, deaths, the frightened period): 0 differences
+vbi_handler: 6000 calls (the same frames through $A5FD, with the tunnel clip afterwards): 0 differences
+coverage of the frames of play: frames 12000, death started 2509, ghost eaten 2564, bonus picked 1340, power pellet 717, dot eaten 108, RANDOM used 473, ghost moved 2841, Pac-Man moved 375, level complete 317
