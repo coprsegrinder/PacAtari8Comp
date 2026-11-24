@@ -10,8 +10,10 @@
 The input logic (what keys become the joystick, console and pause key of the Atari) is portable C99 in `shell/frontend.[ch]`, tested by `ctest frontend_check`. `tools/check_front_end.py` runs the whole front end against the headless shell.
 
 ```
-pacman_a8_play [--root DIR] [--scale N] [--fullscreen] [--no-audio] [--seed N] [--record FILE] [--ppm FILE] [--selftest FRAMES] [--menutest] [--exact]
+pacman_a8_play [--root DIR] [--fps N|native|uncapped] [--no-audio] [--seed N] [--record FILE] [--ppm FILE]
 ```
+
+The game **always starts in borderless fullscreen**, at the resolution of the list (docs/68) that is the monitor's size or the nearest to it, and at the FPS (docs/69) that is its refresh rate or the nearest number. Test options: `--windowed [--scale N]`, `--trace FILE`, `--selftest FRAMES`, `--menutest`, `--startuptest`, `--exact`.
 
 Keys: arrows / WASD stick; Ctrl, Z, X, Enter fire (Enter is also START); F1 help (what the function keys do); F2 START, F3 SELECT, F4 OPTION; Space or P pause; Alt+Enter or F11 full screen; Esc the pause menu (Resume Game, Graphics Options with Display Mode, Resolution and FPS, Quit Game: docs/68, docs/69). Pads: D-pad or left stick; A / B fire; Start = START, Back = SELECT, X / Y = OPTION; pad 2 is player 2; the keyboard drives both ports. In the menu the pad's D-pad or stick moves, A selects, B goes back; Start + Back together open it.
 

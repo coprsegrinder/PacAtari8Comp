@@ -88,20 +88,29 @@ static void test_fps(void)
 {
     Menu m;
     MenuLine l[MENU_MAX_LINES];
-    int i, n;
+    int i, n, start;
 
-    /* the list: the monitor first (the default), then native, 30 to 180, then uncapped */
-    CHECK(menu_fps_values[0] == MENU_FPS_MONITOR && menu_fps_values[1] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_count - 1] == MENU_FPS_UNCAPPED);
-    CHECK(menu_fps_values[2] == 30 && menu_fps_values[menu_fps_count - 2] == 180);
-    for (i = 3; i < menu_fps_count - 1; i++) {
+    /* the list: native, 30 to 180, uncapped: no "monitor" or "default" entry */
+    CHECK(menu_fps_values[0] == MENU_FPS_NATIVE && menu_fps_values[menu_fps_count - 1] == MENU_FPS_UNCAPPED);
+    CHECK(menu_fps_values[1] == 30 && menu_fps_values[menu_fps_count - 2] == 180 && menu_fps_count == 10);
+    for (i = 2; i < menu_fps_count - 1; i++) {
         CHECK(menu_fps_values[i] > menu_fps_values[i - 1] && menu_fps_values[i] <= 180);
     }
+    /* the entry for a monitor: its rate when the list has it, else the nearest number (a tie to the higher); native and uncapped are never picked */
+    for (i = 1; i < menu_fps_count - 1; i++) {
+        CHECK(menu_fps_values[menu_fps_nearest(menu_fps_values[i])] == menu_fps_values[i]);       /* every number of the list finds itself */
+    }
+    CHECK(menu_fps_values[menu_fps_nearest(60)] == 60 && menu_fps_values[menu_fps_nearest(59)] == 60 && menu_fps_values[menu_fps_nearest(61)] == 60);
+    CHECK(menu_fps_values[menu_fps_nearest(100)] == 90 && menu_fps_values[menu_fps_nearest(105)] == 120 && menu_fps_values[menu_fps_nearest(110)] == 120);
+    CHECK(menu_fps_values[menu_fps_nearest(240)] == 180 && menu_fps_values[menu_fps_nearest(360)] == 180 && menu_fps_values[menu_fps_nearest(25)] == 30);
+    CHECK(menu_fps_values[menu_fps_nearest(48)] == 60 && menu_fps_values[menu_fps_nearest(50)] == 60 && menu_fps_values[menu_fps_nearest(72)] == 75 && menu_fps_values[menu_fps_nearest(70)] == 75);
+    CHECK(menu_fps_values[menu_fps_nearest(0)] == 60 && menu_fps_values[menu_fps_nearest(-5)] == 60);   /* not known: 60 */
+    CHECK(menu_fps_values[menu_fps_nearest(143)] == 144 && menu_fps_values[menu_fps_nearest(165)] == 165 && menu_fps_values[menu_fps_nearest(170)] == 165 && menu_fps_values[menu_fps_nearest(175)] == 180);
+
     menu_init(&m, 0, 5, 0, 0);
-    CHECK(m.fps == 0 && menu_fps(&m) == 60);               /* the default is the monitor's rate; 60 when it is not known */
-    m.monitor_hz = 180;
+    CHECK(menu_fps(&m) == 60);                              /* before the front end has found the monitor */
+    m.fps = menu_fps_nearest(180);
     CHECK(menu_fps(&m) == 180);
-    m.monitor_hz = 144;
-    CHECK(menu_fps(&m) == 144);
     menu_key(&m, MK_BACK);
     menu_key(&m, MK_DOWN);
     menu_key(&m, MK_SELECT);                               /* the graphics options */
@@ -109,38 +118,53 @@ static void test_fps(void)
     menu_key(&m, MK_DOWN);
     CHECK(m.cursor == 2 && !m.fps_changed && !m.changed);
     n = menu_lines(&m, l);
-    CHECK(n == 7 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < MONITOR (144 HZ) >") != NULL);
+    CHECK(n == 7 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < 180 >") != NULL);
+    start = m.fps;
     menu_key(&m, MK_RIGHT);
-    CHECK(m.fps == 1 && m.fps_changed && !m.changed && menu_fps(&m) == MENU_FPS_NATIVE);
-    menu_lines(&m, l);
-    CHECK(strstr(l[4].text, "NATIVE (59.92)") != NULL);
-    m.fps_changed = 0;
-    menu_key(&m, MK_RIGHT);
-    CHECK(m.fps == 2 && menu_fps(&m) == 30);
-    menu_lines(&m, l);
-    CHECK(strstr(l[4].text, "FPS: < 30 >") != NULL);
-    for (i = 3; i < menu_fps_count; i++) {                 /* on through the list */
-        menu_key(&m, MK_RIGHT);
-        CHECK(m.fps == i);
-    }
-    CHECK(menu_fps(&m) == MENU_FPS_UNCAPPED);
+    CHECK(m.fps == start + 1 && m.fps_changed && !m.changed && menu_fps(&m) == MENU_FPS_UNCAPPED);
     menu_lines(&m, l);
     CHECK(strstr(l[4].text, "UNCAPPED") != NULL);
-    menu_key(&m, MK_RIGHT);                                /* round to the monitor again */
-    CHECK(m.fps == 0 && menu_fps(&m) == 144);
+    m.fps_changed = 0;
+    menu_key(&m, MK_RIGHT);                                /* round to native */
+    CHECK(m.fps == 0 && menu_fps(&m) == MENU_FPS_NATIVE);
+    menu_lines(&m, l);
+    CHECK(strstr(l[4].text, "NATIVE (59.92)") != NULL);
+    menu_key(&m, MK_RIGHT);
+    CHECK(m.fps == 1 && menu_fps(&m) == 30);
+    menu_lines(&m, l);
+    CHECK(strstr(l[4].text, "FPS: < 30 >") != NULL);
     menu_key(&m, MK_LEFT);                                 /* and back */
-    CHECK(menu_fps(&m) == MENU_FPS_UNCAPPED);
+    CHECK(menu_fps(&m) == MENU_FPS_NATIVE);
     menu_key(&m, MK_SELECT);
-    CHECK(m.fps == 0);
+    CHECK(m.fps == 1);
     m.fps_changed = 0;
     menu_key(&m, MK_UP);                                   /* the other items are still there and do not touch the FPS */
     menu_key(&m, MK_RIGHT);
-    CHECK(m.res != 5 && m.changed && !m.fps_changed && m.fps == 0);
+    CHECK(m.res != 5 && m.changed && !m.fps_changed && m.fps == 1);
     menu_key(&m, MK_UP);
     menu_key(&m, MK_RIGHT);
-    CHECK(m.fullscreen == 1 && m.fps == 0);
+    CHECK(m.fullscreen == 1 && m.fps == 1);
     menu_key(&m, MK_UP);                                   /* wrap: up from the display mode is the FPS */
     CHECK(m.cursor == 2);
+}
+
+static void test_nearest_resolution(void)
+{
+    int i;
+
+    for (i = 0; i < menu_resolution_count; i++) {          /* a monitor that is in the list finds itself */
+        CHECK(menu_res_nearest(menu_resolutions[i].w, menu_resolutions[i].h) == i);
+    }
+    CHECK(menu_res_nearest(2560, 1440) == 9 && menu_resolutions[menu_res_nearest(2560, 1440)].h == 1440);
+    CHECK(menu_resolutions[menu_res_nearest(1920, 1080)].w == 1920 && menu_resolutions[menu_res_nearest(1920, 1080)].h == 1080);
+    CHECK(menu_resolutions[menu_res_nearest(3440, 1440)].w == 3440);
+    /* a size that is not in the list: the nearest one */
+    CHECK(menu_resolutions[menu_res_nearest(1536, 864)].w == 1600 && menu_resolutions[menu_res_nearest(1536, 864)].h == 900);        /* a 1920 x 1080 laptop at 125 % */
+    CHECK(menu_resolutions[menu_res_nearest(2880, 1800)].w == 2560 && menu_resolutions[menu_res_nearest(2880, 1800)].h == 1600);     /* a 16:10 laptop panel */
+    CHECK(menu_resolutions[menu_res_nearest(2736, 1824)].w == 2560 && menu_resolutions[menu_res_nearest(2736, 1824)].h == 1600);     /* a 3:2 tablet */
+    CHECK(menu_resolutions[menu_res_nearest(1366, 768)].w == 1366 && menu_resolutions[menu_res_nearest(1360, 768)].w == 1366);
+    CHECK(menu_resolutions[menu_res_nearest(7680, 4320)].w == 5120 || menu_resolutions[menu_res_nearest(7680, 4320)].w == 3840);     /* beyond the list: its largest */
+    CHECK(menu_resolutions[menu_res_nearest(320, 200)].w == 640 && menu_resolutions[menu_res_nearest(320, 200)].h == 480);
 }
 
 static void test_help(void)
@@ -298,6 +322,7 @@ int main(void)
     test_navigation();
     test_help();
     test_fps();
+    test_nearest_resolution();
     test_text();
     test_list();
     test_fit();

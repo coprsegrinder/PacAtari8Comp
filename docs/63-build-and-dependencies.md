@@ -124,7 +124,7 @@ every test module (103 of them); the long ones (the comparisons with the ROM) ta
 
 ## 5. The Python side
 
-**199 tools** in `tools/` and **103 test modules** in `tests/`, all Python 3 with the standard library, **except**:
+**200 tools** in `tools/` and **103 test modules** in `tests/`, all Python 3 with the standard library, **except**:
 
 | Module | Files that import it | Used for |
 |---|---|---|

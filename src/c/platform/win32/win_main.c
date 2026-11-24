@@ -1,5 +1,6 @@
 /* platform/win32/win_main.c - the Windows 11 front end of the port: a window, the keyboard and XInput pads, the sound device (stage J, docs/67).
- *   pacman_a8_play [--root DIR] [--scale N] [--fullscreen] [--no-audio] [--seed N] [--record FILE] [--ppm FILE] [--selftest FRAMES] [--menutest] [--exact]
+ *   pacman_a8_play [--root DIR] [--fps N|native|uncapped] [--no-audio] [--seed N] [--record FILE] [--ppm FILE]   (the game always starts in borderless fullscreen, at the monitor's resolution and refresh rate)
+ *   test options: [--windowed [--scale N]] [--trace FILE] [--selftest FRAMES] [--menutest] [--startuptest] [--exact]
  * It is the interactive twin of the headless shell: the same Shell, the same renderer, the same sound model, driven by the player instead of a replay.  What it adds is only what a machine does around the game:
  *   - keyboard / pad -> FrontKeys -> FrameInput (shell/frontend.c, portable and tested), one per frame;
  *   - the frame clock: the sound device's buffer (the game runs a frame whenever the device has less than two frames of sound queued), or the system timer when there is no device (--no-audio);
@@ -43,7 +44,8 @@
 #define TITLE "Pac-Man (Atari 8-bit) - C port"
 
 typedef struct Options {
-    int scale, fullscreen, no_audio, exact, menutest;
+    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest;
+    const char *fps, *trace;
     long selftest;
     uint32_t seed;
     int have_seed;
@@ -309,10 +311,9 @@ static void layout(int cw, int ch, DisplayRect *r)
 
 /* ---------------------------------------------------------------- the FPS option: in-between pictures (docs/69) */
 
-#define RING 8                           /* the game frames kept for the in-between pictures */
+#define RING 32                          /* the game frames kept for the in-between pictures (the moves of an object are looked for up to 20 frames back) */
 #define SAMPLES_PER_FRAME (AUDIO_RATE / FRAME_HZ)
 static InterpFrame *ring;                /* the last RING game frames, with their layers */
-static InterpPair ring_pair[RING];       /* how the objects moved from the frame before to this one */
 static unsigned long ring_id[RING];
 static int ring_ok[RING];
 static InterpOut iout;                   /* the picture made for the window */
@@ -323,6 +324,7 @@ static double tau_a;                     /* the game time (in frames) of the pic
 static uint64_t tau_t0;
 static int tau_valid;
 static uint64_t next_tick_ns;
+static PmFile *trace_file;                /* --trace FILE: every picture made, with the game time and where the objects are drawn (for the analysis of the motion) */
 static unsigned long tick_count, blit_count;    /* pictures made at a tick, and pictures that differed from the one before (the FPS test counts them) */
 typedef HRESULT(WINAPI *DwmFlushFn)(void);
 static DwmFlushFn dwm_flush;
@@ -330,26 +332,52 @@ static int bars_x = -1, bars_y = -1, bars_w = -1, bars_h = -1, bars_cw = -1, bar
 
 static int interp_wanted(void)
 {
-    return ring != NULL && !opt.exact && opt.selftest <= 0 && menu_fps(&menu) != MENU_FPS_NATIVE;
+    return ring != NULL && !opt.exact && menu_fps(&menu) != MENU_FPS_NATIVE;
 }
 
-static void detect_monitor_hz(void)
+static int mon_w, mon_h;                 /* the size of the monitor the window is on, in pixels */
+
+/* the size and refresh rate of a monitor (its current mode); 0 when Windows does not say */
+static void monitor_mode(HMONITOR hm, int *w, int *h, int *hz)
 {
     MONITORINFOEXA mi;
     DEVMODEA dm;
 
+    *w = *h = *hz = 0;
+    memset(&mi, 0, sizeof mi);
+    mi.cbSize = sizeof mi;
+    if (hm == NULL || !GetMonitorInfoA(hm, (MONITORINFO *)&mi)) {
+        return;
+    }
+    *w = (int)(mi.rcMonitor.right - mi.rcMonitor.left);
+    *h = (int)(mi.rcMonitor.bottom - mi.rcMonitor.top);
+    memset(&dm, 0, sizeof dm);
+    dm.dmSize = sizeof dm;
+    if (EnumDisplaySettingsA(mi.szDevice, ENUM_CURRENT_SETTINGS, &dm)) {
+        if (dm.dmDisplayFrequency > 1) {
+            *hz = (int)dm.dmDisplayFrequency;
+        }
+        if (dm.dmPelsWidth > 0 && dm.dmPelsHeight > 0) {
+            *w = (int)dm.dmPelsWidth;
+            *h = (int)dm.dmPelsHeight;
+        }
+    }
+}
+
+static void detect_monitor_hz(void)
+{
+    int w, h, hz;
+
     if (hwnd == NULL) {
         return;
     }
-    memset(&mi, 0, sizeof mi);
-    mi.cbSize = sizeof mi;
-    if (!GetMonitorInfoA(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), (MONITORINFO *)&mi)) {
-        return;
+    monitor_mode(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &w, &h, &hz);
+    if (hz > 0) {
+        menu.monitor_hz = hz;
     }
-    memset(&dm, 0, sizeof dm);
-    dm.dmSize = sizeof dm;
-    if (EnumDisplaySettingsA(mi.szDevice, ENUM_CURRENT_SETTINGS, &dm) && dm.dmDisplayFrequency > 1) {
-        menu.monitor_hz = (int)dm.dmDisplayFrequency;
+    if (w > 0) {
+        mon_w = w;
+        mon_h = h;
     }
 }
 
@@ -686,11 +714,7 @@ static void run_frame(void)
         memcpy(colour, f->colour, sizeof colour);
         ring_ok[slot] = 1;
         ring_id[slot] = frames_run;
-        if (frames_run > 0 && ring_ok[prev] && ring_id[prev] == frames_run - 1) {
-            interp_pair(&ring[prev], f, &ring_pair[slot]);
-        } else {
-            memset(&ring_pair[slot], 0, sizeof ring_pair[slot]);
-        }
+        interp_follow(f, (frames_run > 0 && ring_ok[prev] && ring_id[prev] == frames_run - 1) ? &ring[prev] : NULL);
     } else {
         render_frame(&renderer, &shell.world, colour);
     }
@@ -713,11 +737,17 @@ static void run_frame(void)
 
 /* ---------------------------------------------------------------- one picture of the FPS option */
 
-static const InterpFrame *ring_get(unsigned long id)
+static const InterpFrame *ring_get_ctx(void *ctx, unsigned long id)
 {
     size_t s = (size_t)(id % RING);
 
+    (void)ctx;
     return (ring_ok[s] && ring_id[s] == id) ? &ring[s] : NULL;
+}
+
+static const InterpFrame *ring_get(unsigned long id)
+{
+    return ring_get_ctx(NULL, id);
 }
 
 /* which game time (in frames) the picture of this moment shows: the frame the sound device is playing, so that picture and sound are one; the model runs on the clock at exactly the game's rate and is
@@ -754,26 +784,31 @@ static int interp_step(uint64_t t_start_ns)
 {
     const int target = menu_fps(&menu);
     uint64_t now = pm_time_ns();
-    const InterpFrame *fa, *fb;
-    const InterpPair *pp = NULL;
     InterpDirty d;
     RECT rc;
     DisplayRect pr;
-    double tau, phi;
+    double tau;
     long A;
     int changed;
 
     if (target == MENU_FPS_UNCAPPED) {
         /* as many pictures as there are: one whenever the picture is not the one before */
-    } else if (menu_fps_values[menu.fps] == MENU_FPS_MONITOR && dwm_flush != NULL && target >= 50) {
+    } else if (dwm_flush != NULL && target >= 30 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
+        /* the monitor's refresh is the tick when the rate fits it (180 on 180 Hz, 60 or 90 on 180 Hz, 60 on 59.94): every n-th refresh, so that no picture is shown a refresh too long or too short */
         static uint64_t last_flush;
-        (void)dwm_flush();                                      /* the monitor's own refresh is the tick */
+        static int flushed;
+        int every = (menu.monitor_hz + target / 2) / target;
+        (void)dwm_flush();                                      /* one refresh a call, so that the game and the sound are looked after between the refreshes of a slow rate */
         now = pm_time_ns();
-        if (now - last_flush < 1500000u) {                      /* DwmFlush came back at once (the window is minimised or covered): do not spin */
+        if (now - last_flush < (uint64_t)(0.4e9 / (double)menu.monitor_hz)) {   /* DwmFlush came back at once (the window is minimised or covered): do not spin */
             Sleep(2);
             now = pm_time_ns();
         }
         last_flush = now;
+        if (++flushed < every) {
+            return 0;
+        }
+        flushed = 0;
     } else {
         uint64_t period = (uint64_t)(1e9 / (double)target);
         if (next_tick_ns == 0) {
@@ -796,34 +831,39 @@ static int interp_step(uint64_t t_start_ns)
     if (tau < 0.0) {
         tau = 0.0;
     }
-    A = (long)floor(tau);
-    phi = tau - (double)A;
-    fa = ring_get((unsigned long)A);
-    fb = ring_get((unsigned long)A + 1u);
-    if (fa == NULL) {                                           /* the frame is not there (just after the FPS was changed, or the game is not at that frame yet): the newest there is */
-        unsigned long id = frames_run > 0 ? frames_run - 1u : 0u;
-        fa = ring_get(id);
-        if (fa == NULL) {
+    {
+        unsigned long newest = frames_run > 0 ? frames_run - 1u : 0u;
+        const InterpFrame *nf;
+
+        if (tau > (double)newest) {                              /* the game is not that far yet */
+            tau = (double)newest;
+        }
+        A = (long)floor(tau);
+        if (ring_get((unsigned long)A) == NULL) {                /* the frame is not there (just after the FPS was changed): the newest there is */
+            if (ring_get(newest) == NULL) {
+                Sleep(1);
+                return 0;
+            }
+            tau = (double)newest;
+        }
+        GetClientRect(hwnd, &rc);
+        layout(rc.right, rc.bottom, &pr);
+        if (pr.w < 1 || pr.h < 1 || interp_out_size(&iout, pr.w, pr.h) != 0) {
             Sleep(1);
             return 0;
         }
-        A = (long)id;
-        phi = 0.0;
-        fb = NULL;
+        interp_render(&iout, ring_get_ctx, NULL, tau, newest, &d);
+        nf = ring_get((unsigned long)iout.base_id);
+        shown_colour = nf != NULL ? nf->colour : NULL;
+        if (trace_file != NULL && nf != NULL) {
+            int k;
+            pm_fs_printf(trace_file, "%.3f %.4f %lu", (double)now / 1e6, tau, (unsigned long)iout.base_id);
+            for (k = 0; k < INTERP_OBJECTS; k++) {
+                pm_fs_printf(trace_file, " %.3f %.3f %.3f %.3f", nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 + iout.last_offx[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 + iout.last_offy[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 : -1.0);
+            }
+            pm_fs_printf(trace_file, "\n");
+        }
     }
-    if (fb != NULL) {
-        pp = &ring_pair[(size_t)(((unsigned long)A + 1u) % RING)];
-    } else {
-        phi = 0.0;
-    }
-    GetClientRect(hwnd, &rc);
-    layout(rc.right, rc.bottom, &pr);
-    if (pr.w < 1 || pr.h < 1 || interp_out_size(&iout, pr.w, pr.h) != 0) {
-        Sleep(1);
-        return 0;
-    }
-    interp_render(&iout, fa, fb, pp, phi, (unsigned long)A, &d);
-    shown_colour = (fb != NULL && phi >= 0.5) ? fb->colour : fa->colour;
     iout_have = 1;
     changed = d.full || d.n > 0;
     tick_count++;
@@ -1029,7 +1069,7 @@ static long compare_window(void)
 /* ---------------------------------------------------------------- the menu test: real key messages, then what the window really shows */
 
 enum { OP_KEY, OP_SYSKEY, OP_WAIT, OP_FRAMES, OP_CHECK };
-enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END };
+enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP };
 
 typedef struct Op {
     int kind, a, b;
@@ -1093,6 +1133,13 @@ static void mt_result(int ok, const char *what, const char *fmt, ...)
 static void mt_build(void)
 {
     int pass, i;
+
+    if (opt.startuptest) {                              /* the game as the player starts it: nothing set */
+        mt_add(OP_WAIT, 1500, 0);
+        mt_add(OP_CHECK, CK_STARTUP, 0);
+        mt_add(OP_CHECK, CK_QUIT, 1);
+        return;
+    }
 
     mt_add(OP_FRAMES, 640, 0);                         /* the game is running (START at 150, then the stick) */
     mt_add(OP_KEY, VK_F1, 0);                          /* F1 in the game: the help, a pause */
@@ -1408,7 +1455,7 @@ static void mt_check(int id, int arg)
         int v = menu_fps(&menu), idx = menu.fps, ok;
         char what[64];
 
-        snprintf(what, sizeof what, "fps choice %d", idx);
+        snprintf(what, sizeof what, "fps choice %d (%d)", idx, v);
         if (IsIconic(hwnd)) {                                                    /* a test needs its window on the screen: something minimised it (not this program): note it and bring it back */
             if (mt_log != NULL) {
                 pm_fs_printf(mt_log, "NOTE  the window was minimised during choice %d (by something else); restored\n", idx);
@@ -1424,11 +1471,37 @@ static void mt_check(int id, int arg)
             mt_result(ok, what, "uncapped: the game %.2f frames/s, %.1f different pictures/s; CPU %.0f %% of one core", game, blits, cpu);
         } else {
             ok = ok && fabs(ticks - (double)v) / (double)v <= 0.06 && iout_have;
-            mt_result(ok, what, "%s %d: the game %.2f frames/s, %.1f pictures/s, %.1f of them different from the one before; CPU %.0f %% of one core", idx == 0 ? "the monitor's" : "fixed", v, game, ticks, blits, cpu);
+            mt_result(ok, what, "%d: the game %.2f frames/s, %.1f pictures/s, %.1f of them different from the one before; CPU %.0f %% of one core", v, game, ticks, blits, cpu);
         }
         break;
     }
+    case CK_STARTUP: {
+        int mw, mh, mhz;
+        MONITORINFO mi;
+        RECT wr;
+        int want_res, want_fps;
+        LONG style = GetWindowLong(hwnd, GWL_STYLE);
+
+        mi.cbSize = sizeof mi;
+        GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mi);
+        GetWindowRect(hwnd, &wr);
+        monitor_mode(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mw, &mh, &mhz);
+        want_res = menu_res_nearest(mw, mh);
+        want_fps = menu_fps_nearest(mhz);
+        mt_result(menu.fullscreen == 1 && fullscreen == 1 && !(style & WS_CAPTION) && wr.left == mi.rcMonitor.left && wr.top == mi.rcMonitor.top && wr.right == mi.rcMonitor.right && wr.bottom == mi.rcMonitor.bottom,
+                  "starts in borderless fullscreen", "window %ldx%ld at %ld,%ld, monitor %dx%d, no frame: %s", wr.right - wr.left, wr.bottom - wr.top, wr.left, wr.top, mw, mh, (style & WS_CAPTION) ? "NO" : "yes");
+        mt_result(menu.res == want_res && menu.res >= 0, "starts at the monitor's resolution", "monitor %dx%d; the list entry chosen is %dx%d (%s), the nearest is %dx%d", mw, mh, menu_resolutions[menu.res < 0 ? 0 : menu.res].w, menu_resolutions[menu.res < 0 ? 0 : menu.res].h,
+                  menu.res >= 0 && menu_resolutions[menu.res].w == mw && menu_resolutions[menu.res].h == mh ? "exactly the monitor's" : "the nearest", menu_resolutions[want_res].w, menu_resolutions[want_res].h);
+        mt_result(menu.fps == want_fps && menu_fps(&menu) == menu_fps_values[want_fps] && menu.monitor_hz == mhz, "starts at the monitor's refresh rate", "monitor %d Hz; the FPS chosen is %d (%s)", mhz, menu_fps(&menu),
+                  menu_fps(&menu) == mhz ? "exactly the monitor's" : "the nearest");
+        mt_result(frames_run > 30 && interp_wanted() == (menu_fps(&menu) != MENU_FPS_NATIVE), "the game is running", "%lu frames in 1.5 s", frames_run);
+        break;
+    }
     case CK_QUIT:
+        if (arg == 1) {
+            quit = 1;
+            break;
+        }
         mt_result(menu.quit == 1 && quit == 1, "quit game", "the menu set quit=%d, the program quit=%d", menu.quit, quit);
         break;
     default:
@@ -1590,6 +1663,15 @@ static void parse_args(int argc, char **argv)
             opt.fullscreen = 1;
         } else if (strcmp(argv[i], "--no-audio") == 0) {
             opt.no_audio = 1;
+        } else if (strcmp(argv[i], "--trace") == 0 && i + 1 < argc) {
+            opt.trace = argv[++i];
+        } else if (strcmp(argv[i], "--windowed") == 0) {
+            opt.windowed = 1;
+        } else if (strcmp(argv[i], "--fps") == 0 && i + 1 < argc) {
+            opt.fps = argv[++i];
+        } else if (strcmp(argv[i], "--startuptest") == 0) {
+            opt.startuptest = 1;
+            opt.menutest = 1;
         } else if (strcmp(argv[i], "--menutest") == 0) {
             opt.menutest = 1;
         } else if (strcmp(argv[i], "--exact") == 0) {
@@ -1621,12 +1703,30 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     (void)show;
     SetProcessDPIAware();
     parse_args(__argc, __argv);
-    if (opt.exact) {                                            /* the pixel comparison of the self test: the client area is the picture itself */
-        menu_init(&menu, 0, -1, RENDER_W, RENDER_H);
-    } else if (opt.scale > 0) {
-        menu_init(&menu, opt.fullscreen, -1, RENDER_W * opt.scale, RENDER_H * opt.scale);
-    } else {
-        menu_init(&menu, opt.fullscreen, MENU_DEFAULT_RES, 0, 0);
+    {
+        int mw, mh, mhz;
+        monitor_mode(MonitorFromPoint((POINT){0, 0}, MONITOR_DEFAULTTOPRIMARY), &mw, &mh, &mhz);
+        if (opt.exact) {                                        /* the pixel comparison of the self test: the client area is the picture itself */
+            menu_init(&menu, 0, -1, RENDER_W, RENDER_H);
+        } else if (opt.scale > 0 && opt.windowed) {             /* a window size asked for on the command line (with --windowed) */
+            menu_init(&menu, 0, -1, RENDER_W * opt.scale, RENDER_H * opt.scale);
+        } else {
+            menu_init(&menu, !opt.windowed, MENU_DEFAULT_RES, 0, 0);
+            if (!opt.windowed && mw > 0) {                      /* the game starts in borderless fullscreen with the resolution of the list that is the monitor's, or the nearest to it */
+                menu.res = menu_res_nearest(mw, mh);
+            }
+        }
+        menu.monitor_hz = mhz;
+        menu.fps = menu_fps_nearest(mhz);                       /* and the FPS that is its refresh rate, or the nearest number */
+        if (opt.fps != NULL) {                                  /* a test or a wish on the command line */
+            if (strcmp(opt.fps, "native") == 0) {
+                menu.fps = 0;
+            } else if (strcmp(opt.fps, "uncapped") == 0) {
+                menu.fps = menu_fps_count - 1;
+            } else if (atoi(opt.fps) > 0) {
+                menu.fps = menu_fps_nearest(atoi(opt.fps));
+            }
+        }
     }
     if (opt.root == NULL) {
         /* Started by a double click, the current folder is the program's own.
@@ -1725,8 +1825,11 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     (void)rep;
     if (opt.menutest) {
-        mt_log = pm_fs_open("logs/menutest.txt", "wb");
+        mt_log = pm_fs_open(opt.startuptest ? "logs/startuptest.txt" : "logs/menutest.txt", "wb");
         mt_build();
+    }
+    if (opt.trace != NULL) {
+        trace_file = pm_fs_open(opt.trace, "wb");
     }
     t_start = t_prev = pm_time_ns();
     while (!quit) {
@@ -1817,7 +1920,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     if (writer.buf != NULL) {
         size_t size = 0;
-        const char *path = opt.record != NULL ? opt.record : (opt.menutest ? "logs/menutest.pmrp" : "logs/selftest.pmrp");
+        const char *path = opt.record != NULL ? opt.record : (opt.startuptest ? "logs/startuptest.pmrp" : (opt.menutest ? "logs/menutest.pmrp" : "logs/selftest.pmrp"));
         ReplayError e = replay_writer_finish(&writer, &size);
         if (e == REPLAY_OK) {
             (void)shell_make_folders();
@@ -1875,6 +1978,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
             pm_fs_printf(rep, "high score: %06ld\n", shell_highscore_value(&shell));
             pm_fs_close(rep);
         }
+    }
+    if (trace_file != NULL) {
+        pm_fs_close(trace_file);
     }
     wl_close(wloop);
     wa_close(wa);

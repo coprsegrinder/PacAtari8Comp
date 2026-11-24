@@ -23,11 +23,29 @@ static int failures;
     } while (0)
 
 #define NFRAMES 900
+#define OW 768
+#define OH 480
 static uint8_t blob_buf[ASSET_BLOB_MAX], ram_image[65536];
 static Assets assets;
 static Shell sh;
 static Renderer rend;
 static InterpFrame *frames;          /* every frame of the game */
+static unsigned long g_limit;        /* the newest frame the getter shows: the game is that far */
+
+static const InterpFrame *get_game(void *ctx, unsigned long id)
+{
+    (void)ctx;
+    return id <= g_limit && id < NFRAMES ? &frames[id] : NULL;
+}
+
+typedef struct Two {
+    const InterpFrame *f[2];
+} Two;
+
+static const InterpFrame *get_two(void *ctx, unsigned long id)
+{
+    return id < 2 ? ((Two *)ctx)->f[id] : NULL;
+}
 
 static void play(void)
 {
@@ -42,33 +60,30 @@ static void play(void)
     memset(&k, 0, sizeof k);
     for (n = 0; n < NFRAMES; n++) {
         k.start = (uint8_t)(n >= 100 && n < 106);
-        if (n >= 300 && n < 420) {
-            k.pad[0].left = 1;
-        } else {
-            k.pad[0].left = 0;
-        }
-        if (n >= 420 && n < 520) {
-            k.pad[0].up = 1;
-        } else {
-            k.pad[0].up = 0;
-        }
+        k.pad[0].left = (uint8_t)(n >= 300 && n < 420);
+        k.pad[0].up = (uint8_t)(n >= 420 && n < 520);
         front_frame(&f, &k, &in);
         shell_frame(&sh, &in);
         render_frame_layers(&rend, &sh.world, frames[n].colour, &frames[n].layers);
         interp_prepare(&frames[n]);
+        interp_follow(&frames[n], n > 0 ? &frames[n - 1] : NULL);
     }
 }
 
-/* the nearest-pixel picture of a frame at ow x oh, written here independently of interp.c */
-static void reference(const InterpFrame *f, int ow, int oh, uint32_t *out)
+static uint32_t rgb_of(uint8_t c)
+{
+    return 0xFF000000u | ((uint32_t)NTSC_PALETTE[c][0] << 16) | ((uint32_t)NTSC_PALETTE[c][1] << 8) | NTSC_PALETTE[c][2];
+}
+
+/* the nearest-pixel picture of a frame at OW x OH, written here independently of interp.c */
+static void reference(const InterpFrame *f, uint32_t *out)
 {
     int x, y;
 
-    for (y = 0; y < oh; y++) {
-        for (x = 0; x < ow; x++) {
-            int sx = (int)(((2LL * x + 1) * RENDER_W) / (2LL * ow)), sy = (int)(((2LL * y + 1) * RENDER_H) / (2LL * oh));
-            uint8_t c = f->colour[sy * RENDER_W + sx];
-            out[(size_t)y * (size_t)ow + (size_t)x] = 0xFF000000u | ((uint32_t)NTSC_PALETTE[c][0] << 16) | ((uint32_t)NTSC_PALETTE[c][1] << 8) | NTSC_PALETTE[c][2];
+    for (y = 0; y < OH; y++) {
+        for (x = 0; x < OW; x++) {
+            int sx = (int)(((2LL * x + 1) * RENDER_W) / (2LL * OW)), sy = (int)(((2LL * y + 1) * RENDER_H) / (2LL * OH));
+            out[(size_t)y * (size_t)OW + (size_t)x] = rgb_of(f->colour[sy * RENDER_W + sx]);
         }
     }
 }
@@ -84,7 +99,7 @@ static size_t diff(const uint32_t *a, const uint32_t *b, size_t n)
 }
 
 /* centroid (in output pixels) of the pixels that are this colour */
-static int centroid(const uint32_t *p, int ow, int oh, uint32_t colour, double *cx, double *cy, long *n)
+static int centroid_n(const uint32_t *p, int ow, int oh, uint32_t colour, double *cx, double *cy)
 {
     int x, y;
     double sx = 0, sy = 0;
@@ -99,7 +114,6 @@ static int centroid(const uint32_t *p, int ow, int oh, uint32_t colour, double *
             }
         }
     }
-    *n = c;
     if (c == 0) {
         return 0;
     }
@@ -108,29 +122,69 @@ static int centroid(const uint32_t *p, int ow, int oh, uint32_t colour, double *
     return 1;
 }
 
-static void test_ends_and_motion(void)
+static int centroid(const uint32_t *p, uint32_t colour, double *cx, double *cy)
+{
+    return centroid_n(p, OW, OH, colour, cx, cy);
+}
+
+static uint32_t object_colour(const InterpFrame *f, int k)
+{
+    int x, y;
+
+    for (y = f->obj[k].y0; y < f->obj[k].y1; y++) {
+        for (x = f->obj[k].x0; x < f->obj[k].x1; x++) {
+            if (f->layers.cov[y * RENDER_W + x] & (1u << k)) {
+                return rgb_of(f->colour[y * RENDER_W + x]);
+            }
+        }
+    }
+    return 0;
+}
+
+/* the playfield alone: a picture of the title screen at any moment is the picture of the frame */
+static void test_still(void)
 {
     InterpOut o;
-    InterpPair pr;
-    uint32_t *ref;
-    const int OW = 768, OH = 480;
-    int n, k, found = 0;
-    InterpDirty dirty;
-    size_t px = (size_t)OW * (size_t)OH;
+    InterpDirty d;
+    uint32_t *ref = (uint32_t *)malloc((size_t)OW * OH * sizeof(uint32_t));
+    const size_t px = (size_t)OW * OH;
 
-    ref = (uint32_t *)malloc(px * sizeof(uint32_t));
     CHECK(ref != NULL && interp_out_init(&o) == 0 && interp_out_size(&o, OW, OH) == 0);
-    /* a pair of frames in which an object moved, and kept its shape */
-    for (n = 400; n < NFRAMES - 1 && !found; n++) {      /* a ghost that moved and kept its shape */
-        interp_pair(&frames[n], &frames[n + 1], &pr);
+    g_limit = 90;
+    reference(&frames[70], ref);
+    interp_render(&o, get_game, NULL, 70.0, 90, &d);
+    CHECK(d.full && diff(o.work, ref, px) == 0);
+    interp_render(&o, get_game, NULL, 70.4, 90, &d);
+    CHECK(!d.full && d.n == 0 && diff(o.work, ref, px) == 0);          /* the same picture again: nothing changed */
+    reference(&frames[71], ref);
+    interp_render(&o, get_game, NULL, 70.6, 90, &d);                   /* nothing moves on the title screen: the next frame's playfield */
+    CHECK(diff(o.work, ref, px) == 0);
+    interp_out_free(&o);
+    free(ref);
+}
+
+/* a ghost between two of its steps: it glides the whole time, and is where the game put it when the game did */
+static void test_glide(void)
+{
+    InterpOut o;
+    InterpDirty d;
+    uint32_t *ref = (uint32_t *)malloc((size_t)OW * OH * sizeof(uint32_t));
+    unsigned long n, e0 = 0, e1 = 0;
+    int k = 0, found = 0, i, steps, distinct = 0;
+    const double s = (double)OW / RENDER_W;
+    uint32_t colour = 0;
+    double ax = 0, ay = 0, bx = 0, by = 0, lastx = -1e9, lasty = -1e9;
+
+    CHECK(ref != NULL && interp_out_init(&o) == 0 && interp_out_size(&o, OW, OH) == 0);
+    for (n = 450; n + 8 < NFRAMES && !found; n++) {                    /* a ghost with two steps in a row three frames apart */
         for (k = 0; k < 4; k++) {
-            if (pr.ok[k] && (pr.dx[k] != 0 || pr.dy[k] != 0) && frames[n].obj[k].count == frames[n + 1].obj[k].count) {
+            if (frames[n].mv[k] && frames[n + 3].mv[k] && !frames[n + 1].mv[k] && !frames[n + 2].mv[k] && frames[n + 3].run[k] == frames[n].run[k] && frames[n + 3].obj[k].present &&
+                frames[n + 3].obj[k].count == frames[n].obj[k].count) {
+                e0 = n;
+                e1 = n + 3;
                 found = 1;
                 break;
             }
-        }
-        if (found) {
-            break;
         }
     }
     CHECK(found);
@@ -138,211 +192,238 @@ static void test_ends_and_motion(void)
         free(ref);
         return;
     }
-    interp_pair(&frames[n], &frames[n + 1], &pr);
-    printf("  frames %d -> %d: object %d moved by (%d, %d) picture pixels\n", n, n + 1, k, pr.dx[k], pr.dy[k]);
-
-    /* phi = 0 is frame A, phi = 1 is frame B, to the pixel */
-    interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.0, (unsigned long)n, &dirty);
-    reference(&frames[n], OW, OH, ref);
-    CHECK(diff(o.work, ref, px) == 0 && dirty.full);
-    interp_render(&o, &frames[n], &frames[n + 1], &pr, 1.0, (unsigned long)n, &dirty);
-    reference(&frames[n + 1], OW, OH, ref);
-    CHECK(diff(o.work, ref, px) == 0);
-    interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.0, (unsigned long)n, &dirty);
-    interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.0, (unsigned long)n, &dirty);
-    CHECK(!dirty.full && dirty.n == 0);                  /* the same picture again: nothing changed */
-
-    /* in between: the picture is not A's and not B's, the object is a fraction of its move on the way, nothing is mixed */
-    {
-        double phis[5] = {0.0, 0.25, 0.49, 0.5, 0.75};
-        double cx[5], cy[5];
-        long cnt[5];
-        int i, have = 1;
-        uint32_t colour;
-        uint32_t *seen = (uint32_t *)calloc(256, sizeof(uint32_t));
-        size_t j;
-        long mixed = 0;
-        uint32_t lut[256];
-
-        /* the colour of the object: the colour of one of its pixels */
-        {
-            int x, y;
-            uint8_t c = 0;
-            int found_c = 0;
-            for (y = frames[n].obj[k].y0; y < frames[n].obj[k].y1 && !found_c; y++) {
-                for (x = frames[n].obj[k].x0; x < frames[n].obj[k].x1 && !found_c; x++) {
-                    if (frames[n].layers.cov[y * RENDER_W + x] & (1u << k)) {
-                        c = frames[n].colour[y * RENDER_W + x];
-                        found_c = 1;
-                    }
-                }
-            }
-            colour = 0xFF000000u | ((uint32_t)NTSC_PALETTE[c][0] << 16) | ((uint32_t)NTSC_PALETTE[c][1] << 8) | NTSC_PALETTE[c][2];
+    colour = object_colour(&frames[e0], k);
+    CHECK(colour != 0);
+    printf("  ghost %d: steps at frames %lu and %lu, from (%d, %d) to (%d, %d)\n", k, e0, e1, frames[e0].px[k], frames[e0].py[k], frames[e1].px[k], frames[e1].py[k]);
+    g_limit = e1 + 2;                                                  /* the next step is made: the way is the straight one between the two steps */
+    reference(&frames[e0], ref);
+    CHECK(centroid(ref, colour, &ax, &ay));
+    reference(&frames[e1], ref);
+    CHECK(centroid(ref, colour, &bx, &by));
+    steps = 4 * (int)(e1 - e0);
+    for (i = 0; i <= steps; i++) {
+        double t = (double)e0 + (double)i / 4.0, cx = 0, cy = 0, u = (double)i / (double)steps, ex = ax + (bx - ax) * u, ey = ay + (by - ay) * u;
+        interp_render(&o, get_game, NULL, t, g_limit, &d);
+        CHECK(centroid(o.work, colour, &cx, &cy));
+        if (i == 0 || i == steps || i == steps / 2) {
+            printf("    t = e0 + %.2f: centre (%.2f, %.2f); the straight way from (%.2f, %.2f) to (%.2f, %.2f) is at (%.2f, %.2f)\n", (double)i / 4.0, cx, cy, ax, ay, bx, by, ex, ey);
         }
-        for (i = 0; i < 256; i++) {
-            lut[i] = 0xFF000000u | ((uint32_t)NTSC_PALETTE[i][0] << 16) | ((uint32_t)NTSC_PALETTE[i][1] << 8) | NTSC_PALETTE[i][2];
+        CHECK(fabs(cx - ex) <= 1.2 * s && fabs(cy - ey) <= 1.2 * s);   /* on the straight way (the shape may change by a pixel when the ghost's feet do) */
+        if (fabs(cx - lastx) + fabs(cy - lasty) > 0.25) {
+            distinct++;
         }
-        for (i = 0; i < 5; i++) {
-            interp_render(&o, &frames[n], &frames[n + 1], &pr, phis[i], (unsigned long)n, &dirty);
-            have &= centroid(o.work, OW, OH, colour, &cx[i], &cy[i], &cnt[i]);
-        }
-        CHECK(have);
-        if (have) {
-            double s = (double)OW / RENDER_W;
-            double ax = cx[0], ay = cy[0];
-            /* the frame-B end of the move, measured on the B picture itself */
-            double bx = 0.0, by = 0.0;
-            long bn;
-            reference(&frames[n + 1], OW, OH, ref);
-            CHECK(centroid(ref, OW, OH, colour, &bx, &by, &bn));
-            printf("  centroid of the object's colour (output pixels, 2 x): A (%.2f, %.2f)  B (%.2f, %.2f)  expected move (%.2f, %.2f)\n", ax, ay, bx, by, pr.dx[k] * s, pr.dy[k] * s);
-            for (i = 0; i < 5; i++) {
-                double ex = ax + phis[i] * (bx - ax), ey = ay + phis[i] * (by - ay);
-                printf("    phi %.2f: (%.2f, %.2f), %ld pixels; straight line from A to B: (%.2f, %.2f)\n", phis[i], cx[i], cy[i], cnt[i], ex, ey);
-                CHECK(fabs(cx[i] - ex) <= 1.0 * s && fabs(cy[i] - ey) <= 1.0 * s);        /* on the line from A to B to within a picture pixel */
-            }
-            CHECK(fabs((cx[3] - ax) - (bx - ax) * 0.5) <= 1.0 * s);
-            CHECK(fabs(cx[1] - ax) > 0.0 || fabs(cy[1] - ay) > 0.0 || (pr.dx[k] == 0 && pr.dy[k] == 0));
-        }
-        /* a picture in between is neither A's nor B's, but every pixel of it is a colour of the game: no mixing */
-        interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.25, (unsigned long)n, &dirty);
-        reference(&frames[n], OW, OH, ref);
-        CHECK(diff(o.work, ref, px) > 0);
-        for (j = 0; j < px; j++) {
-            int c;
-            for (c = 0; c < 256; c++) {
-                if (lut[c] == o.work[j]) {
-                    seen[c] = 1;
-                    break;
-                }
-            }
-            if (c == 256) {
-                mixed++;
-            }
-        }
-        CHECK(mixed == 0);
-        {
-            int colours = 0, c;
-            for (c = 0; c < 256; c++) {
-                colours += seen[c] != 0;
-            }
-            CHECK(colours >= 2 && colours <= 12);       /* the picture of a game uses few colours; a mix would add many */
-        }
-        free(seen);
+        lastx = cx;
+        lasty = cy;
     }
-    /* sweeping phi: only rows near the objects change between two pictures of one nearest frame */
-    interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.10, (unsigned long)n, &dirty);
-    interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.20, (unsigned long)n, &dirty);
-    CHECK(!dirty.full && dirty.n > 0);
+    CHECK(distinct >= 3);                                              /* it is at several places in between (a step is 2 game pixels = 4 output pixels here); the native game has two places for these 3 frames */
+    /* the next step not yet made: the ghost goes on the way it went, and no further than one step */
     {
-        uint32_t *keep = (uint32_t *)malloc(px * sizeof(uint32_t));
-        int yy, xx, i2;
-        long outside = 0;
-        interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.10, (unsigned long)n, &dirty);
-        memcpy(keep, o.work, px * sizeof(uint32_t));
-        interp_render(&o, &frames[n], &frames[n + 1], &pr, 0.20, (unsigned long)n, &dirty);
-        for (yy = 0; yy < OH; yy++) {
-            for (xx = 0; xx < OW; xx++) {
-                int in = 0;
-                for (i2 = 0; i2 < dirty.n; i2++) {
-                    in |= xx >= dirty.r[i2][0] && xx < dirty.r[i2][2] && yy >= dirty.r[i2][1] && yy < dirty.r[i2][3];
-                }
-                if (!in && keep[(size_t)yy * (size_t)OW + (size_t)xx] != o.work[(size_t)yy * (size_t)OW + (size_t)xx]) {
-                    outside++;
-                }
-            }
-        }
-        CHECK(outside == 0);                                /* what is reported as changed covers all that changed */
-        free(keep);
+        double cx0 = 0, cy0 = 0, cx1 = 0, cy1 = 0, v, one_step = hypot(bx - ax, by - ay);
+        g_limit = e1;
+        interp_render(&o, get_game, NULL, (double)e1, g_limit, &d);
+        CHECK(centroid(o.work, colour, &cx0, &cy0));
+        g_limit = e1 + 1;                                              /* the game is one frame ahead and the next step is not there yet */
+        interp_render(&o, get_game, NULL, (double)e1 + 0.99, g_limit, &d);
+        CHECK(centroid(o.work, colour, &cx1, &cy1));
+        v = hypot(cx1 - cx0, cy1 - cy0);
+        printf("    the next step not made yet: the ghost went %.2f output pixels in the frame after its step (one step is %.2f)\n", v, one_step);
+        CHECK(v <= one_step + 1.5 * s);
+        CHECK(fabs((cx1 - cx0) * (bx - ax)) + fabs((cy1 - cy0) * (by - ay)) >= 0.0 && ((cx1 - cx0) * (bx - ax) + (cy1 - cy0) * (by - ay) >= -1.0));   /* the way of the step before, not back */
     }
     interp_out_free(&o);
     free(ref);
 }
 
-/* an object that jumps, appears or vanishes is not moved */
-static void test_jumps(void)
+/* the point of it: the motion of a ghost over 140 frames of play is smoother than the game's own, which moves it in steps; measured on the pictures (the centre of the ghost's colour, sampled at 180 a second):
+ * the unevenness of the speed is the spread of the steps between pictures divided by their mean, over stretches of steady movement */
+static double unevenness(int native, unsigned long newest_ahead, uint32_t colour, int k)
 {
     InterpOut o;
-    InterpPair pr;
-    InterpFrame *a = &frames[400], *b = (InterpFrame *)malloc(sizeof *b);
-    uint32_t *ref;
-    int x, y, k;
-    InterpDirty dirty;
-    const int OW = 768, OH = 480;
-    size_t px = (size_t)OW * (size_t)OH;
+    InterpDirty d;
+    double xs[1200], ys[1200], total = 0.0;
+    int n = 0, w, i, stretches = 0;
+    double t;
+    const int W = 36;
+    const int UW = 1536, UH = 960;                       /* a 4 x picture: a step of the game is 8 pixels, not 4 */
 
-    ref = (uint32_t *)malloc(px * sizeof(uint32_t));
-    CHECK(b != NULL && ref != NULL);
-    for (k = 0; k < 4; k++) {
-        if (a->obj[k].present) {
-            break;
+    interp_out_init(&o);
+    interp_out_size(&o, UW, UH);
+    g_limit = NFRAMES - 1;
+    for (t = 460.0; t < 600.0 && n < 1200; t += 1.0 / 3.0) {
+        double cx = 0, cy = 0;
+        unsigned long newest = (unsigned long)floor(t) + newest_ahead;
+        interp_render(&o, get_game, NULL, native ? floor(t) : t, newest, &d);
+        if (!centroid_n(o.work, UW, UH, colour, &cx, &cy)) {
+            cx = cy = -1.0;
+        }
+        xs[n] = cx;
+        ys[n] = cy;
+        n++;
+    }
+    for (w = 0; w + W < n; w += W) {
+        double v[36], m = 0.0, sd = 0.0;
+        int ok = 1, steps = 0;
+        unsigned long f0 = 460u + (unsigned long)w / 3u;
+        for (i = 0; i < 12; i++) {
+            steps += frames[f0 + (unsigned long)i].mv[k];
+        }
+        if (steps < 3) {
+            continue;                                      /* a stretch with fewer than three steps in 12 frames is a stop or a start, not steady movement */
+        }
+        for (i = 0; i < W; i++) {
+            if (xs[w + i] < 0 || xs[w + i + 1] < 0) {
+                ok = 0;
+                break;
+            }
+            v[i] = hypot(xs[w + i + 1] - xs[w + i], ys[w + i + 1] - ys[w + i]);
+            m += v[i];
+        }
+        if (!ok) {
+            continue;
+        }
+        m /= W;
+        if (m < 0.1) {
+            continue;                                      /* not moving steadily */
+        }
+        for (i = 0; i < W; i++) {
+            sd += (v[i] - m) * (v[i] - m);
+        }
+        total += sqrt(sd / W) / m;
+        stretches++;
+    }
+    interp_out_free(&o);
+    return stretches > 0 ? total / stretches : -1.0;
+}
+
+static void test_smoothness(void)
+{
+    int k, best = -1;
+    double nat, in1, in2;
+    unsigned long n;
+    long moves[4] = {0, 0, 0, 0};
+
+    for (n = 460; n < 600; n++) {
+        for (k = 0; k < 4; k++) {
+            moves[k] += frames[n].mv[k];
         }
     }
-    CHECK(k < 4);
-    *b = *a;                                              /* frame b: player k thrown 40 pixels to the right (a tunnel, a respawn) */
-    memset(b->layers.cov, 0, sizeof b->layers.cov);
+    for (k = 0; k < 4; k++) {
+        if (best < 0 || moves[k] > moves[best]) {
+            best = k;
+        }
+    }
+    CHECK(moves[best] >= 20);
+    nat = unevenness(1, 0, object_colour(&frames[500], best), best);
+    in1 = unevenness(0, 1, object_colour(&frames[500], best), best);
+    in2 = unevenness(0, 2, object_colour(&frames[500], best), best);
+    printf("  ghost %d, %ld steps in 140 frames: unevenness of its speed %.2f in the game's own pictures (a 4 x picture, 12-frame stretches with at least 3 steps); %.2f with the in-between pictures (game 1 frame ahead), %.2f (2 frames ahead)\n", best, moves[best], nat, in1, in2);
+    CHECK(nat > 0.0 && in1 > 0.0 && in1 < nat * 0.5 && in2 <= in1 + 0.05);                 /* at least twice as even */
+}
+
+/* nothing is mixed: every pixel is a colour of the game */
+static void test_no_mixing(void)
+{
+    InterpOut o;
+    InterpDirty d;
+    uint32_t lut[256];
+    unsigned long n;
+    long mixed = 0;
+    int i, t;
+    const size_t px = (size_t)OW * OH;
+
+    for (i = 0; i < 256; i++) {
+        lut[i] = rgb_of((uint8_t)i);
+    }
+    CHECK(interp_out_init(&o) == 0 && interp_out_size(&o, OW, OH) == 0);
+    g_limit = NFRAMES - 1;
+    for (n = 500; n < 530; n++) {
+        for (t = 0; t < 8; t++) {
+            size_t j;
+            interp_render(&o, get_game, NULL, (double)n + (double)t / 8.0, g_limit, &d);
+            for (j = 0; j < px; j++) {
+                int c;
+                for (c = 0; c < 256 && lut[c] != o.work[j]; c++) {
+                }
+                mixed += c == 256;
+            }
+        }
+    }
+    CHECK(mixed == 0);
+    interp_out_free(&o);
+}
+
+/* an object that jumps or vanishes is not moved */
+static void test_jumps(void)
+{
+    static InterpFrame two[2];
+    InterpOut o;
+    InterpDirty d;
+    Two ctx;
+    uint32_t *ref = (uint32_t *)malloc((size_t)OW * OH * sizeof(uint32_t));
+    const size_t px = (size_t)OW * OH;
+    int x, y, k;
+
+    two[0] = frames[400];
+    for (k = 0; k < 4 && !two[0].obj[k].present; k++) {
+    }
+    CHECK(k < 4 && ref != NULL);
+    two[1] = two[0];                                       /* frame 2: player k thrown 40 pixels to the right (a tunnel, a respawn) */
+    memset(two[1].layers.cov, 0, sizeof two[1].layers.cov);
     for (y = 0; y < RENDER_H; y++) {
         for (x = 0; x < RENDER_W; x++) {
-            uint8_t v = a->layers.cov[y * RENDER_W + x];
+            uint8_t v = two[0].layers.cov[y * RENDER_W + x];
             if (v & (1u << k)) {
                 if (x + 40 < RENDER_W) {
-                    b->layers.cov[y * RENDER_W + x + 40] |= (uint8_t)(1u << k);
+                    two[1].layers.cov[y * RENDER_W + x + 40] |= (uint8_t)(1u << k);
                 }
                 v = (uint8_t)(v & ~(1u << k));
             }
-            b->layers.cov[y * RENDER_W + x] |= v;
+            two[1].layers.cov[y * RENDER_W + x] |= v;
         }
     }
-    interp_prepare(b);
-    interp_pair(a, b, &pr);
-    CHECK(!pr.ok[k]);
-    interp_out_init(&o);
-    interp_out_size(&o, OW, OH);
-    interp_render(&o, a, b, &pr, 0.25, 400, &dirty);
-    reference(a, OW, OH, ref);
-    CHECK(diff(o.work, ref, px) == 0);                    /* not moved: exactly the nearer frame's picture */
-    interp_render(&o, a, b, &pr, 0.75, 400, &dirty);
-    memset(b->layers.cov, 0, sizeof b->layers.cov);       /* the object vanishes */
-    interp_prepare(b);
-    interp_pair(a, b, &pr);
-    CHECK(!pr.ok[k]);
+    interp_prepare(&two[1]);
+    interp_follow(&two[0], NULL);
+    interp_follow(&two[1], &two[0]);
+    CHECK(two[1].run[k] != two[0].run[k] && !two[1].mv[k]);        /* a new run: not a move */
+    ctx.f[0] = &two[0];
+    ctx.f[1] = &two[1];
+    CHECK(interp_out_init(&o) == 0 && interp_out_size(&o, OW, OH) == 0);
+    interp_render(&o, get_two, &ctx, 0.25, 1, &d);
+    reference(&two[0], ref);
+    CHECK(diff(o.work, ref, px) == 0);                     /* not moved: exactly the nearer frame's picture */
+    interp_render(&o, get_two, &ctx, 0.75, 1, &d);
+    CHECK(d.full);                                         /* the nearer frame is the other one now */
+    memset(two[1].layers.cov, 0, sizeof two[1].layers.cov);        /* the object vanishes */
+    interp_prepare(&two[1]);
+    interp_follow(&two[1], &two[0]);
+    CHECK(!two[1].obj[k].present && two[1].run[k] != two[0].run[k]);
     interp_out_free(&o);
-    free(b);
     free(ref);
 }
 
-/* a 2304 x 1440 picture (a 6 x scale: the 3440 x 1440 and the 2560 x 1440 screens) takes how long, and a 1152 x 720 one */
+/* a 2304 x 1440 picture (a 6 x scale) takes how long: a picture of the same nearest frame, and one when the nearest frame changes */
 static void test_cost(void)
 {
     InterpOut o;
-    InterpPair pr;
+    InterpDirty d;
     const int sizes[3][2] = {{1152, 720}, {2304, 1440}, {3456, 2160}};
-    int s, i, n0 = 500, kk;
-    InterpDirty dirty;
+    int s, i;
 
-    for (; n0 < NFRAMES - 60; n0++) {                     /* a pair in which something moves */
-        interp_pair(&frames[n0], &frames[n0 + 1], &pr);
-        for (kk = 0; kk < INTERP_OBJECTS && !(pr.ok[kk] && (pr.dx[kk] || pr.dy[kk])); kk++) {
-        }
-        if (kk < INTERP_OBJECTS) {
-            break;
-        }
-    }
     interp_out_init(&o);
+    g_limit = NFRAMES - 1;
     for (s = 0; s < 3; s++) {
         clock_t t;
         double ms_move, ms_full;
         interp_out_size(&o, sizes[s][0], sizes[s][1]);
-        interp_pair(&frames[n0], &frames[n0 + 1], &pr);
-        interp_render(&o, &frames[n0], &frames[n0 + 1], &pr, 0.1, (unsigned long)n0, &dirty);
+        interp_render(&o, get_game, NULL, 500.0, g_limit, &d);
         t = clock();
         for (i = 0; i < 200; i++) {
-            interp_render(&o, &frames[n0], &frames[n0 + 1], &pr, 0.05 + 0.002 * i, (unsigned long)n0, &dirty);
+            interp_render(&o, get_game, NULL, 500.0 + 0.0123 * i, g_limit, &d);
         }
         ms_move = (double)(clock() - t) * 1000.0 / CLOCKS_PER_SEC / 200.0;
         t = clock();
         for (i = 0; i < 40; i++) {
-            interp_render(&o, &frames[n0 + i], &frames[n0 + 1 + i], &pr, 0.1, (unsigned long)(n0 + i), &dirty);
+            interp_render(&o, get_game, NULL, 520.0 + (double)i, g_limit, &d);
         }
         ms_full = (double)(clock() - t) * 1000.0 / CLOCKS_PER_SEC / 40.0;
         printf("  %dx%d: a picture of the same nearest frame %.3f ms, with a new nearest frame (base rebuilt) %.3f ms\n", sizes[s][0], sizes[s][1], ms_move, ms_full);
@@ -362,7 +443,10 @@ int main(void)
         return 2;
     }
     play();
-    test_ends_and_motion();
+    test_still();
+    test_glide();
+    test_smoothness();
+    test_no_mixing();
     test_jumps();
     test_cost();
     free(frames);

@@ -1,14 +1,16 @@
 /* render/interp.h - the in-between pictures of the FPS option (docs/69).  Portable C99, no allocation except InterpOut's two pictures.
  *
- * The game makes one new picture every 1/59.92 s.  A front end that shows more (or other) pictures a second than that needs pictures of the moments between two game frames.  They are invented here,
- * by the port itself and not by the graphics driver or the monitor, in the one way that keeps the picture the original's:
- *   - the PLAYFIELD (maze, dots, the text) is not moved or mixed: it is the playfield of the nearer of the two game frames, so it changes at the moments the game changed it;
- *   - the PLAYERS AND MISSILES (the four ghosts, and Pac-Man with the pop-up score, which the game draws with the missiles) are the objects that move.  Each is found in the two frames, the way it moved
- *     between them is measured (by matching its pixels: a shift of at most INTERP_MAX_MOVE pixels), and the object of the nearer frame is drawn the fraction of that move it is away from its frame;
- *   - an object that is in one frame only, or moved further than INTERP_MAX_MOVE (a ghost through the tunnel, a ghost back at the house), or does not match, is not moved: it is the nearer frame's;
+ * The game makes one new picture every 1/59.92 s, but it moves each ghost and Pac-Man in steps of two pixels every second or third frame (its own speed pacing), so its motion is a staircase.  A front end
+ * that shows more (or other) pictures a second than the game has frames needs pictures of the moments in between, and to look smooth they have to glide through the steps.  They are invented here, by the
+ * port itself and not by the graphics driver or the monitor, in the one way that keeps the picture the original's:
+ *   - the PLAYFIELD (maze, dots, the text) is not moved or mixed: it is the playfield of the nearer game frame, so it changes at the moments the game changed it;
+ *   - the PLAYERS AND MISSILES (the four ghosts, and Pac-Man with the pop-up score, which the game draws with the missiles) are the objects that move.  Each is found in the frames, how it moved from each
+ *     frame to the next is measured (by matching its pixels: a shift of at most INTERP_MAX_MOVE), and the place it is drawn at is on the straight way from the place of one of its moves to the place of the
+ *     next one, so that it glides the whole time between two steps of the game and is where the game put it at the moment the game did.  The game is a frame or two ahead of the picture, which is often the
+ *     next step already; when it is not, the object goes on the way its last step went, no further than one step;
+ *   - an object that appears, vanishes, jumps further than INTERP_MAX_MOVE (a ghost through the tunnel, back at the house) or does not match is not moved: it is the nearer frame's;
  *   - nothing is mixed: every pixel of an in-between picture is a colour the game's own rules (the priority of GTIA, the colour registers of that line) give it, and the picture is made at the size it is
- *     shown at, so a sprite can stand a fraction of a game pixel away from where the game put it (nearest pixel, never smoothed).
- * With phi = 0 the picture is exactly the nearest-pixel picture of frame A, with phi = 1 that of frame B. */
+ *     shown at, so a sprite can stand a fraction of a game pixel away from where the game put it (nearest pixel, never smoothed). */
 #ifndef PM_RENDER_INTERP_H
 #define PM_RENDER_INTERP_H
 
@@ -31,6 +33,9 @@ typedef struct InterpFrame {
     uint8_t colour[RENDER_W * RENDER_H];
     RenderLayers layers;
     InterpObject obj[INTERP_OBJECTS];
+    int px[INTERP_OBJECTS], py[INTERP_OBJECTS];   /* where each object is, counted from the start of its run of frames (the sum of the matched moves; see interp_follow) */
+    int run[INTERP_OBJECTS];                      /* which run: a new one starts when the object appears or jumps */
+    int mv[INTERP_OBJECTS];                       /* 1 when the object moved since the frame before */
 } InterpFrame;
 
 /* how each object moved from one frame to the next one: `ok` is 0 for an object that is in one frame only, jumped, or did not match */
@@ -55,6 +60,12 @@ typedef struct InterpOut {
 /* after render_frame_layers: finds the objects in f->layers.cov */
 void interp_prepare(InterpFrame *f);
 
+/* after interp_prepare, with the frame before it (NULL for the first): matches the objects of the two frames and keeps where each is (px, py, run, mv) */
+void interp_follow(InterpFrame *cur, const InterpFrame *prev);
+
+/* how a frame is found by its number (NULL when it is not kept) */
+typedef const InterpFrame *(*InterpGet)(void *ctx, unsigned long id);
+
 /* how the objects of `a` moved to `b` */
 void interp_pair(const InterpFrame *a, const InterpFrame *b, InterpPair *p);
 
@@ -70,8 +81,10 @@ int interp_out_init(InterpOut *o);
 int interp_out_size(InterpOut *o, int ow, int oh);   /* the pictures are ow x oh from now on (nothing is done when they already are); 1 when there is no memory */
 void interp_out_free(InterpOut *o);                  /* gives the two pictures back */
 
-/* the picture at `phi` (0 to 1) between frame a (number id_a) and frame b (number id_a + 1; b and pair may be NULL: the picture of a).  Makes o->work and says what differs from what the previous call
- * made (everything when the nearest frame changed or the size did), so that only that needs to be drawn to the window */
-void interp_render(InterpOut *o, const InterpFrame *a, const InterpFrame *b, const InterpPair *pair, double phi, unsigned long id_a, InterpDirty *d);
+/* the picture at the game time t (in frames: 5.5 is half way from frame 5 to frame 6), the frames up to `newest` being made.  The playfield is that of the nearer frame; the ghosts and Pac-Man are drawn
+ * where they are on the way between the moves of the game (their steps are every second or third frame, so they glide the whole time between two steps), which needs the next move when it is made, and the
+ * way of the move before it when it is not.  Makes o->work and says what differs from what the previous call made (everything when the nearest frame changed or the size did), so that only that needs to
+ * be drawn to the window.  o->base_id is the number of the nearer frame */
+void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned long newest, InterpDirty *d);
 
 #endif

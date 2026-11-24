@@ -12,7 +12,7 @@ const MenuResolution menu_resolutions[] = {
 };
 const int menu_resolution_count = (int)(sizeof menu_resolutions / sizeof menu_resolutions[0]);
 
-const int menu_fps_values[] = {MENU_FPS_MONITOR, MENU_FPS_NATIVE, 30, 60, 75, 90, 120, 144, 165, 180, MENU_FPS_UNCAPPED};
+const int menu_fps_values[] = {MENU_FPS_NATIVE, 30, 60, 75, 90, 120, 144, 165, 180, MENU_FPS_UNCAPPED};
 const int menu_fps_count = (int)(sizeof menu_fps_values / sizeof menu_fps_values[0]);
 
 #define MAIN_ITEMS 3        /* Resume Game, Graphics Options, Quit Game */
@@ -21,6 +21,7 @@ const int menu_fps_count = (int)(sizeof menu_fps_values / sizeof menu_fps_values
 void menu_init(Menu *m, int fullscreen, int res, int custom_w, int custom_h)
 {
     memset(m, 0, sizeof *m);
+    m->fps = menu_fps_nearest(60);
     m->fullscreen = fullscreen != 0;
     m->res = (res >= 0 && res < menu_resolution_count) ? res : -1;
     m->custom_w = custom_w;
@@ -63,12 +64,45 @@ static void step_fps(Menu *m, int dir)
 
 int menu_fps(const Menu *m)
 {
-    int v = menu_fps_values[m->fps];
+    return menu_fps_values[m->fps];
+}
 
-    if (v == MENU_FPS_MONITOR) {
-        return m->monitor_hz > 0 ? m->monitor_hz : 60;
+int menu_res_nearest(int w, int h)
+{
+    int i, best = 0;
+    long best_d = -1;
+
+    for (i = 0; i < menu_resolution_count; i++) {
+        long dw = (long)menu_resolutions[i].w - w, dh = (long)menu_resolutions[i].h - h;
+        long d = (dw < 0 ? -dw : dw) + (dh < 0 ? -dh : dh);
+        if (best_d < 0 || d < best_d || (d == best_d && (long)menu_resolutions[i].w * menu_resolutions[i].h > (long)menu_resolutions[best].w * menu_resolutions[best].h)) {
+            best = i;
+            best_d = d;
+        }
     }
-    return v;
+    return best;
+}
+
+int menu_fps_nearest(int hz)
+{
+    int i, best = -1;
+    long best_d = 0;
+
+    if (hz <= 0) {
+        hz = 60;
+    }
+    for (i = 0; i < menu_fps_count; i++) {
+        long v = menu_fps_values[i], d;
+        if (v <= 0) {
+            continue;                                        /* native and uncapped are not rates */
+        }
+        d = v > hz ? v - hz : hz - v;
+        if (best < 0 || d < best_d || (d == best_d && v > menu_fps_values[best])) {
+            best = i;
+            best_d = d;
+        }
+    }
+    return best;
 }
 
 static void toggle_mode(Menu *m)
@@ -205,13 +239,7 @@ int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
         put_line(&out[n++], buf, 0, 1, m->cursor == 1);
         {
             int v = menu_fps_values[m->fps];
-            if (v == MENU_FPS_MONITOR) {
-                if (m->monitor_hz > 0) {
-                    snprintf(buf, sizeof buf, "FPS: < MONITOR (%d HZ) >", m->monitor_hz);
-                } else {
-                    snprintf(buf, sizeof buf, "FPS: < MONITOR >");
-                }
-            } else if (v == MENU_FPS_NATIVE) {
+            if (v == MENU_FPS_NATIVE) {
                 snprintf(buf, sizeof buf, "FPS: < NATIVE (59.92) >");
             } else if (v == MENU_FPS_UNCAPPED) {
                 snprintf(buf, sizeof buf, "FPS: < UNCAPPED >");

@@ -211,30 +211,157 @@ static void redraw(InterpOut *o, const InterpFrame *f, const int offx[INTERP_OBJ
     }
 }
 
-void interp_render(InterpOut *o, const InterpFrame *a, const InterpFrame *b, const InterpPair *pair, double phi, unsigned long id_a, InterpDirty *d)
+void interp_follow(InterpFrame *cur, const InterpFrame *prev)
 {
-    const InterpFrame *near_f = a;
-    unsigned long near_id = id_a;
+    InterpPair pr;
+    int k;
+
+    if (prev != NULL) {
+        interp_pair(prev, cur, &pr);
+    } else {
+        memset(&pr, 0, sizeof pr);
+    }
+    for (k = 0; k < INTERP_OBJECTS; k++) {
+        cur->mv[k] = 0;
+        cur->px[k] = cur->py[k] = 0;
+        if (!cur->obj[k].present) {
+            cur->run[k] = prev != NULL ? prev->run[k] + 1 : 1;     /* gone: the next time it appears is a new run */
+        } else if (prev != NULL && prev->obj[k].present && pr.ok[k]) {
+            cur->run[k] = prev->run[k];
+            cur->px[k] = prev->px[k] + pr.dx[k];
+            cur->py[k] = prev->py[k] + pr.dy[k];
+            cur->mv[k] = pr.dx[k] != 0 || pr.dy[k] != 0;
+        } else {
+            cur->run[k] = prev != NULL ? prev->run[k] + 1 : 1;     /* appeared, jumped or did not match: a new run */
+        }
+    }
+}
+
+#define EVENT_SPAN 10             /* how many frames back and forward the moves of an object are looked for */
+#define MAX_GAP 8                 /* the longest time between two moves that is smoothed over (frames) */
+
+/* where object k is at the game time t: the moves of an object are the frames at which it changed place (the game moves each object in steps, every second or third frame); between two moves it is
+ * drawn on the straight way from one place to the next (so it glides the whole time between the moves and arrives when the game put it there); when the next move is not yet made (the game is only
+ * a frame or two ahead of the picture) the way is the one of the move before it.  Positions are counted from the start of the object's run (interp_follow).  Returns 0 when the object is not in a run at t */
+static int object_target(InterpGet get, void *ctx, unsigned long f, unsigned long newest, double t, int k, double *tx, double *ty)
+{
+    const InterpFrame *ff = get(ctx, f), *fj;
+    unsigned long j, e0 = 0, e1 = 0, em = 0;
+    int h0 = 0, h1 = 0, hm = 0, run;
+    double p0x, p0y;
+
+    if (ff == NULL || !ff->obj[k].present) {
+        return 0;
+    }
+    run = ff->run[k];
+    for (j = f; j > 0 && j + EVENT_SPAN > f; j--) {              /* the last move at or before f */
+        fj = get(ctx, j);
+        if (fj == NULL || !fj->obj[k].present || fj->run[k] != run) {
+            break;
+        }
+        if (fj->mv[k]) {
+            e0 = j;
+            h0 = 1;
+            break;
+        }
+    }
+    if (h0) {
+        for (j = e0 - 1; j > 0 && j + EVENT_SPAN > e0; j--) {    /* and the one before it */
+            fj = get(ctx, j);
+            if (fj == NULL || !fj->obj[k].present || fj->run[k] != run) {
+                break;
+            }
+            if (fj->mv[k]) {
+                em = j;
+                hm = 1;
+                break;
+            }
+        }
+    }
+    for (j = f + 1; j <= newest && j <= f + EVENT_SPAN; j++) {   /* the next move that is already made */
+        fj = get(ctx, j);
+        if (fj == NULL || !fj->obj[k].present || fj->run[k] != run) {
+            break;
+        }
+        if (fj->mv[k]) {
+            e1 = j;
+            h1 = 1;
+            break;
+        }
+    }
+    p0x = ff->px[k];
+    p0y = ff->py[k];
+    if (h0) {
+        fj = get(ctx, e0);
+        p0x = fj->px[k];
+        p0y = fj->py[k];
+    }
+    if (h1) {
+        const InterpFrame *f1 = get(ctx, e1);
+        double p1x = f1->px[k], p1y = f1->py[k];
+        if (h0 && e1 - e0 <= MAX_GAP) {                           /* between two moves: the straight way, over the whole time */
+            double u = (t - (double)e0) / (double)(e1 - e0);
+            *tx = p0x + (p1x - p0x) * u;
+            *ty = p0y + (p1y - p0y) * u;
+        } else {                                                  /* a first move, or after a long wait: still until the last frame before it */
+            double s = (double)e1 - 1.0, u = t > s ? t - s : 0.0;
+            const InterpFrame *fs = get(ctx, e1 - 1);
+            double sx = fs != NULL && fs->run[k] == run ? fs->px[k] : p1x, sy = fs != NULL && fs->run[k] == run ? fs->py[k] : p1y;
+            *tx = sx + (p1x - sx) * u;
+            *ty = sy + (p1y - sy) * u;
+        }
+        return 1;
+    }
+    if (h0 && hm && e0 - em <= MAX_GAP) {                         /* no next move yet: on the way the move before it took, no further than the one step */
+        const InterpFrame *fm = get(ctx, em);
+        double g = (double)(e0 - em), u = (t - (double)e0) / g;
+        if (u > 1.0) {
+            u = 1.0;
+        }
+        *tx = p0x + (p0x - fm->px[k]) * u;
+        *ty = p0y + (p0y - fm->py[k]) * u;
+        return 1;
+    }
+    *tx = ff->px[k];
+    *ty = ff->py[k];
+    return 1;
+}
+
+void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned long newest, InterpDirty *d)
+{
+    const InterpFrame *near_f;
+    unsigned long f, near_id;
     int offx[INTERP_OBJECTS], offy[INTERP_OBJECTS], k, i;
     int rebuilt = 0;
     double sx_scale, sy_scale;
 
     memset(d, 0, sizeof *d);
-    if (o->base == NULL || a == NULL) {
+    if (o->base == NULL || t < 0.0) {
         return;
     }
-    if (b != NULL && pair != NULL && phi >= 0.5) {
-        near_f = b;
-        near_id = id_a + 1;
+    f = (unsigned long)floor(t);
+    near_id = (t - (double)f >= 0.5) ? f + 1 : f;
+    if (near_id > newest || get(ctx, near_id) == NULL) {
+        near_id = f;
+    }
+    near_f = get(ctx, near_id);
+    if (near_f == NULL) {
+        return;
     }
     sx_scale = (double)o->ow / RENDER_W;
     sy_scale = (double)o->oh / RENDER_H;
     for (k = 0; k < INTERP_OBJECTS; k++) {
+        double tx, ty;
         offx[k] = offy[k] = 0;
-        if (b != NULL && pair != NULL && pair->ok[k] && near_f->obj[k].present) {
-            double f = near_f == a ? phi : phi - 1.0;       /* the nearer frame's object is |f| of the move away from its own place */
-            /* the offset is a whole number of pixels of the picture shown: two moments that put the object on the same pixels make the same picture */
-            double px = floor(f * pair->dx[k] * sx_scale + 0.5), py = floor(f * pair->dy[k] * sy_scale + 0.5);
+        if (near_f->obj[k].present && f <= newest && object_target(get, ctx, f, newest, t, k, &tx, &ty)) {
+            /* the offset is the way the object is from the place its nearer frame has it, a whole number of pixels of the picture shown: two moments that put the object on the same pixels make the same picture */
+            double dx = tx - near_f->px[k], dy = ty - near_f->py[k];
+            double px, py;
+            if (near_f->run[k] != get(ctx, f)->run[k] || fabs(dx) > 2.0 * INTERP_MAX_MOVE || fabs(dy) > 2.0 * INTERP_MAX_MOVE) {
+                continue;
+            }
+            px = floor(dx * sx_scale + 0.5);
+            py = floor(dy * sy_scale + 0.5);
             offx[k] = (int)floor(px * FIX / sx_scale + 0.5);
             offy[k] = (int)floor(py * FIX / sy_scale + 0.5);
         }
