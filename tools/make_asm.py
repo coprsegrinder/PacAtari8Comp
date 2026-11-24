@@ -234,9 +234,13 @@ with open(os.path.join(ROOT, "src", "asm", "pacman.s"), "w", newline="\n") as fh
     fh.write("\n; Hardware registers and OS variables used (standard Atari 400/800 names)\n")
     for a in sorted(used_abs):
         fh.write("%-8s = $%04X\n" % (used_abs[a], a))
-    fh.write("\n; Zero page: names without the zp_ prefix are OS variables; zp_xx are the game's own, not yet named\n")
-    for a in sorted(used_zp):
-        fh.write("%-8s = $%02X\n" % (LB.zp_name(a), a))
+    fh.write("\n; Zero page: the OS variables and the game's variables (the names of docs/25-variable-catalogue.md; `Name+k` is the k-th byte of a variable); a zp_xx would be a byte that is not in the catalogue\n")
+    eq = {}
+    for a in used_zp:
+        sym, base = LB.zp_equate(a)
+        eq[sym] = base
+    for sym, base in sorted(eq.items(), key=lambda kv: (kv[1], kv[0])):
+        fh.write("%-8s = $%02X\n" % (sym, base))
     fh.write('\n.segment "CODE"\n\n')
     fh.write(body.getvalue())
 

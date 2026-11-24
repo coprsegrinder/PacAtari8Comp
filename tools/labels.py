@@ -64,7 +64,7 @@ def hw_name(addr, mnem):
 
 # Game zero-page variables named so far (evidence: used as (zp),y pointers by the helpers and by Start).
 GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 0x3E: "DstPtrL", 0x3F: "DstPtrH",
-           # Sub_B423 adds these six BCD digits to the score; zp_E9 and zp_2B proven in docs/12-data-formats.md
+           # AddToScore (was Sub_B423) adds these six BCD digits to the score; GhostsEaten and CurrentPlayer proven in docs/12-data-formats.md
            0x94: "ScoreAdd100000", 0x95: "ScoreAdd10000", 0x96: "ScoreAdd1000",
            0x97: "ScoreAdd100", 0x98: "ScoreAdd10", 0x99: "ScoreAdd1",
            0xE9: "GhostsEaten", 0x2B: "CurrentPlayer",
@@ -77,13 +77,39 @@ GAME_ZP = {0x1B: "StartLevel", 0x30: "Level", 0x3C: "SrcPtrL", 0x3D: "SrcPtrH", 
            0xC2: "TargetX", 0xC6: "TargetY", 0xCA: "GhostTimer", 0xD6: "WantVert", 0xDA: "WantHoriz",
            # per-player dot counter (index = CurrentPlayer): 16 bits, DotsEatenLo $34/$35 and DotsEatenHi $36/$37, incremented at $B388 for every dot and power pellet, cleared at $AE26; the bonus items appear at 80 and 160 (docs/17, docs/14)
            0x34: "DotsEatenLo", 0x36: "DotsEatenHi",
-           # siren pitch step 2..5 chosen at $B5FF from the dots eaten (>= $B0: 3, >= $E0: 4, >= $F0 or high byte non-zero: 5) and added to / subtracted from the siren tone zp_DE (docs/22-sound.md)
+           # siren pitch step 2..5 chosen at $B5FF from the dots eaten (>= $B0: 3, >= $E0: 4, >= $F0 or high byte non-zero: 5) and added to / subtracted from the siren tone SirenTone (docs/22-sound.md)
            0x9C: "SirenStep",
            0xED: "DeathState", 0xAF: "LegPhase", 0x5E: "DliColors", 0xA0: "ItemColor", 0xEA: "DeathAnimActive", 0xEB: "DeathAnimFrame", 0xEC: "DeathAnimDelay"}
 
 
+# the zero-page variables of the catalogue (tools/zp_catalogue.py, docs/25): every byte the code touches belongs to one; a byte that is not the first of its variable is written `Name+k` (the names are applied, checklist stage 3)
+import os as _os  # noqa: E402
+import sys as _sys  # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from zp_catalogue import ZP as _ZP  # noqa: E402
+ZP_AT = {}
+for _first, _n, _name, *_rest in _ZP:
+    for _k in range(_n):
+        ZP_AT[_first + _k] = (_name, _first)
+
+
 def zp_name(addr):
-    return OS_ZP.get(addr) or GAME_ZP.get(addr) or "zp_%02X" % addr
+    """the symbol of a zero-page operand: an OS variable, a name given here, else the catalogue's name (`Name` for its first byte, `Name+k` for the k-th)"""
+    n = OS_ZP.get(addr) or GAME_ZP.get(addr)
+    if n:
+        return n
+    v = ZP_AT.get(addr)
+    if v:
+        return v[0] if addr == v[1] else "%s+%d" % (v[0], addr - v[1])
+    return "zp_%02X" % addr
+
+
+def zp_equate(addr):
+    """-> (symbol, address) of the definition line a zero-page operand needs: the symbol itself, or the first byte of its variable for a `Name+k`"""
+    n = zp_name(addr)
+    if "+" in n:
+        return n.split("+")[0], addr - int(n.split("+")[1])
+    return n, addr
 
 
 # ---- Game symbols (address -> name). Evidence in docs/11-labelling.md ---------------------
@@ -104,8 +130,8 @@ ROM_NAMES = {
     0xB13D: "Copy0C00To1000",      # copies four pages $0C00-$0FFF to $1000-$13FF
     0xB15B: "Copy0C00To1400",      # copies four pages $0C00-$0FFF to $1400-$17FF
     0xBB55: "PacMouthOffsets",     # 3 entries 00,0A,00 read at $B2DC (chomp cycle)
-    0xAE3D: "DeathSequence",       # state machine on DeathState (zp_ED), run while it is non-zero
-    0xAEF7: "DeathAnimation",      # plots Pac-Man's death frames while DeathAnimActive (zp_EA) is non-zero
+    0xAE3D: "DeathSequence",       # state machine on DeathState (DeathState), run while it is non-zero
+    0xAEF7: "DeathAnimation",      # plots Pac-Man's death frames while DeathAnimActive (DeathAnimActive) is non-zero
     0xB179: "MovePacMan",          # reads STICK0, moves PacX/PacY, picks and draws the Pac-Man shape
     # Ghost behaviour (docs/13-ghost-patrols.md): dispatcher on GhostState and its state handlers
     0xB7F5: "GhostBehaviour",      # per-ghost step: dispatches on GhostState (1 start route, 2 chase, 8 travel, $10 patrol, $20 corner)
@@ -125,10 +151,51 @@ ROM_NAMES = {
     0xAC93: "DrawLevelIndicator",  # bonus items of the last levels along the bottom row ($0F86-$0F93)
     0xB62E: "BonusItemUpdate",     # shows the bonus item when the dot counter hits $50 / $A0, clears its score pop-up later
     0xAC75: "AdvanceLevel",        # level-complete finish: board setup, then INC Level
-    0xAC05: "ToggleLegPhase",      # every 16th jiffy toggles LegPhase (zp_AF) 0 <-> 1: the ghosts' feet row alternates $54 / $AA
+    0xAC05: "ToggleLegPhase",      # every 16th jiffy toggles LegPhase (LegPhase) 0 <-> 1: the ghosts' feet row alternates $54 / $AA
     0xB423: "AddToScore",          # decimal-mode add of ScoreAdd digits to the score at $202A-$202F (player 1) / $2047-$204C (player 2)
     0xA886: "GhostEaten",          # frightened ghost touched: pop-up, score 200/400/800/1600
     0xB3DE: "PowerPelletEaten",    # adds 50, sets GhostsEaten=$FF, frightens the ghosts
+    0xB049: "GhostEatenPause",         # the pause after a ghost is eaten (EatPauseTick / EatPausePitch count down with the sound); reached by a JMP from FrameDispatch at $A840 (not a JSR target)
+    # --- the 39 routines that were Sub_XXXX (stage 40, docs/24-function-relationships.md): name <- role; the old label is in the comment ---
+    0xA632: "TitleClearScores1P",          # was Sub_A632: clear the scores to '00' in title state 3 (one player)
+    0xA64E: "TitleClearScores2P",          # was Sub_A64E: the same for two players (also draws both labels)
+    0xA6CC: "FrameDispatch",               # was Sub_A6CC: the deferred VBI routine - title states 1-4 (draw), and in state 0 the whole game frame
+    0xAA2D: "TurnControl",                 # was Sub_AA2D: after a death or at the READY wait - switch players, load / save mazes, game over
+    0xAB26: "CompareHighScore",            # was Sub_AB26: copy the player's score to the high score when it is larger (game over)
+    0xAB48: "ClipEntitiesOnTunnelRow",     # was Sub_AB48: for each entity on y = $74 call the clip
+    0xAB57: "ClipEntityAtTunnel",          # was Sub_AB57: mask the picture at the tunnel edges and wrap X (docs/16, OV-31)
+    0xABC9: "BonusSound",                  # was Sub_ABC9: the bonus-eaten sound
+    0xAD0E: "DrawReadyScreen",             # was Sub_AD0E: Pac-Man and ghosts in place, lives drawn
+    0xAD15: "DrawLives",                   # was Sub_AD15: the lives icons of the player on turn
+    0xAD42: "LifeIcon2",                   # was Sub_AD42: store X into the second lives cell(s)
+    0xAD45: "LifeIcon1",                   # was Sub_AD45: store X into the first lives cell
+    0xAD49: "DrawAllInPlace",              # was Sub_AD49: draw the four ghosts and Pac-Man without moving them (DrawOnly = 1)
+    0xAD5E: "ClearReadyText",              # was Sub_AD5E: clear the READY! row ($0DED)
+    0xAD69: "BlinkPlayerLabel",            # was Sub_AD69: blink the label of the player on turn every 16th jiffy
+    0xAD87: "DrawLabel2UP",                # was Sub_AD87: draw '2UP' at $2021
+    0xAD9F: "DrawLabel1UP",                # was Sub_AD9F: draw '1UP' at $2004
+    0xADF1: "NewGameInit",                 # was Sub_ADF1: lives 3, Level := StartLevel, first board of a game
+    0xAE02: "NewBoardInit",                # was Sub_AE02: copy the original maze, reset the counters and release timers for the player's level
+    0xAE1E: "ClearPlayerCounters",         # was Sub_AE1E: dots eaten, pellets, bonus counter of player X
+    0xAF54: "FrightenedTick",              # was Sub_AF54: the frightened clock, flashing and the end of the time
+    0xAFD7: "FrightenedSound",             # was Sub_AFD7: the sound of the frightened phase
+    0xB02C: "EyesReturningSound",             # was Sub_B02C: the sound of the eaten ghosts on their way home (AUDF2 13..23, EyesSoundStep)
+    0xB0BC: "DotSoundSweep",               # was Sub_B0BC: the dot-eaten sweep
+    0xB0F1: "ClearPlayerMemory",           # was Sub_B0F1: clear the player / missile pages
+    0xB100: "FillPlayerPages",             # was Sub_B100: fill the five pages $2300-$27FF with A
+    0xB33A: "EatDotAtPacMan",              # was Sub_B33A: the dot or pellet in Pac-Man's cell: clear, count, score, sound
+    0xB39F: "PowerPelletCheck",            # was Sub_B39F: is Pac-Man on one of the four power-pellet squares whose flag is set (then `PowerPelletEaten`)
+    0xB54F: "BlinkPowerPellets",           # was Sub_B54F: show / hide the four power-pellet cells
+    0xB55A: "ShowPowerPellets",            # was Sub_B55A: set the four cells from the player's pellet flags
+    0xB5C7: "ChaseTimerSirenSight",         # was Sub_B5C7: ChaseTimer tick, siren step and late-board chase from the dots eaten, sight test of the patrolling ghosts
+    0xB616: "ForceChase",                  # was Sub_B616: late board - ghosts into chase, ChaseTimer = $FF
+    0xB69E: "EyesAndHousePerFrame",        # was Sub_B69E: eaten ghosts home and the house movement, every frame
+    0xB738: "HouseLeaveStep",              # was Sub_B738: up the door column, state $01 at the door row
+    0xB76D: "HouseLeaveGhost2",                  # was Sub_B76D: ghost 2 leaving the house: walk right to x = $7C, then up (HouseLeaveStep)
+    0xB777: "HouseLeaveGhost3",                  # was Sub_B777: ghost 3 leaving the house: walk left to x = $7C, then up (HouseLeaveStep)
+    0xB781: "HouseEnterStep",              # was Sub_B781: down the door column and sideways to the ghost's place
+    0xB7A5: "HouseWaitingTick",            # was Sub_B7A5: waiting ghosts every 4th jiffy: timer and bobbing
+    0xB7D6: "HouseBobStep",                # was Sub_B7D6: the bobbing step
 }
 
 
@@ -156,7 +223,7 @@ DATA = [
      "14 bytes, one plotted per step of the death animation (DeathAnimation $AF26): row = nibble map $0600+X minus 1, in missile memory at Pac-Man's Y"),
     (0xBB65, 0xBB6E, "words", "PacShapePtrs", "pointers to the first frame of each Pac-Man direction (full, right, left, up, down)"),
     (0xBB6F, 0xBB82, "bytes", "ZeroPageInit80", "20 bytes copied to zero page $80-$93 (X=$13..0) by the routine at $ADE0"),
-    (0xBB83, 0xBB8C, "bytes", "JunctionYList", "y coordinates (= 8*row+36) of the 10 junction rows of the maze lattice, rows 1,4,6,8,10,12,14,16,18,20; searched with CMP by Sub_B48E"),
+    (0xBB83, 0xBB8C, "bytes", "JunctionYList", "y coordinates (= 8*row+36) of the 10 junction rows of the maze lattice, rows 1,4,6,8,10,12,14,16,18,20; searched with CMP by JunctionLookup"),
     (0xBB8D, 0xBB96, "bytes", "JunctionXList", "x coordinates (= 4*col+46) of the 10 junction columns, columns 3,6,9,13,18,21,26,30,33,36 (mirror-symmetric)"),
     (0xBB97, 0xBBAA, "words", "JunctionRowPtrs", "pointers to the 10 rows of JunctionExits in RAM ($060E + 10*row), indexed by 2*row"),
     # Sight (line-of-sight) data used by GhostSeesPacMan ($BA19): per junction row / column a FF-terminated list of blocker coordinates, reached through
@@ -171,7 +238,7 @@ DATA = [
      "10 offsets (one per junction column, mirror-symmetric) into SightListsY; the code scans from here (ProfileList_BBD8,Y) straight into the colour tables that follow"),
     (0xBBE2, 0xBBE9, "bytes", "ColorsGame", "8 colours: PCOLR0-3 = ghosts 0-3 (dark red $44, pink $4A, green $D8, dark gold $28), then COLOR0-3 = walls blue $86 (COLPF0), light $0C (COLPF1, status text), black $00 (COLPF2), gold $2A (COLPF3, Pac-Man); LoadShadowColors; $BBE2-$BBE5 also restore the ghost colours at $AF7D"),
     (0xBBEA, 0xBBED, "bytes", "ColorsTitle", "4 colours loaded into COLOR0-3 by InitDisplay2 for the title screen: green $DA (text), light $0C, black $00, gold $2A (logo and highlighted words)"),
-    (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to zp_5E-zp_61 = DliColors: peach $3A (COLPF2 of the maze body), red $44 (COLPF1 at scanline 208), gold $2A (COLPF3) and light green $DA (COLPF0) for the bottom band at scanline 216"),
+    (0xBBEE, 0xBBF1, "bytes", "ColorsDli", "4 colours; EORed with COLRSH, ANDed with DRKMSK (attract mode), stored to DliColors ($5E-$61): peach $3A (COLPF2 of the maze body), red $44 (COLPF1 at scanline 208), gold $2A (COLPF3) and light green $DA (COLPF0) for the bottom band at scanline 216"),
     (0xBBF2, 0xBBF7, "bytes", "HouseReleaseTimers", "ghost-house release timers (4 frames per tick): 3-byte windows picked by board (90 60 30 / 60 30 04 / 30 04 00 / 04 00 00 -> GhostTimer of ghosts 3,2,1); see docs/14-levels.md"),
     (0xBBF8, 0xBC06, "bytes", "FrightenFrames", "15 entries by Level: initial FrightenCountdown (frames of solid frightened colour); level 1 = $FF"),
     (0xBC07, 0xBC12, "shape", "StarShape", "12 rows; drawn as the last (15th) frame of the death animation (AF3A); the routine copies 16 rows, so 4 zero bytes of the next table are read as padding"),
@@ -184,11 +251,11 @@ DATA = [
     (0xBC50, 0xBC8F, "bytes", "TuneAudf1", "64 entries stored to AUDF1, stepped every 4th jiffy by the routine around $A7DF (hyp: start-up tune)"),
     (0xBC90, 0xBCCF, "bytes", "TuneAudf2", "64 entries stored to AUDF2 together with TuneAudf1"),
     (0xBCD0, 0xBCD7, "words", "GhostScorePtrs", "pointers to the four ghost-eaten pop-up shapes, indexed by 2*GhostsEaten (confirmed, see docs/12-data-formats.md)"),
-    (0xBCD8, 0xBCDE, "bytes", "AudfSweepDown", "AUDF1 values, descending, ended by 0; chosen when zp_F6 = 0"),
-    (0xBCDF, 0xBCE5, "bytes", "AudfSweepUp", "AUDF1 values, ascending, ended by 0; chosen when zp_F6 <> 0"),
+    (0xBCD8, 0xBCDE, "bytes", "AudfSweepDown", "AUDF1 values, descending, ended by 0; chosen when DotSoundAlt = 0"),
+    (0xBCDF, 0xBCE5, "bytes", "AudfSweepUp", "AUDF1 values, ascending, ended by 0; chosen when DotSoundAlt <> 0"),
     (0xBCE6, 0xBCED, "words", "StartRoutePtrs", "pointers to the four ghost start routes in RAM ($0686 $0693 $069B $06A3), indexed by 2*ghost"),
     (0xBCEE, 0xBD0D, "bytes", "PatrolStartPositions", "16 (x,y) pairs, one per patrol route (same index); each is the junction where its route starts and ends (16 of 16 routes close into loops from here); chosen with RANDOM AND $0F"),
-    (0xBD0E, 0xBD15, "bytes", "CornerPositions", "4 pairs (x,y) = ($BE,$2C) ($3A,$2C) ($BE,$C4) ($3A,$C4), the four corners; stored to zp_C2,X and zp_C6,X"),
+    (0xBD0E, 0xBD15, "bytes", "CornerPositions", "4 pairs (x,y) = ($BE,$2C) ($3A,$2C) ($BE,$C4) ($3A,$C4), the four corners; stored to TargetX,X and TargetY,X"),
     (0xBD16, 0xBD25, "bytes", "PatrolRouteOffsets", "16 ascending offsets of the patrol routes inside PatrolRoutes ($06AE + offset + step)"),
     (0xBD26, 0xBD44, "bytes", "BonusItemCodes", "31 glyph codes (first of a pair): entries 0-12 = the bonus item of level 0-12 (clamped at 12) shown in the maze at $0DF3 and in the level indicator; the falling half is read backwards by the indicator for levels >= 6"),
     (0xBD45, 0xBD6C, "bytes", "BonusScoreGlyphs", "8 records of 5 glyph codes that draw the bonus score (100 300 500 700 1000 2000 3000 5000), copied to $0DF1 when the bonus item is eaten"),
@@ -197,7 +264,7 @@ DATA = [
     (0xBDB9, 0xBDBF, "bytes", "PacMoveDelayBase", "7 offsets into MoveDelay for Pac-Man by Level (clamped to 6): 8,8,8,12,16,20,20"),
     (0xBDC0, 0xBDC6, "bytes", "GhostMoveDelayBase", "7 offsets into MoveDelay for the ghosts by Level (clamped to 6): 0,4,8,8,12,16,16"),
     (0xBDC7, 0xBDD0, "text", "TextHighScore", None),
-    (0xBDD1, 0xBDD5, "bytes", "DliChbaseTable", "CHBASE value for each DLI of DisplayList2 (zp_18 = 1..4: $E0, $30, $E0, $30); entry 0 = $18 matches DliHandler2"),
+    (0xBDD1, 0xBDD5, "bytes", "DliChbaseTable", "CHBASE value for each DLI of DisplayList2 (BandCounter = 1..4: $E0, $30, $E0, $30); entry 0 = $18 matches DliHandler2"),
     (0xBDD6, 0xBDE6, "text6", "TextChangeDifficulty", "ANTIC mode 6 screen codes: low 6 bits = glyph of the OS font ($E000 band), top 2 bits = colour register; copied to $1D05"),
     (0xBDE7, 0xBDF6, "text6", "TextPressStartTo", "mode 6; copied to $1D56 (row 18)"),
     (0xBDF7, 0xBE04, "text6", "TextCopyright",

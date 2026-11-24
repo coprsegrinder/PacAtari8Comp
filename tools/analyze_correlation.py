@@ -4,7 +4,7 @@ Sources (nothing is re-measured here): the 81 routines of tools/analyze_function
 (analysis/evidence-registers-summary.txt) and the model coverage (analysis/evidence-model-coverage-summary.txt); the register docs/OPEN-VERIFICATION.md; the files of the repository.  The BEHAVIOURS table below is the one
 curated part: for each observable behaviour of the game, the routines that implement it, the chapter that states the rule, the register entries that hold the live measurement, the harness sessions and the tests.
 Mechanical checks (tests/test_correlation.py): every routine belongs to a behaviour; every behaviour has code, a chapter, live evidence (register entry C-nn, closed) and an executable check (a test file); every file and
-every register entry named exists; no verification item is open except OV-02 (the port does not exist yet); every algorithm is carried by a behaviour.
+every register entry named exists; no verification item is open except OV-71 (the routine-path comparison of the key loop) and OV-72 (machines and compilers the port was not tried on); OV-02, the port, closed in stage 87; every algorithm is carried by a behaviour.
 Usage: python -I tools/analyze_correlation.py [--doc docs/36-behaviour-correlation.md]
 """
 import os
@@ -144,8 +144,8 @@ def build():
         if not ts or not cs or not hs:
             problems.append("%s lacks live evidence or an executable check" % bid)
     open_items = sorted(k for k, v in ovs.items() if v != "CLOSED")
-    if open_items != ["OV-02"]:
-        problems.append("open verification items: %s (expected only OV-02)" % open_items)
+    if open_items != ["OV-71", "OV-72"]:
+        problems.append("open verification items: %s (expected only OV-71 and OV-72)" % open_items)
     return {"ntotal": ntotal, "nroutine": nroutine, "r_alg": r_alg, "algs": algs, "never": never, "head": head, "calls": calls, "reg": reg, "ovs": ovs, "problems": problems, "rb": rb, "alg_beh": alg_beh, "open": open_items}
 
 
@@ -167,7 +167,7 @@ def doc_lines():
     P("- The behaviour of the game is cut into **%d behaviours** (section 2). Each has its **code** (routines through the algorithms of `31`), its **rule** (the chapter), its **live measurement** (register entries C-nn, closed, with the harness sessions of the real game in Altirra) and an **executable check** (test files, and the ROM run against models in `tools/cpu6502.py`)." % len(BEHAVIOURS))
     P("- **Every one of the %d routines belongs to at least one behaviour**, every one of the 22 algorithms is carried by one, and every file and register entry named below exists (checked by `tests/test_correlation.py`)." % len(nr))
     P("- **Static = live = model, instruction by instruction**: %s of the %d instructions of the ROM were executed by the live sessions (the %s never executed are dead code of the original, `32`), and all %d were executed by the model comparisons, the whole memory compared after every call (`31` section 5)." % (D["head"][0] if D["head"] else "?", tot_ins, str(tot_ins - int(D["head"][0])), tot_ins))
-    P("- The register holds %d verification items (OV-nn): **%d closed, %d open: %s** - the equivalence of a C port with the original, which cannot be tested before the port exists (stage H23)." % (nov, nclosed, len(D["open"]), ", ".join(D["open"])))
+    P("- The register holds %d verification items (OV-nn): **%d closed, %d open: %s** - the C port against the original was tested in stages 86-87 (`52`, `53`: OV-02 and OV-70 closed); the open ones are the routine-path comparison of the key loop (OV-71) and the machines and compilers the port was not tried on (OV-72)." % (nov, nclosed, len(D["open"]), ", ".join(D["open"])))
     P("- Limits that apply to every row (owner's decision, `OPEN-VERIFICATION.md` OV-01, OV-42b, OV-49): all live measurements are Altirra 4.40 (NTSC and PAL, OS-B, the PAL OS and the built-in OS were also run); real hardware was not tested. The sessions run with the test aids of their harnesses (`04`), named in each harness; a claim holds for the game's own logic with those aids.")
     P("- Problems found by the mechanical check: **%d**%s" % (len(D["problems"]), "" if not D["problems"] else ": " + "; ".join(D["problems"])))
     P("")
@@ -198,7 +198,7 @@ def doc_lines():
     P("")
     P("## 5. What is not correlated")
     P("")
-    P("- **A port.** OV-02: no C re-implementation exists, so the claim 'the port behaves like the original' has no test yet; the models of `31` (the ROM run against rules written from it) and the 20 sessions of `34` are the oracles the port will be tested against.")
+    P("- **The port, in part.** OV-02 closed in stage 87: the C port equals the ROM frame by frame (`52`, `53`); what is not covered is OV-71 (routine call counts only for the vertical-blank handler, not for the key loop, the new-game sequence and the display-list interrupts), OV-72 (macOS, MSVC, 32-bit, big-endian, ARM; `54`) and the limits of `53` section 6 (samples of up to 12,000 frames, one board change at most).")
     P("- **The five instructions never executed live** are dead code of the original (`32`, OV-59, C-62): they were run by the model comparisons only.")
     P("- **Real hardware**, **a human playing every situation**: documented limits (`OPEN-VERIFICATION.md`).")
     P("")

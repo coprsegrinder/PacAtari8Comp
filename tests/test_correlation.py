@@ -25,8 +25,8 @@ class Correlation(unittest.TestCase):
         self.assertEqual(len(self.D["algs"]), 22)
         self.assertTrue(all(a in self.D["alg_beh"] for a in self.D["algs"]))
 
-    def test_only_the_port_is_open(self):
-        self.assertEqual(self.D["open"], ["OV-02"])
+    def test_only_the_paths_and_machines_items_are_open(self):
+        self.assertEqual(self.D["open"], ["OV-71", "OV-72"])
 
     def test_instruction_totals(self):
         self.assertEqual(self.D["ntotal"], 2925)

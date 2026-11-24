@@ -13,9 +13,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 ROOT = os.path.dirname(HERE)
 SUMMARY = os.path.join(ROOT, "analysis", "evidence-mainloop-summary.txt")
-LINES = 262                                     # NTSC scan lines per frame (the sessions are NTSC)
-VB = re.compile(r"^VB f=(\d+) vp=(\d+) gs=(\d+) v1c=(\d+) v20=(\d+) v21=(\d+) v22=(\d+) v23=(\d+) v24=(\d+) v26=(\d+) v27=(\d+) e5=(\d+) ed=(\d+) p9b=(\d+) a3=(\d+) cnt=(\d+)")
-XV = re.compile(r"^(VF|VX) f=(\d+) vp=(\d+)")
+from video import LINES                          # scan lines per frame: 262 (NTSC) or 312 with PACMAN_VIDEO=pal (OV-62)
+VB = re.compile(r"^VB f=(\d+) vp=(\d+) gs=(\d+) v1c=(\d+) v20=(\d+) v21=(\d+) v22=(\d+) v23=(\d+) v24=(\d+) v26=(\d+) v27=(\d+) e5=(\d+) ed=(\d+) p9b=(\d+) a3=(\d+) cnt=(\d+)(?: hp=(\d+))?")
+XV = re.compile(r"^(VF|VX) f=(\d+) vp=(\d+)(?: hp=(\d+))?")
 FIELDS = ["f", "vp", "gs", "v1c", "v20", "v21", "v22", "v23", "v24", "v26", "v27", "e5", "ed", "p9b", "a3", "cnt"]
 
 # the classes, in the order of the dispatcher's decisions: (name, what the code does)
@@ -81,9 +81,10 @@ def parse(path):
                 m = VB.match(ln)
                 if not m:
                     continue
-                r = dict(zip(FIELDS, [int(x) for x in m.groups()]))
+                r = dict(zip(FIELDS, [int(x) for x in m.groups()[:16]]))
+                r["hp"] = int(m.group(17)) if m.group(17) else None      # the cycle in the line (logs of -Cycles, OV-63)
                 r["class"] = classify(r)
-                r["vf"] = r["vx"] = None
+                r["vf"] = r["vx"] = r["vfc"] = r["vxc"] = None
                 out.append(r)
                 cur = r
                 continue
@@ -92,10 +93,11 @@ def parse(path):
                 if not m:
                     continue
                 el = (int(m.group(2)) - cur["f"]) * LINES + int(m.group(3)) - cur["vp"]
+                elc = el * 114 + int(m.group(4)) - cur["hp"] if m.group(4) and cur["hp"] is not None else None   # cycles
                 if m.group(1) == "VF" and cur["vf"] is None:
-                    cur["vf"] = el
+                    cur["vf"], cur["vfc"] = el, elc
                 elif m.group(1) == "VX" and cur["vx"] is None:
-                    cur["vx"] = el
+                    cur["vx"], cur["vxc"] = el, elc
     return out
 
 
@@ -111,12 +113,18 @@ def runs(frames):
 
 
 def gather(paths):
-    S = {"sessions": {}, "frames": 0, "gaps": 0, "overrun": 0, "by_class": defaultdict(lambda: {"n": 0, "vf": [], "vx": []}), "trans": Counter(), "runs": defaultdict(list), "first_runs": {}}
+    S = {"cyc": defaultdict(list), "margin": [], "sessions": {}, "frames": 0, "gaps": 0, "overrun": 0, "by_class": defaultdict(lambda: {"n": 0, "vf": [], "vx": []}), "trans": Counter(), "runs": defaultdict(list), "first_runs": {}}
     for p in paths:
-        name = os.path.basename(p)[9:-4]
+        name = re.sub(r"^(pal)?mainloop-|\.txt$", "", os.path.basename(p))
         fr = parse(p)
         fr = [r for r in fr if r["f"] > 36]                    # the first frames: the OS boot, before Start installs the handler
         S["sessions"][name] = len(fr)
+        for i, r in enumerate(fr):
+            if r["vxc"] is not None:
+                S["cyc"][r["class"]].append(r["vxc"])
+                if i + 1 < len(fr) and fr[i + 1]["f"] == r["f"] + 1 and fr[i + 1]["hp"] is not None:
+                    nxt = (fr[i + 1]["f"] * LINES + fr[i + 1]["vp"]) * 114 + fr[i + 1]["hp"]
+                    S["margin"].append(nxt - ((r["f"] * LINES + r["vp"]) * 114 + r["hp"] + r["vxc"]))
         for i, r in enumerate(fr):
             S["frames"] += 1
             c = S["by_class"][r["class"]]
@@ -158,6 +166,13 @@ def summary_lines(paths):
             continue
         P("%-20s %7d | %3d / %3d / %3d | %3d / %3d / %3d | %5d / %5d / %5d  (%d runs)" % ((name, c["n"]) + stat(c["vf"]) + stat(c["vx"]) + stat(S["runs"][name]) + (len(S["runs"][name]),)))
     P("")
+    if S["margin"]:
+        P("cycles (logs of -Cycles, OV-63): handler entry to the XITVBV jump, per class min/median/max, and the cycles left to the next entry (%d cycles per frame)" % (LINES * 114))
+        for name, _ in CLASSES:
+            if S["cyc"].get(name):
+                P("%-20s %7d | %6d / %6d / %6d" % ((name, len(S["cyc"][name])) + stat(S["cyc"][name])))
+        P("margin to the next handler entry: min %d, median %d cycles (%d frames); the least is %.1f%% of a frame" % (min(S["margin"]), statistics.median(S["margin"]), len(S["margin"]), 100.0 * min(S["margin"]) / (LINES * 114)))
+        P("")
     P("transitions between classes (frames):")
     for (a, b), n in sorted(S["trans"].items(), key=lambda kv: (-kv[1], kv[0])):
         if a != b:
@@ -220,6 +235,8 @@ def doc_lines(paths):
     P("$A537  CountdownActive = 0; GameState = 0; IntroRequest = 1; goto $A477             new game: the restart clears $20-$3F, copies the maze, ... (`37`, `21`)")
     P("```")
     P("")
+    P("Every outcome of every conditional branch of this loop was run in the real game (47 of 54; the other 7 cannot happen by construction), and a pass costs 111 cycles on a title screen and 114 in a game: `40-key-loop-coverage.md` (OV-65).")
+    P("")
     P("The vertical-blank handler (`$A5FD`): `$18` := 0 (the band counter of the display-list interrupts), `$45` -= 1, `FrameDispatch`, `ClipEntitiesOnTunnelRow` unless `EatPause` (`$E5`) is set, `JMP XITVBV`.")
     P("")
     P("## 4. The frame: the dispatcher's decisions in the order of the code, and what each costs")
@@ -267,11 +284,13 @@ def doc_lines(paths):
     P("")
     P("- The play frame is the long one: a median of %d lines, a maximum of %d (the contacts, the bonus item, Pac-Man and four ghosts moving and drawn). The level end (%d lines at its worst, the board redrawn) and the turn control (%d, the maze copies) are the heaviest single frames; the start tune and the ready wait have one frame of %d lines when the screen is drawn." % (stat(play["vx"])[1], stat(play["vx"])[2], max(bc["level end"]["vx"]), max(bc["turn control"]["vx"]), max(bc["start tune"]["vx"])))
     P("- The handler is entered at line 256 and, on its heaviest frame, ends **%d lines after its entry**: before the next vertical blank (262 lines), with **%d lines to spare**. The main program gets what the handler and the five display-list interrupts leave." % (max(allvx), LINES - max(allvx)))
+    P("- **Cycles (OV-63, `analysis/evidence-mainloop-cycles-summary.txt`, `tools/run_mainloop_audit.ps1 -Cycles`):** the same 7 NTSC sessions with the cycle in the line (`hpos`) at the three trace points: 218,392 frame pairs. The heaviest handler run is a level end of **26,729 cycles** (234.5 lines, of 29,868 in a frame), which leaves **3,138 cycles (10.5% of a frame, 27.5 lines)** to the next handler entry; the 100 smallest margins are 61 turn controls and 39 level ends. The line count above was right to a line. The cycles are elapsed machine time from the entry to the `JMP XITVBV`, with the display-list interrupts and ANTIC's DMA inside, not the cycles of the handler's own instructions.")
+    P("- **PAL (OV-62, `analysis/evidence-mainloop-pal-summary.txt`, `tools/run_mainloop_audit.ps1 -Video pal`):** the same 7 sessions with `/pal` (312 lines): 184,234 frames, 0 missed entries, 0 frames still running at the next entry, the handler entered at line 256 in every frame, the same 15 classes and the same stays (start tune 258-260 frames, ready wait 65, death 354, eaten pause 33, level end 187, copyright wait 245). The heaviest frame is the level end at **190 lines** (turn control 177, play 65): **122 lines to spare** of 312 (39%), against 28 of 262 in NTSC. The same frames cost fewer lines than in NTSC (level end 190 against 234, turn control 173 against 219, copyright setup 60 against 76), about 45 lines less: the handler starts at line 256, and PAL's vertical blank lasts to line 312 while NTSC's ends at 262, so more of the work falls where the display takes no cycles (a likely cause, not measured).")
     P("- For a port: the original needs less than 90%% of a frame in its worst case and about %d%% in play (%d / %d lines), all of it in one deferred interrupt; a port may run the same sequence once per video frame." % (round(100.0 * stat(play["vx"])[1] / LINES), stat(play["vx"])[1], LINES))
     P("")
     P("## 8. Limits")
     P("")
-    P("- NTSC sessions, Altirra 4.40; PAL has 312 lines (the code is the same, the frame has more room). The costs are in scan lines (114 cycles each) at the trace points, not cycle counts.")
+    P("- The main sessions are NTSC, Altirra 4.40. The same 7 sessions were also run as PAL (`/pal`, 312 lines, section 7); the costs of the first measurement are in scan lines (114 cycles each) at the trace points; the heaviest frames were then measured in cycles (section 7).")
     P("- The sessions run with the test aids of their harnesses (`04`); the frame classes and lengths are the game's own, the bot decides how often a class occurs.")
     P("- Frames before `Start` has installed the handler (the OS boot, frames up to 36) are left out.")
     return out

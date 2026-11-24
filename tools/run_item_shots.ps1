@@ -5,7 +5,7 @@
 # Popup_<k> (the k-th ghost eaten in a row: pellet, all ghosts put on Pac-Man; shown 4 frames after the eating),
 # Title_<1P|2P> and Game2P_<cp0|cp1>_<shown|blank> (OV-53: the title screen before / after SELECT and the two-player game with the 1UP / 2UP label shown or blank; input only through CONSOL, the bot's STICK0 pattern),
 # Overlap_<A|B> (OV-52: the four ghosts put side by side in the ghost house, 4 pixels apart and overlapping: A = ghost 0 leftmost, B = ghost 3 leftmost).
-param([Parameter(Mandatory)][string]$OutDir, [string[]]$Only, [int]$TimeoutSec = 200, [string]$Ini = '')
+param([Parameter(Mandatory)][string]$OutDir, [string[]]$Only, [int]$TimeoutSec = 200, [string]$Ini = '', [string]$Cmd = 'altirra_itemshots.cmd', [string]$FreezeAt = '')
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $Ini) { $Ini = Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra_fast.ini' }
 $alt  = (Join-Path $PSScriptRoot '..\external-tools\Altirra\Altirra64.exe')
@@ -20,6 +20,10 @@ public class Win { [StructLayout(LayoutKind.Sequential)] public struct RECT { pu
 New-Item -ItemType Directory -Force $OutDir | Out-Null
 $bot = 'bp -n a82f "r @t5 ((@frame/$30)%4); eb $278 ($0E*(@t5=0))+($07*(@t5=1))+($0D*(@t5=2))+($0B*(@t5=3))"'
 $frz = 'eb 440 $4c; eb 441 $43; eb 442 $04; eb 443 $4c; eb 444 $43; eb 445 $04; r pc ($a82f*(1-@t6))+($440*@t6)'
+# -FreezeAt a5fd (stage 80b): freeze at the entry of the NEXT frame handler instead of inside the frame of the state: then the window shows the frame whose RAM and chip writes are logged
+# the frozen machine keeps running its video frames: at every entry of the frame handler the program counter goes to a stub that clears BandCounter ($18) and spins (440: LDA #0; STA $18; 444: JMP 444), the stack
+# pointer is reset, and after 90 such frames (at 800 % speed the window presents only some of the emulated frames: the last presented one must be one of the frozen frames) the pc goes to the halt loop at $450 (the cmd file has its final breakpoint there): the window then shows the frame of the logged RAM and chip writes, three times over
+if ($FreezeAt) { $frz = 'eb 440 $a9; eb 441 0; eb 442 $85; eb 443 $18; eb 444 $4c; eb 445 $44; eb 446 4; eb 450 $4c; eb 451 $50; eb 452 4; eb 510 0' }
 $targets = @()
 foreach ($n in (0..20 + 25 + 30)) { $targets += ,@("Item_L$n", 'item', $n) }
 foreach ($k in 0..2) { $targets += ,@("Lives_$k", 'lives', $k) }
@@ -28,7 +32,7 @@ foreach ($k in '1P','2P') { $targets += ,@("Title_$k", 'title', $k) }
 foreach ($c in 'cp0','cp1') { foreach ($l in 'shown','blank') { $targets += ,@("Game2P_${c}_$l", 'game2p', "$c,$l") } }
 foreach ($k in 'A','B') { $targets += ,@("Overlap_$k", 'overlap', $k) }
 if ($Only) { $Only = @($Only | ForEach-Object { $_ -split ',' }); $targets = @($targets | Where-Object { $Only -contains $_[0] }) }
-$tpl = Get-Content (Join-Path $root 'altirra_itemshots.cmd') | Where-Object { $_ -notmatch '^\s*(#|$)' }
+$tpl = Get-Content (Join-Path $root $Cmd) | Where-Object { $_ -notmatch '^\s*(#|$)' }
 foreach ($t in @($targets)) {
   $name = $t[0]; $mode = $t[1]; $arg = $t[2]; $log = Join-Path $OutDir "$name.log"
   Remove-Item $log -ErrorAction SilentlyContinue
@@ -82,7 +86,8 @@ foreach ($t in @($targets)) {
             ('bp -n a82f "r @t1 (' + $cond + '); r @t2 (@t2|@t1)"'),
             ('bp -n a82f "r @t3 (@t3+@t2); r @t6 (@t3>=4); ' + $frz + '"'))
   }
-  $lines = @(".logopen $log") + ($tpl | ForEach-Object { if ($_ -eq '@MODELINES@') { $ml } else { $_.Replace('@MODE@', $mode) } }) + @('.restart', 'g')
+  $extra = @(); if ($FreezeAt) { $extra = @(('bp -n ' + $FreezeAt + ' "eb 510 db(510)+@t6; r s (s*(1-@t6))+($ff*@t6); r pc ($' + $FreezeAt + '*(1-@t6))+($440*@t6)"'), 'bp -n 444 "r pc ($444*(db(510)<90))+($450*(db(510)>=90))"') }
+  $lines = @(".logopen $log") + ($tpl | ForEach-Object { if ($_ -eq '@MODELINES@') { $ml + $extra } else { $_.Replace('@MODE@', $mode) } }) + @('.restart', 'g')
   $batch = Join-Path ([IO.Path]::GetTempPath()) 'pacman_itemshot.batch'
   Set-Content -Path $batch -Value $lines -Encoding ascii
   $line = '/portablealt:"' + $Ini + '" /hardware:800 /ntsc /nofastboot /cartmapper:1 /debug /debugcmd:".batch ' + $batch + '" "' + $cart + '"'

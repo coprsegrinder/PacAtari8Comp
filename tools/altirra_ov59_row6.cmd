@@ -1,0 +1,242 @@
+# Generates tools/altirra_sound_bot2.cmd (OPEN-VERIFICATION.md OV-46): the sound-session harness of altirra_sound_bot.cmd with a STEERING bot that really goes for power pellets, frightened ghosts and the bonus item.
+# Usage: python -I tools/make_sound_bot2.py        (writes tools/altirra_sound_bot2.cmd)
+#        NGAMES=n sets the number of games of a session minus one (default 5), LONGPRESS=1 gives games 4 and 5 three OPTION presses, WATCH=1 adds the access watchpoints over the path table (OV-47).
+# Sessions recorded for OV-46:  C-34: default, 5 games;  C-35: the same bot with the older route;  C-36: NGAMES=12 (11 games, -Seconds 1150);  C-37: LONGPRESS=1 NGAMES=10 (9 games, -Seconds 900).
+# 
+# The bot is a path-finder over the 10x10 junction lattice of the maze (JunctionYList/JunctionXList at $BB83/$BB8D; the edges come from the decoded maze and are checked against all 16 patrol routes).
+# The inside of the ghost house (lattice points (4,4) and (4,5)) is left out.  At every frame, when Pac-Man stands exactly on a lattice point, the bot writes the STICK0 shadow ($0278) with the first step of the shortest
+# path to its target.  The target is, in this order:  1 the lattice point of the first frightened ghost (bit 7 of the ghost state $CE..$D1; its y is read from $85..$88, its x from $8A..$8D);
+# 2 the bonus item while it is on screen (zp_9F = 1): the bot walks back and forth between the junctions (5,4) and (5,5), the item (x 124, y 132) lies between them;  3 the next of the pellet route (7,0) (1,0) (0,0) (1,9) (0,9) (7,9), which passes the four power pellets.
+# Only game memory is READ.  The path table (100 targets x 100 lattice cells, one STICK0 value per entry, at $5000-$76FF) is written by the harness into RAM that the game does not touch (OPEN-VERIFICATION.md OV-47 / C-39: WATCH=1 logs every CPU access; none comes from the game or from the OS after the boot).
+# NOTHING in the game is written (no pokes, no invulnerability, no PC move, no life refill); the injected values are only what the game READS: STICK0 (the bot above) and CONSOL (START 6, SELECT 5, OPTION 3).
+# Schedule (g = games started): g=0 START at title frame 120-170 -> game 1 one player level 0;  g=1 at the title OPTION x3, SELECT, START -> game 2 two players level 4;  g=2 OPTION x2, SELECT, START -> game 3 one player level 8;  g=3 OPTION x3, START -> game 4 one player level 0;  g=4 OPTION x3, START -> game 5 one player level 4.
+# Run:  powershell -NoProfile -ExecutionPolicy Bypass -File tools/record_tune.ps1 -Cmd altirra_sound_bot2.cmd -Trace analysis/raw-logs/sound-bot2.txt -Out analysis/sound-bot2-recorded.wav -Seconds 1500
+# then  python -I tools/analyze_sound_events.py analysis/raw-logs/sound-bot2.txt   python -I tools/analyze_tail_sound.py analysis/sound-bot2-recorded.wav analysis/raw-logs/sound-bot2.txt   python -I tools/analyze_full_waveform.py analysis/sound-bot2-recorded.wav analysis/raw-logs/sound-bot2.txt
+ecord_tune.ps1 -Cmd altirra_sound_bot.cmd -Trace analysis/raw-logs/sound-bot.txt -Out analysis/sound-bot-recorded.wav -Seconds 780
+r @t1 0
+r @t3 0
+r @t4 0
+r @t5 0
+r @t7 0
+r @t8 0
+bp -n a537 "r @t7 @t7+1"
+bp -n a5fd "r @t1 (db($19)>=3)*(@t1+1)"
+bp -n a5fd "r @t3 ((@t7=0)&(@t1>=120)&(@t1<=170))*1+((@t7=1)&(db($19)>=3)&(@t1>=60)&(@t1<=187)&(((@t1-60)%40)<8))*4+((@t7=1)&(db($19)>=3)&(@t1>=400)&(@t1<=408))*2+((@t7=1)&(db($19)>=3)&(@t1>=480)&(@t1<=530))*1+((@t7=2)&(db($19)>=3)&(@t1>=60)&(@t1<=107)&(((@t1-60)%40)<8))*4+((@t7=2)&(db($19)>=3)&(@t1>=300)&(@t1<=308))*2+((@t7=2)&(db($19)>=3)&(@t1>=380)&(@t1<=430))*1"
+bp -n a507 "r a 7-@t3"
+bp -n a514 "r a 7-@t3"
+bp -n a51c "r a 6+(@t3>0)"
+bp -n a4fa "eb $284 1"
+bp -n a4ff "eb $285 1"
+bt a923 "DEATH_START f=%d" @frame
+bt aaef "GAME_OVER_TEXT f=%d" @frame
+bt a5fd "FR f=%d z19=%d z20=%d z21=%d lives=%d,%d lv=%d fc=%d fd=%d f2=%d e5=%d f7=%d f4=%d s1=%02X%02X%02X%02X%02X%02X d34=%d d36=%d sl=%d p=%d cyc=%d t1=%d" @frame db($19) db($20) db($21) db($2c) db($2d) db($30) db($fc) db($fd) db($f2) db($e5) db($f7) db($f4) db($202a) db($202b) db($202c) db($202d) db($202e) db($202f) db($34) db($36) db($1b) @t7 @t8 @t1
+bta w d200 L16 "SNDW a=$%04X v=$%02X pc=$%04X f=%d vp=%d hp=%d" @address @value pc @frame vpos hpos
+bt a537 "NEWGAME f=%d" @frame
+bt a7c8 "READY_DRAW f=%d" @frame
+bt a7f5 "TUNE f=%d x=%d" @frame db($a3)
+bt a800 "START_PLAY f=%d" @frame
+bt b3de "PELLET f=%d" @frame
+bt a886 "GHOST_EATEN f=%d x=%d" @frame x
+bt a93d "BONUS_EATEN f=%d" @frame
+bt b660 "BONUS_APPEAR f=%d" @frame
+bt b487 "EXTRA_LIFE f=%d" @frame
+bt ac75 "LEVEL_ADV f=%d" @frame
+bt adaf "INIT_BOARD f=%d" @frame
+bt aef1 "DEATH_DONE f=%d" @frame
+
+r @t2 $0B
+r @t4 0
+r @t6 255
+bp -n a537 "eb 5000 00 0b 0b 0b 0b 0d 0b 0b 0b 0b 0e 0b 0b 0b 0b 0b 0b 0b 0b 0b 0e 0b 0b 0e 0b 0d 0e 0e 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b"
+bp -n a537 "eb 5038 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 00 0b 0b 0b 0d 0b 0b 0b 0b 0e 0b"
+bp -n a537 "eb 5070 0e 0b 0b 0b 0b 0b 0b 0b 0e 0b 0e 0e 0b 0d 0e 0e 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b"
+bp -n a537 "eb 50a8 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 00 0b 0b 0d 0b 0b 0b 0b 07 07 0e 0b 0b 0b 0b 0b 0b 0b 07 07 0e 0e"
+bp -n a537 "eb 50e0 0b 0d 0e 0e 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e"
+bp -n a537 "eb 5118 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 07 00 0b 0d 0b 0b 0b 0b 07 07 0e 0b 0e 0b 0b 0b 0b 0b 07 07 0e 0e 0b 07 0e 0e 0b 0b 00 00 0e 0d 0e 0b"
+bp -n a537 "eb 5150 0b 0e 00 00 07 07 0e 0b 00 00 0e 0e 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0e 0b 0b 0e 0d 0e 0b 0b 0b 0b 0e 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b"
+bp -n a537 "eb 5188 0b 07 0e 0b 0b 0b 0b 0e 07 07 07 07 00 0d 0b 0b 0b 0b 07 07 07 07 0e 0b 0b 0b 0b 0b 07 07 0e 0e 0b 07 0e 0e 0b 0b 00 00 0e 07 0e 0b 0b 0e 00 00 07 07 0e 0e 00 00 0e 0e"
+bp -n a537 "eb 51c0 0b 0b 00 00 0e 0e 0b 0b 0e 0e 00 00 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0d 0e 0b 0e 0b 07 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 07 0e 07 07 07 07"
+bp -n a537 "eb 51f8 0d 00 0b 0b 0b 0b 07 07 07 07 07 0e 0b 0b 0b 0b 07 07 0e 0e 0b 07 0e 0e 0b 0b 00 00 0e 07 0e 0e 0b 0e 00 00 07 07 0e 0e 00 00 0e 0e 0b 0b 00 00 0e 0e 0b 07 0e 0e 00 00"
+bp -n a537 "eb 5230 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0d 0e 0b 0e 0e 07 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0e 0b 07 07 0e 07 07 07 07 0d 07 00 0b 0b 0b 07 07 07 07 07 0e"
+bp -n a537 "eb 5268 0b 0e 0b 0b 07 07 0e 0e 0b 07 0e 0e 0b 0b 00 00 0e 07 0e 0e 0b 0e 00 00 07 07 0e 0e 00 00 07 0e 0b 0b 00 00 0e 0e 07 07 0e 0e 00 00 07 07 0e 0e 0b 07 07 0e 0b 0b 0e 0d"
+bp -n a537 "eb 52a0 0e 0b 07 07 07 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 00 0b 0b 07 07 07 07 07 07 07 0e 0b 0b 07 07 0e 0e 0d 07 0e 0e"
+bp -n a537 "eb 52d8 0b 0b 00 00 0e 07 07 0e 0d 0e 00 00 07 07 07 0e 00 00 07 0e 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e"
+bp -n a537 "eb 5310 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 07 00 0b 07 07 07 07 07 07 07 0e 0b 0e 07 07 0e 0e 0d 07 0e 0e 0b 0e 00 00 0e 07 07 0e 0d 0e 00 00"
+bp -n a537 "eb 5348 07 07 07 0e 00 00 07 0e 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e"
+bp -n a537 "eb 5380 0b 07 07 0e 07 07 07 07 0d 07 07 07 07 00 07 07 07 07 07 07 07 07 07 0e 07 07 0e 0e 0d 07 0e 07 07 0e 00 00 0e 07 07 0e 0d 0e 00 00 07 07 07 0e 00 00 07 0e 0b 0b 00 00"
+bp -n a537 "eb 53b8 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 0d 0b 0b 0b 0b 0d 0b 0b"
+bp -n a537 "eb 53f0 0b 0b 00 0b 0b 0b 0b 0b 0b 0b 0b 0b 0e 0b 0b 0e 0b 0d 0e 0e 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b"
+bp -n a537 "eb 5428 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 0d 0b 0d 0b 0b 0d 0b 0b 0b 0b 07 00 0b 0b 0b 0b 0b 0b 0b 0b"
+bp -n a537 "eb 5460 0e 0b 0e 0e 0b 0d 0e 0e 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b"
+bp -n a537 "eb 5498 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 00 0b 0b 0b 0b 0b 0b 0b 07 07 0e 0e 0b 0d 0e 0e 0b 0b 00 00"
+bp -n a537 "eb 54d0 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e"
+bp -n a537 "eb 5508 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0d 0d 0b 0b 0b 0b 07 07 07 00 0b 0b 0b 0b 0b 0b 07 07 0e 0e 0b 0d 0e 0e 0b 0b 00 00 0e 07 0e 0b 0b 0e 00 00 07 07 0e 0e"
+bp -n a537 "eb 5540 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0e 0e 00 00 07 07 0e 0e 0b 07 0e 0b 0b 0b 0e 0d 0e 0b 0e 0b 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 07 0e"
+bp -n a537 "eb 5578 07 07 07 07 0d 0d 0b 0b 0b 0b 07 07 07 07 00 0b 0b 0b 0b 0b 07 07 0e 0e 0b 07 0e 0e 0b 0b 00 00 0e 07 0e 0b 0b 0e 00 00 07 07 0e 0e 00 00 0e 0e 0b 0b 00 00 0e 0e 0b 0b"
+bp -n a537 "eb 55b0 0e 0e 00 00 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0d 0e 0b 0e 0b 07 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 07 0e 07 07 07 07 0d 0d 0b 0b 0b 0b 07 07"
+bp -n a537 "eb 55e8 07 07 07 00 0b 0b 0b 0b 07 07 0e 0e 0b 07 0e 0e 0b 0b 00 00 0e 07 0e 0e 0b 0e 00 00 07 07 0e 0e 00 00 0e 0e 0b 0b 00 00 0e 0e 0b 07 0e 0e 00 00 07 07 0e 0e 0b 07 0e 0e"
+bp -n a537 "eb 5620 0b 0b 0e 0d 0e 0b 0e 0e 07 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0e 0b 07 07 0e 07 07 07 07 0d 0d 0b 0d 0b 0b 07 07 07 07 07 07 00 0b 0b 0b 07 07 0e 0e"
+bp -n a537 "eb 5658 0d 07 0e 0e 0b 0b 00 00 0e 07 07 0e 0b 0e 00 00 07 07 07 0e 00 00 0e 0e 0b 0b 00 00 0e 0e 0b 07 0e 0e 00 00 07 07 07 0e 0b 07 0e 0e 0b 0b 0e 0d 0e 0b 0e 0e 07 0e 0d 0e"
+bp -n a537 "eb 5690 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 00 0b 0b 07 07 0e 0e 0d 07 0e 0e 0b 0b 00 00 0e 07 07 0e"
+bp -n a537 "eb 56c8 0d 0e 00 00 07 07 07 0e 00 00 07 0e 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07"
+bp -n a537 "eb 5700 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0d 07 07 07 07 07 07 07 07 00 0b 07 07 0e 0e 0d 07 0e 0e 0b 0e 00 00 0e 07 07 0e 0d 0e 00 00 07 07 07 0e 00 00 07 0e"
+bp -n a537 "eb 5738 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07"
+bp -n a537 "eb 5770 0d 07 07 07 07 0d 07 07 07 07 07 07 07 07 07 00 07 07 0e 0e 0d 07 0e 07 07 0e 00 00 0e 07 07 0e 0d 0e 00 00 07 07 07 0e 00 00 07 0e 0b 0b 00 00 0e 07 07 07 0e 0e 00 00"
+bp -n a537 "eb 57a8 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 0d 0b 0b 0b 0b 0d 0b 0b 0b 0b 0d 0b 0b 0b 0b 0b"
+bp -n a537 "eb 57e0 0b 0b 0b 0b 00 0b 0b 0e 0b 0d 0e 0e 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d"
+bp -n a537 "eb 5818 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 0d 0b 0d 0b 0b 0d 0b 0b 0b 0b 0d 0b 0d 0b 0b 0b 0b 0b 0b 0b 07 00 0b 0e 0b 0d 0e 0e"
+bp -n a537 "eb 5850 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e"
+bp -n a537 "eb 5888 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 00 0e 0b 0d 0e 0e 0b 0b 00 00 0e 0d 0e 0b 0b 0e 00 00"
+bp -n a537 "eb 58c0 07 07 0e 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b"
+bp -n a537 "eb 58f8 0b 0b 0b 0b 07 07 0d 0b 0d 0d 0b 0b 0b 0b 07 07 07 0d 0b 0b 0b 0b 0b 0b 07 07 0e 00 0b 0d 0e 0e 0b 0b 00 00 0e 07 0e 0b 0b 0e 00 00 07 07 0e 0e 00 00 0e 0b 0b 0b 00 00"
+bp -n a537 "eb 5930 0e 0e 0b 0b 0e 0e 00 00 07 07 0e 0e 0b 07 0e 0b 0b 0b 0e 0d 0e 0b 0e 0b 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 07 0e 07 07 0d 0b 0d 0d 0b 0d"
+bp -n a537 "eb 5968 0b 0b 07 07 07 0d 0b 0b 0d 0b 0b 0b 07 07 0e 07 00 0d 0b 0e 0b 0b 00 00 0d 07 0e 0b 0b 0d 00 00 07 07 07 0e 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0e 0e 00 00 07 07 07 0e"
+bp -n a537 "eb 59a0 0b 07 0e 0b 0b 0b 0e 0d 0e 0b 0e 0b 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 07 0e 07 07 0d 07 0d 0d 0b 0d 0b 0b 07 07 07 0d 07 07 0d 0b 0b 0b"
+bp -n a537 "eb 59d8 07 07 0e 07 0d 00 0b 0e 0b 0b 00 00 0d 07 07 0e 0b 0d 00 00 07 07 07 0e 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 07 0e 0e 00 00 07 07 07 0e 0b 07 0e 0b 0b 0b 0e 0d 0e 0b 0e 0e"
+bp -n a537 "eb 5a10 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0e 0b 0b 07 0e 07 07 07 07 0d 0d 0b 0d 0b 0b 07 07 07 07 07 07 0d 0b 0b 0b 07 07 0e 0e 0d 07 00 0e 0b 0b 00 00"
+bp -n a537 "eb 5a48 0e 07 07 0e 0b 0e 00 00 07 07 07 0e 00 00 0e 0e 0b 0b 00 00 0e 0e 0b 07 0e 0e 00 00 07 07 07 0e 0b 07 0e 0e 0b 0b 0e 0d 0e 0b 0e 0e 07 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e"
+bp -n a537 "eb 5a80 0b 0b 0e 0b 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0e 0e 0d 07 0e 00 0b 0b 00 00 0e 07 07 0e 0d 0e 00 00 07 07 07 0e"
+bp -n a537 "eb 5ab8 00 00 07 0e 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e"
+bp -n a537 "eb 5af0 07 07 07 07 0d 07 07 0d 0b 0d 07 07 07 07 07 07 07 0d 0b 0d 07 07 0e 0e 0d 07 0e 07 00 0b 00 00 0e 07 07 0e 0d 0e 00 00 07 07 07 0e 00 00 07 0e 0b 0b 00 00 0e 07 07 07"
+bp -n a537 "eb 5b28 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 07 07 0d 07 07"
+bp -n a537 "eb 5b60 07 07 07 07 07 07 07 0d 07 07 0e 0e 0d 07 0e 07 07 00 00 00 0e 07 07 0e 0d 0e 00 00 07 07 07 0e 00 00 07 0e 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e"
+bp -n a537 "eb 5b98 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 5bd0 00 00 00 00 00 00 00 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 5c08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00"
+bp -n a537 "eb 5c40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 5c78 00 00 00 00 00 00 00 00 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0b 0d 0e 0e 0b 0b 00 00 00 0d 0b 0b 0b 0e 00 00 07 07 0e 0b 00 00 0e 0b"
+bp -n a537 "eb 5cb0 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b"
+bp -n a537 "eb 5ce8 0d 0d 0b 0d 0b 0b 07 07 0d 0d 0b 0b 0d 0b 0b 0b 07 07 0d 07 0d 0d 0b 0e 0b 0b 00 00 0d 00 0b 0b 0b 0d 00 00 07 07 07 0e 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00"
+bp -n a537 "eb 5d20 07 07 07 0e 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0e 0b 0b 0b 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0e 07 07 0d 0b 0d 0d 0b 0d 0b 0b 07 07 07 0d 0b 0b"
+bp -n a537 "eb 5d58 0d 0b 0b 0b 07 07 0e 07 0d 0d 0b 0e 0b 0b 00 00 0d 07 00 0b 0b 0d 00 00 07 07 07 0e 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0e 0e 00 00 07 07 07 0e 0b 07 0e 0b 0b 0b 0e 0d"
+bp -n a537 "eb 5d90 0e 0b 0e 0b 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 07 0e 07 07 0d 07 0d 0d 0b 0d 0b 0b 07 07 07 0d 07 07 0d 0b 0b 0b 07 07 0e 07 0d 0d 0b 0e"
+bp -n a537 "eb 5dc8 0b 0b 00 00 0d 07 07 00 0b 0d 00 00 07 07 07 0e 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 07 0e 0e 00 00 07 07 07 0e 0b 07 0e 0b 0b 0b 0e 0d 0e 0b 0e 0e 0b 0e 0d 0e 07 07 0e 0e"
+bp -n a537 "eb 5e00 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0e 0b 0b 07 0e 07 07 0d 07 0d 0d 07 0d 0b 0b 07 07 07 0d 07 07 0d 0d 0b 0b 07 07 0e 07 0d 0d 0b 0d 0b 0b 00 00 0d 07 07 07 00 0d 00 00"
+bp -n a537 "eb 5e38 07 07 07 0e 00 00 0e 0b 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 0e 0b 0b 0b 0e 0d 07 07 07 0e 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0e"
+bp -n a537 "eb 5e70 0b 0b 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0e 0e 0d 07 0e 0d 0b 0b 00 00 0e 07 07 07 0d 00 00 00 07 07 07 0e 00 00 07 0e 0b 0b 00 00"
+bp -n a537 "eb 5ea8 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 5ee0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 5f18 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 5f50 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 5f88 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0e 0b 0b 00 00"
+bp -n a537 "eb 5fc0 0d 0d 0b 0b 0b 0d 00 00 00 0b 0b 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e"
+bp -n a537 "eb 5ff8 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0e 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 00 0b 0b"
+bp -n a537 "eb 6030 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b"
+bp -n a537 "eb 6068 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0e 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 00 0b 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b"
+bp -n a537 "eb 60a0 0b 0e 00 00 07 07 0e 0b 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0d 0d 0b 0d 0b 0b 07 07"
+bp -n a537 "eb 60d8 0d 0d 0b 0b 0d 0b 0b 0b 07 07 0d 07 0d 0d 0b 0e 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 07 00 00 00 0e 0b 0b 0b 00 00 0e 0e 0b 0b 0b 0e 00 00 07 07 07 0e 0b 0d 0e 0b"
+bp -n a537 "eb 6110 0b 0b 0e 0d 0e 0b 0e 0b 0b 0b 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0e 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 6148 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 6180 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 61b8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 61f0 00 00 00 00 00 00 00 00 07 07 0d 07 0d 0d 07 0d 0b 0b 07 07 07 0d 07 07 0d 0d 0b 0b 07 07 0e 07 0d 0d 0b 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0e 00 00 00 0b"
+bp -n a537 "eb 6228 0b 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 0e 0b 0b 0b 0e 0d 07 07 07 0e 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0e 0b 0b 07 0e 07 07 07 07"
+bp -n a537 "eb 6260 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0e 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0e 00 00 07 00 0b 0b 00 00 0e 07 07 07 0e 0e 00 00"
+bp -n a537 "eb 6298 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07"
+bp -n a537 "eb 62d0 07 0d 0b 0b 07 07 0e 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0e 00 00 07 07 00 0b 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d"
+bp -n a537 "eb 6308 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0e 07 0d 0d 0e 0d"
+bp -n a537 "eb 6340 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0e 00 00 07 07 07 00 00 00 0e 07 07 07 0e 0e 00 00 07 07 07 0e 0d 07 07 0e 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e"
+bp -n a537 "eb 6378 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 63b0 00 00 00 00 00 00 00 00 00 00 00 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 63e8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00"
+bp -n a537 "eb 6420 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 07 0d 0b 0b 0d 0b 0b"
+bp -n a537 "eb 6458 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0e 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0e 0b 0b 0b 00 00 00 0e 0b 0b 0b 0e 00 00 07 07 0e 0b"
+bp -n a537 "eb 6490 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0d 0d 0b 0d 0b 0b 07 07 0d 0d 0b 0b 0d 0b 0b 0b"
+bp -n a537 "eb 64c8 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 07 0d 00 00 0d 0b 0b 0b 00 00 0e 00 0b 0b 0b 0e 00 00 07 07 07 0e 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0e 0b"
+bp -n a537 "eb 6500 0b 0b 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0e 07 07 0d 0b 0d 0d 07 0d 0b 0b 07 07 0d 0d 0b 0b 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00"
+bp -n a537 "eb 6538 0d 0d 0b 0b 0d 0d 00 00 07 07 07 0d 00 00 0d 0b 0b 0b 00 00 0e 07 00 0b 0b 0e 00 00 07 07 07 0e 0b 07 0e 0b 0b 0b 0e 0d 0e 0b 0e 0b 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e"
+bp -n a537 "eb 6570 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 07 0e 07 07 0d 0b 0d 0d 07 0d 0b 0b 07 07 0d 0d 0b 07 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 07 0d 0d 00 00 07 07 07 0d"
+bp -n a537 "eb 65a8 00 00 0d 0b 0b 0b 00 00 0e 07 07 00 0b 0e 00 00 07 07 07 0e 0b 07 0e 0b 0b 0b 0e 0d 0e 0b 0e 0e 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0e 0b 0b 07 0e"
+bp -n a537 "eb 65e0 07 07 0d 07 0d 0d 07 0d 0b 0b 07 07 07 0d 07 07 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 0d 0b 0b 0b 00 00 0e 07 07 07"
+bp -n a537 "eb 6618 00 0e 00 00 07 07 07 0e 0d 07 0e 0b 0b 0b 0e 0d 07 07 07 0e 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0e 0b 0b 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07"
+bp -n a537 "eb 6650 07 07 07 07 07 0d 0b 0b 07 07 0e 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0e 00 00 07 0d 0b 0b 00 00 0e 07 07 07 0e 00 00 00 07 07 07 0e 0d 07 07 0e"
+bp -n a537 "eb 6688 0b 0b 0e 0d 07 07 07 07 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 66c0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 66f8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 6730 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+bp -n a537 "eb 6768 00 00 00 00 00 00 00 00 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b"
+bp -n a537 "eb 67a0 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 00 0b 0b 0b 0b 0d 0b 0b 0b 0b 0e 0b 0e 0b 0b 0b 0b 0b 0d 0e 07 0e 0b 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 0b 0e 0b 0b 0b 0b 0b 07 07 0d 0b"
+bp -n a537 "eb 67d8 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00"
+bp -n a537 "eb 6810 07 00 0b 0b 0b 0d 0b 0b 0b 0b 0e 0b 0e 0b 0b 0b 0b 0b 0d 0e 07 0e 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b"
+bp -n a537 "eb 6848 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 00 0b 0b 0d 0b 0b 0b 0b 0e 0d"
+bp -n a537 "eb 6880 0e 0b 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0d 0d 0b 0d 0b 0b 07 07 0d 0d 0b 0b 0d 0b 0b 0b 07 07 0d 07 0d 0d 0b 0d"
+bp -n a537 "eb 68b8 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 07 0d 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0e 00 00 07 07 07 00 0b 0d 0e 0b 0b 0b 0e 0d 0e 0b 0e 0b 0b 0b 0d 0e 07 07 0e 0e"
+bp -n a537 "eb 68f0 0b 07 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0e 07 07 0d 0b 0d 0d 07 0d 0b 0b 07 07 0d 0d 0b 0b 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00"
+bp -n a537 "eb 6928 07 07 07 0d 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 07 07 00 0d 0b 0b 0b 0b 0e 0d 07 07 0e 0b 0b 0b 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0b"
+bp -n a537 "eb 6960 0b 0b 0b 0e 07 07 0d 0b 0d 0d 07 0d 0b 0b 07 07 0d 0d 07 07 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 07 0d 00 00 0d 0b 0b 0b 00 00"
+bp -n a537 "eb 6998 0d 0d 07 07 0d 0d 00 00 07 07 07 07 0d 00 0b 0b 0b 0b 0e 0d 07 07 07 0e 0b 0b 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0e 0b 0b 0b 0e 07 07 0d 07 0d 0d 07 0d"
+bp -n a537 "eb 69d0 0b 0b 07 07 07 0d 07 07 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 0d 0b 0b 0b 00 00 0e 07 07 07 0d 0d 00 00 07 07 07 0e"
+bp -n a537 "eb 6a08 0d 07 00 0b 0b 0b 0e 0d 07 07 07 0e 0b 0e 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0e 0b 0b 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b"
+bp -n a537 "eb 6a40 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 00 0b 0b 0e 0d 07 07 07 07"
+bp -n a537 "eb 6a78 07 0e 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00"
+bp -n a537 "eb 6ab0 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 07 00 0b 0e 0d 07 07 07 07 07 0e 07 0e 07 07 0e 0e 0d 07 0e 0e"
+bp -n a537 "eb 6ae8 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d"
+bp -n a537 "eb 6b20 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 07 07 00 0e 0d 07 07 07 07 07 0e 07 0e 07 07 0e 0e 0d 07 0e 07 0e 0b 07 07 07 07 07 0e 07 07 07 0e"
+bp -n a537 "eb 6b58 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b"
+bp -n a537 "eb 6b90 0b 0d 00 00 0d 0b 0b 0b 0b 0d 0b 0b 0b 0b 00 0b 0e 0b 0b 0b 0b 0b 0d 0e 07 0e 0b 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 0b 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07"
+bp -n a537 "eb 6bc8 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 0d 0b 0d 0b 0b 0d 0b 0b"
+bp -n a537 "eb 6c00 0b 0b 07 00 0d 0b 0b 0b 0b 0b 0d 0e 07 0e 0b 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e"
+bp -n a537 "eb 6c38 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 0b 0d 0b 0b 0b 0b 0e 0d 00 0b 0b 0b 0b 0b 0d 0e"
+bp -n a537 "eb 6c70 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0d 0b 0b 07 07 0d 0b 0b 0b 0b 0d 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b"
+bp -n a537 "eb 6ca8 0d 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 0d 0b 0d 0d 0b 0b 0b 0b 0e 0d 07 00 0b 0b 0b 0b 0d 0e 07 07 0e 0e 0b 0d 0e 0e 0b 0b 0e 07"
+bp -n a537 "eb 6ce0 07 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0d 0d 07 0d 0b 0b 07 07 0d 0d 0b 0b 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 07 0d 00 00 0d 0b"
+bp -n a537 "eb 6d18 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 07 07 0d 0d 0b 0b 0b 0b 0e 0d 07 07 00 0b 0b 0b 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0b 0b 0b 0b 0e 07 07 0d 0b"
+bp -n a537 "eb 6d50 0d 0d 07 0d 0b 0b 07 07 0d 0d 07 07 0d 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 07 0d 00 00 0d 0b 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00"
+bp -n a537 "eb 6d88 07 07 07 07 0d 0d 0b 0b 0b 0b 0e 0d 07 07 07 00 0b 0b 0d 0e 07 07 0e 0e 0b 07 0e 0e 0b 0b 0e 07 07 07 0e 0e 0b 0b 0b 0e 07 07 0d 0b 0d 07 07 0d 0b 0b 07 07 0d 0d 07 07"
+bp -n a537 "eb 6dc0 07 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 07 0d 00 00 0d 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 07 07 0d 0d 0b 0d 0b 0b 0e 0d"
+bp -n a537 "eb 6df8 07 07 07 07 00 0b 0d 0e 07 07 0e 0e 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 0b 0b 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d"
+bp -n a537 "eb 6e30 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 0d 0b 0b 0e 0d 07 07 07 07 07 00 0d 0e 07 07 0e 0e"
+bp -n a537 "eb 6e68 0d 07 0e 0e 0b 0b 07 07 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00"
+bp -n a537 "eb 6ea0 07 07 07 0d 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 0d 07 0d 0e 0d 07 07 07 07 07 0d 00 0b 07 07 0e 0e 0d 07 0e 07 0e 0b 07 07 07 07 07 0e"
+bp -n a537 "eb 6ed8 07 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 07 0d 0b 0b 00 00"
+bp -n a537 "eb 6f10 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 07 07 0d 0e 0d 07 07 07 07 07 0e 07 00 07 07 0e 0e 0d 07 0e 07 0e 0b 07 07 07 07 07 0e 07 07 07 0e 07 07 0d 0b 0b 0d 0b 0b"
+bp -n a537 "eb 6f48 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 0d 0b 0d 0b"
+bp -n a537 "eb 6f80 0b 0d 0b 0b 0b 0b 07 0d 0d 0b 0b 0b 0b 0b 0d 0e 00 0b 0b 0e 0d 0d 0b 0e 0b 0d 0e 0b 0b 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b"
+bp -n a537 "eb 6fb8 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 0d 0b 0d 0b 0b 0d 0b 0b 0b 0b 07 0d 0d 0b 0b 0b"
+bp -n a537 "eb 6ff0 0b 0b 0d 0e 07 00 0b 0e 0b 0d 0e 0e 0b 0b 0e 0b 0b 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00"
+bp -n a537 "eb 7028 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 0d 0d 0b 0b 0b 0b 0b 0d 0e 07 07 00 0e 0b 0d 0e 0e"
+bp -n a537 "eb 7060 0b 0b 0e 0b 0b 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0d 0b 0b 07 07 0d 0b 0b 0b 0b 0d 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 0d 0b"
+bp -n a537 "eb 7098 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 0d 0b 0d 0d 0b 0b 0b 0b 0e 0d 07 0d 0b 0b 0b 0b 0d 0e 07 07 0e 00 0b 0d 0e 0e 0b 0b 0e 07 07 07 0e 0b 0b 0b 0b 0b"
+bp -n a537 "eb 70d0 07 07 0d 0b 0b 0d 07 0d 0b 0b 07 07 0d 0b 0b 0b 07 0d 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 0d 0b 00 00 0d 0d 0b 0b 00 00 0d 0d 0b 0b"
+bp -n a537 "eb 7108 0d 0d 00 00 07 07 0d 0b 0d 0d 0b 0d 0b 0b 0e 0d 07 0d 0b 0b 0d 0b 0d 0e 0d 07 0e 07 00 0d 0b 0e 0b 0d 07 07 07 07 0e 0b 0b 0b 0b 0b 07 07 0d 0b 0d 07 07 0d 0b 0b 07 07"
+bp -n a537 "eb 7140 0d 0b 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 0d 00 00 0d 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 07 0d 0d 0b 0d"
+bp -n a537 "eb 7178 0b 0b 0e 0d 07 0d 07 07 0d 0b 0d 0e 0d 07 0e 07 0d 00 0b 0e 0b 0d 07 07 07 07 07 0e 0b 0b 0b 0b 07 07 0d 0b 0d 07 07 0d 0b 0b 07 07 0d 0d 07 07 07 0d 0b 0b 07 07 0d 07"
+bp -n a537 "eb 71b0 0d 0d 0b 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 07 0d 00 00 0d 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 07 07 0d 0d 0b 0d 0b 0b 0e 0d 07 07 07 07 0d 0b 0d 0e"
+bp -n a537 "eb 71e8 07 07 0e 0e 0d 07 00 0e 0b 0b 07 07 07 07 07 0e 0b 0b 0b 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07"
+bp -n a537 "eb 7220 0d 0d 00 00 07 07 07 0d 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 0d 0b 0b 0e 0d 07 07 07 07 07 0d 0d 0b 07 07 0e 0e 0d 07 0e 00 0b 0b 07 07"
+bp -n a537 "eb 7258 07 07 07 0e 0b 07 07 0e 07 07 07 07 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 07 0d"
+bp -n a537 "eb 7290 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 0d 07 0d 0e 0d 07 07 07 07 07 0d 0d 0b 07 07 0e 0e 0d 07 0e 07 00 0b 07 07 07 07 07 0e 07 07 07 0e 07 07 07 07"
+bp -n a537 "eb 72c8 0d 07 07 0d 0b 0b 07 07 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00"
+bp -n a537 "eb 7300 07 07 07 07 0d 07 07 0d 07 0d 0e 0d 07 07 07 07 07 0d 0d 0b 0d 07 0e 07 0d 0d 0e 07 07 00 07 07 07 07 07 07 07 07 07 0e 07 07 0d 0b 0b 0d 0b 0b 0b 0b 07 07 0d 0b 0b 0b"
+bp -n a537 "eb 7338 0b 0b 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0b 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 0d 0b 0d 0b 0b 0d 0b 0b 0b 0b 07 0d"
+bp -n a537 "eb 7370 0d 0b 0b 0b 0b 0b 0d 0e 0d 0b 0b 0e 0d 0d 0b 0e 0b 0d 00 0b 0b 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 0b 0d 0b 0b 07 07 0d 0b 0b 0b 0b 0d 0b 0b 07 07 0d 0e 0d 0d 0b 0d"
+bp -n a537 "eb 73a8 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 07 07 0d 0b 00 00 0d 0d 0b 0b 00 00 0d 0d 0b 0b 0b 0d 00 00 0d 0b 0d 0b 0b 0d 0b 0d 0b 0b 07 0d 0d 0b 0b 0b 0d 0b 0d 0e 0d 0b 0b 07"
+bp -n a537 "eb 73e0 0d 0d 0b 0e 0b 0d 07 00 0b 0b 0b 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 07 0d 0b 0b 07 07 0d 0b 0b 0b 07 0d 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00"
+bp -n a537 "eb 7418 07 07 0d 0b 00 00 0d 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 0d 0b 0d 0b 0d 0d 0b 0d 0b 0b 07 0d 0d 0d 0b 0b 0d 0b 0d 0e 0d 0b 0b 07 0d 0d 0b 0e 0b 0d 07 07 00 0b 0b 0b"
+bp -n a537 "eb 7450 0b 0b 0b 0b 07 07 0d 0b 0b 0d 07 0d 0b 0b 07 07 0d 0b 0b 0b 07 0d 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 0d 0b 00 00 0d 0d 0b 0b 00 00"
+bp -n a537 "eb 7488 0d 0d 0b 0b 0d 0d 00 00 0d 07 0d 0b 0d 0d 0b 0d 0b 0b 07 0d 07 0d 0b 0b 0d 0b 0d 0e 0d 0b 0b 07 0d 0d 0b 0e 0b 0d 07 07 07 00 0b 0b 0b 0b 0b 0b 07 07 0d 0b 0b 0d 07 0d"
+bp -n a537 "eb 74c0 0b 0b 07 07 0d 0b 0b 0b 07 0d 0b 0b 07 07 0d 0e 0d 0d 0b 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 0d 0b 00 00 0d 0d 0b 0b 00 00 0d 0d 0b 0b 0d 0d 00 00 07 07 0d 0b"
+bp -n a537 "eb 74f8 0d 0d 0b 0d 0b 0b 0e 0d 07 0d 0b 0b 0d 0b 0d 0e 0d 07 0e 07 0d 0d 0b 0e 0b 0d 07 07 07 07 00 0b 0b 0b 0b 0b 07 07 0d 0b 0d 07 07 0d 0b 0b 07 07 0d 0b 07 07 07 0d 0b 0b"
+bp -n a537 "eb 7530 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 0d 00 00 0d 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 07 0d 0d 0b 0d 0b 0b 0e 0d 07 0d 07 07"
+bp -n a537 "eb 7568 0d 0b 0d 0e 0d 07 0e 07 0d 0d 0b 0e 0b 0d 07 07 07 07 07 00 0b 0b 0b 0b 07 07 0d 0b 0d 07 07 0d 0b 0b 07 07 0d 0b 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00"
+bp -n a537 "eb 75a0 0d 0d 07 07 0d 0d 00 00 07 07 0d 0d 00 00 0d 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 07 0d 0d 0b 0d 0b 0b 0e 0d 07 0d 07 07 0d 0b 0d 0b 0d 07 0e 07 0d 0d 0b 0e"
+bp -n a537 "eb 75d8 07 0d 07 07 07 07 07 07 00 0b 0b 0b 07 07 0d 0b 0d 07 07 0d 0b 0b 07 07 0d 0b 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0b 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 0d"
+bp -n a537 "eb 7610 00 00 0d 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 07 0d 0d 0b 0d 0b 0d 0e 0d 07 0d 07 07 0d 0b 0d 0b 0d 07 0e 07 0d 0d 0b 07 07 0d 07 07 07 07 07 07 07 00 0b 0b"
+bp -n a537 "eb 7648 07 07 0d 0b 0d 07 07 0d 0b 0b 07 07 0d 0b 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 0d 07 07 0d 0d 00 00 07 07 0d 0d 00 00 07 0d 0b 0b 00 00 0d 0d 07 07"
+bp -n a537 "eb 7680 0d 0d 00 00 07 07 0d 07 0d 0d 07 0d 07 0d 0e 0d 07 0d 07 07 0d 0d 0d 0b 0d 07 0e 07 0d 0d 0b 07 07 0d 07 07 07 07 07 07 07 07 00 0b 07 07 07 07 0d 07 07 0d 0b 0b 07 07"
+bp -n a537 "eb 76b8 07 07 07 07 07 0d 0b 0b 07 07 0d 07 0d 0d 0e 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 0d 00 00 07 0d 0b 0b 00 00 0d 07 07 07 0d 0d 00 00 07 07 07 07 0d 07 07 0d"
+bp -n a537 "eb 76f0 07 0d 0e 0d 07 07 07 07 07 0d 0d 0b 0d 07 0e 07 0d 0d 0e 07 07 0d 07 07 07 07 07 07 07 07 07 00"
+bt a537 "TABLE_CHECK f=%d t0=%d t1=%d t2=%d" @frame db($5000+69*100+70) db($5000+0*100+5) db($5000+79*100+0)
+bp -n a82f "r @t8 (db($8e)=58)*1+(db($8e)=70)*2+(db($8e)=82)*3+(db($8e)=98)*4+(db($8e)=118)*5+(db($8e)=130)*6+(db($8e)=150)*7+(db($8e)=166)*8+(db($8e)=178)*9+(db($8e)=190)*10; r @t9 (db($89)=44)*1+(db($89)=68)*2+(db($89)=84)*3+(db($89)=100)*4+(db($89)=116)*5+(db($89)=132)*6+(db($89)=148)*7+(db($89)=164)*8+(db($89)=180)*9+(db($89)=196)*10; r @t6 ((@t8>0)*(@t9>0))*((@t9-1)*10+@t8-1)+(1-(@t8>0)*(@t9>0))*255"
+bp -n a82f "r @t4 (@t4+(@t6=((@t4=0)*23+(@t4=1)*24)))%2"
+bp -n a82f "r @t9 ((((db($ce)&$80)>0)+((db($cf)&$80)>0)+((db($d0)&$80)>0)+((db($d1)&$80)>0))>0)*((((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=56)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=76)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=92)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=108)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=124)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=140)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=156)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=172)+((((db($ce)&$80)>0)*db($85)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($86)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($87)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($88))>=188))*10+(((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=64)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=76)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=90)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=108)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=124)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=140)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=158)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=172)+((((db($ce)&$80)>0)*db($8a)+(1-((db($ce)&$80)>0))*((db($cf)&$80)>0)*db($8b)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*((db($d0)&$80)>0)*db($8c)+(1-((db($ce)&$80)>0))*(1-((db($cf)&$80)>0))*(1-((db($d0)&$80)>0))*((db($d1)&$80)>0)*db($8d))>=184)))+(1-((((db($ce)&$80)>0)+((db($cf)&$80)>0)+((db($d0)&$80)>0)+((db($d1)&$80)>0))>0))*((db($9f)=1)*(54+(@t6=54))+(1-(db($9f)=1))*((@t4=0)*23+(@t4=1)*24))"
+bp -n a82f "r @t5 db($5000+@t9*100+@t6)*(@t6<100)"
+bp -n a82f "r @t2 (@t5>0)*@t5+(@t5=0)*@t2"
+bp -n a800 "r @t2 $0B"
+bp -n a82f "eb $278 @t2"
+bt b179 "MOVE f=%d px=%d py=%d dir=%d z80=%02X%02X" @frame db($8e) db($89) db($93) db($81) db($80)
+bt b267 "PAGE_CROSS_RIGHT f=%d px=%d py=%d z80=%02X%02X" @frame db($8e) db($89) db($81) db($80)
+bt b249 "RIGHT_WRAP_IN_MOVE f=%d px=%d py=%d dir=%d" @frame db($8e) db($89) db($93)
+bt b27b "LEFT_WRAP_IN_MOVE f=%d px=%d py=%d dir=%d" @frame db($8e) db($89) db($93)
+bt ab89 "CLIP_WRAP_RIGHT_TO_LEFT f=%d" @frame
+bt a923 "DEATH f=%d" @frame

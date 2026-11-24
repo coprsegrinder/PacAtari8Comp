@@ -56,6 +56,25 @@ class Parser(unittest.TestCase):
         self.assertEqual(fr[0]["vx"], 262 + 12 - 256)
         self.assertEqual(fr[0]["class"], "play")
 
+    def test_cycles_and_margin(self):
+        base = "gs=0 v1c=0 v20=0 v21=1 v22=1 v23=0 v24=0 v26=0 v27=0 e5=0 ed=0 p9b=0 a3=0 cnt=0"
+        txt = ("VB f=100 vp=256 %s hp=20\n" "VX f=101 vp=12 hp=30\n" "VB f=101 vp=256 %s hp=20\n" "VX f=101 vp=300 hp=0\n") % (base, base)
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "m.txt")
+            with open(p, "w") as fh:
+                fh.write(txt)
+            fr = M.parse(p)
+        self.assertEqual(fr[0]["vxc"], (262 + 12 - 256) * 114 + 30 - 20)         # entry to exit in cycles
+        self.assertEqual(fr[0]["hp"], 20)
+        old = "VB f=1 vp=256 %s\nVX f=1 vp=260\n" % base                         # logs without hp still parse
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "o.txt")
+            with open(p, "w") as fh:
+                fh.write(old)
+            fr = M.parse(p)
+        self.assertIsNone(fr[0]["vxc"])
+        self.assertEqual(fr[0]["vx"], 4)
+
 
 class Evidence(unittest.TestCase):
     @classmethod

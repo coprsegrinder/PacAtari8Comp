@@ -1,3 +1,4 @@
+"""Helper of tests/test_levels.py (stage 14): reads a frame log of a harness session (argv[1]: lines `FR ... f=N p=... lv=... d34=... d36=... lives=...` and the events `BONUS_APPEAR f=N` / `BONUS_EATEN f=N`) and prints, for every bonus event, the frame, the player, the level, the dots eaten and the lives of the nearest logged frame at or before it."""
 import re, bisect, sys
 fr={};ev=[]
 for l in open(sys.argv[1],errors='replace'):

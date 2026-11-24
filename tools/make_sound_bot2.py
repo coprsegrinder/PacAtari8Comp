@@ -119,6 +119,12 @@ for k in WALK:
     assert (k // 10, k % 10) in nodes
 if os.environ.get("TUNNELWALK"):                    # OV-31: Pac-Man only keeps going to the tunnel mouth (4,0): at the target the bot holds its last direction (left), so he runs into the tunnel and out at the right side
     WALK = [40]
+OV59 = os.environ.get("OV59", "")                    # OV-59 (stage 53 coverage): "row6" = Pac-Man walks back and forth between the junctions (2,3) and (2,4), the corridor above the ghost house, so that he steps right across the
+                                                     # page boundary of MazePtr ($0CFF -> $0D00); "tunnel" = he runs into the tunnel (target (4,0)) and, standing at x = $CA after the wrap, is pushed right (see below)
+if OV59 == "row6":
+    WALK = [23, 24]
+elif OV59 in ("tunnel", "tunnel_control"):
+    WALK = [40]                                      # "tunnel_control" = the same session without the pushed RIGHT: the control of the proof in docs/32 (tools/analyze_ov59_tunnel.py)
 NW = len(WALK)
 for k in (54, 55):
     assert (k // 10, k % 10) in nodes
@@ -179,12 +185,26 @@ A('bp -n a82f "r @t5 db($5000+@t9*100+@t6)*(@t6<100)"')
 A('bp -n a82f "r @t2 (@t5>0)*@t5+(@t5=0)*@t2"')
 A('bp -n a800 "r @t2 $0B"')                 # at every start of play (a new board or a new life) Pac-Man begins by walking left
 A('bp -n a82f "eb $278 @t2"')
+if OV59:
+    A('bt b179 "MOVE f=%d px=%d py=%d dir=%d z80=%02X%02X" @frame db($8e) db($89) db($93) db($81) db($80)')
+    A('bt b267 "PAGE_CROSS_RIGHT f=%d px=%d py=%d z80=%02X%02X" @frame db($8e) db($89) db($81) db($80)')
+    A('bt b249 "RIGHT_WRAP_IN_MOVE f=%d px=%d py=%d dir=%d" @frame db($8e) db($89) db($93)')
+    A('bt b27b "LEFT_WRAP_IN_MOVE f=%d px=%d py=%d dir=%d" @frame db($8e) db($89) db($93)')
+    A('bt ab89 "CLIP_WRAP_RIGHT_TO_LEFT f=%d ent=%d" @frame x')
+    A('bt abb1 "CLIP_WRAP_LEFT_TO_RIGHT f=%d ent=%d" @frame x')
+    A('bt b1a4 "STICK_READ f=%d px=%d dir=%d stick=$%02X" @frame db($8e) db($93) @a')
+    A('bt a923 "DEATH f=%d" @frame')
+if OV59 == "tunnel":
+    # TEST AID (input only): at the one instant the game is about to read STICK0 inside MovePacMan with Pac-Man standing at x = $CA (the clip has just wrapped him in from the left exit), the joystick shadow is RIGHT ($07)
+    A('bp -n b19f "eb $278 (db($8e)=$ca)*$07+(1-(db($8e)=$ca))*db($278)"')
 if os.environ.get("WATCH"):                          # OV-47: every CPU write to and read from the path table's RAM ($5000-$76FF) is logged with the program counter
     A('bta w 5000 L2710 "TBLW a=$%04X v=$%02X pc=$%04X f=%d" @address @value pc @frame')
     A('bta r 5000 L2710 "TBLR a=$%04X pc=$%04X f=%d" @address pc @frame')
 if os.environ.get("BOTDEBUG"):
     A('bt a82f "BOT f=%d px=%d py=%d k=%d tc=%d held=$%02X rt=%d" @frame db($8e) db($89) @t6 @t9 @t2 @t4')
 OUTNAME = "altirra_sound_bot2.cmd"
+if OV59:
+    OUTNAME = "altirra_ov59_%s.cmd" % OV59
 if os.environ.get("TUNNELTRACE"):                    # OV-31: the same bot session with a trace of the tunnel-edge clipping of the game's own entities (tools/analyze_tunnel_clip.py); written to altirra_tunnel_bot.cmd
     A('bt ab57 "ENTER x=%d X=%d Y=%d dir=%d k=0 f=%d" x db($8a+x) db($85+x) db($8f+x) @frame')
     A('bt abc8 "LEAVE x=%d X=%d dir=%d mask=$%02X ptr=$%02X%02X z80=$%02X b0=$%02X b7=$%02X b15=$%02X f=%d" x db($8a+x) db($8f+x) db($fe) db($48) db($47) db($80) db(dw($47)+0) db(dw($47)+7) db(dw($47)+15) @frame')

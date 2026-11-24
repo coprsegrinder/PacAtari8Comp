@@ -1,0 +1,215 @@
+"""Stage 64 (output processing): the evidence and the chapter docs/42-output-processing.md, generated from the write map of tools/output_map.py (the static classification of every store of the ROM, its check on the concrete 6502),
+the display lists decoded from the ROM, and the curated text of this file.
+Usage: python -I tools/analyze_output.py [--frames 3000] [--write analysis/evidence-output-summary.txt] [--doc docs/42-output-processing.md]"""
+import os
+import sys
+from collections import Counter, defaultdict
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+ROOT = os.path.dirname(HERE)
+import output_map as O  # noqa: E402
+
+KIND_ORDER = ["screen", "player-missile", "character set", "picture buffers", "os shadows", "hardware", "maze", "tables"]
+REGION_INFO = {
+    "PictureBuffers": ("$0400-$041F", "the 16 picture rows of Pac-Man (`$0400`) and of the ghost being drawn (`$0410`), copied into the player-missile pages"),
+    "RamTables": ("$0600-$07FF", "the tables `Start` builds from the nibble streams (never written again)"),
+    "OriginalMaze": ("$0800-$0BFF", "the stored maze of a new board (never written after `Start`)"),
+    "MazeScreen": ("$0C00-$0FFF", "the working maze **and** the screen of the maze band (23 rows of 40: walls, dots, power pellets, the lives row, the level indicator, the bonus item, READY!)"),
+    "SavedMaze1": ("$1000-$13FF", "player 1's maze while player 2 plays"),
+    "SavedMaze2": ("$1400-$17FF", "player 2's maze while player 1 plays"),
+    "TitleCharset": ("$1800-$18FF", "the title character set (20 glyphs of the PAC-MAN logo, written by `Start`)"),
+    "TitleScreen": ("$1C00-$1FFF", "the title screen (mode 6 and 7 rows)"),
+    "StatusRows": ("$2000-$22FF", "the two status lines (mode 2): the 1UP / 2UP labels, the scores and the high score"),
+    "PmMissiles": ("$2300-$23FF", "the missile page: Pac-Man's body and the pop-up score digits"),
+    "PmPlayers": ("$2400-$27FF", "the four player pages: ghost 0 to 3"),
+    "GameCharset": ("$3000-$33FF", "the game character set (101 glyphs: the maze pieces, the dots, the digits, the text; written by `Start`)"),
+    "OsPage2": ("$0200-$02FF", "the OS shadows the game writes (colours, display list, DMA, priority, `ATRACT`, `CH`)"),
+    "Gtia": ("$D000-$D0FF", "GTIA: player and missile positions, the colour registers, `HITCLR`, `PRIOR`"),
+    "Antic": ("$D400-$D4FF", "ANTIC: the display-list pointer, `CHBASE`, `PMBASE`, `NMIEN`, `WSYNC`"),
+    "Pokey": ("$D200-$D2FF", "POKEY: the four sound channels, `SKCTL`, `IRQEN`"),
+}
+ORDER = ["MazeScreen", "TitleScreen", "StatusRows", "PmMissiles", "PmPlayers", "PictureBuffers", "GameCharset", "TitleCharset", "OriginalMaze", "SavedMaze1", "SavedMaze2", "RamTables", "OsPage2", "Gtia", "Antic", "Pokey"]
+
+
+def decode_dl(addr):
+    rom = O.A.started_machine().mem if False else None
+    with open(os.path.join(ROOT, "original", "Pac-Man.rom"), "rb") as fh:
+        rom = fh.read()
+    scan = {2: 8, 4: 8, 6: 8, 7: 16}
+    i = addr - 0xA000
+    out = []
+    line = 0
+    while True:
+        b = rom[i]
+        m = b & 15
+        if m == 0:
+            n = ((b >> 4) & 7) + 1
+            out.append((line, "blank", n, None, bool(b & 0x80)))
+            line += n
+            i += 1
+        elif m == 1:
+            break
+        else:
+            lms = (rom[i + 1] | rom[i + 2] << 8) if b & 0x40 else None
+            out.append((line, "mode %d" % m, scan[m], lms, bool(b & 0x80)))
+            line += scan[m]
+            i += 3 if b & 0x40 else 1
+    return out
+
+
+def dl_table(addr):
+    rows = decode_dl(addr)
+    L = ["| First line | Rows | Mode | Memory | Display-list interrupt after |", "|---|---|---|---|---|"]
+    k = 0
+    while k < len(rows):
+        j = k
+        while j + 1 < len(rows) and rows[j + 1][1] == rows[k][1] and rows[j + 1][3] is None and rows[j + 1][4] == rows[k][4] == False:
+            j += 1
+        first = rows[k]
+        n = j - k + 1
+        L.append("| %d | %d | %s | %s | %s |" % (first[0] + 8, n, first[1] if first[1] != "blank" else "blank (%d lines)" % first[2], ("from `$%04X`" % first[3]) if first[3] else "continues", "yes (line %d)" % (rows[j][0] + 8 + rows[j][2] - 1) if rows[j][4] else ""))
+        k = j + 1
+    return "\n".join(L)
+
+
+def build(frames):
+    rec, stats, seqs = O.run(frames)
+    dyn, st = O.census(rec)
+    seen = {pc for pc, r in rec.stores}
+    unexec = sorted(pc for pc, regs in O.STATIC.items() if regs & O.OUTPUT and pc not in seen)
+    stray = Counter()
+    for (pc, r), n in rec.stores.items():
+        if r in ("Rom", "Other"):
+            stray[(pc, r)] += n
+    return rec, stats, dyn, st, unexec, stray
+
+
+def region_table(dyn, st):
+    L = ["| Region | Address | What | Store instructions (executed on the models / in the ROM) | Routines that write it |", "|---|---|---|---|---|"]
+    for r in ORDER:
+        s = st.get(r, {})
+        d = dyn.get(r, {})
+        nstat = sum(len(v) for v in s.values())
+        ndyn = sum(len(d.get(k, ())) for k in s)
+        names = ", ".join("`%s`" % k for k in sorted(s))
+        L.append("| %s | %s | %s | %d / %d | %s |" % (r, REGION_INFO[r][0], REGION_INFO[r][1], ndyn, nstat, names))
+    return "\n".join(L)
+
+
+def lines_evidence(rec, stats, dyn, st, unexec, stray, frames):
+    total = sum(rec.stores.values())
+    nout = sum(1 for pc, r in O.STATIC.items() if r & O.OUTPUT)
+    L = ["Write map of the output memory (tools/output_map.py): %d store instructions of the ROM classified by the regions they can write; %d of them can write an output region" % (len(O.STATIC), nout),
+         "checked on the concrete 6502: %d handler frames (%d of each of the game, play and title frame set-ups, and rare paths), %d display-list interrupts, the start-up expansion: %d stores, %d outside the classification" % (stats["frames"], frames, stats.get("interrupts", 0), total, len(rec.bad)),
+         "output-region stores executed by these models: %d of %d (not executed: %s)" % (nout - len(unexec), nout, ", ".join("$%04X %s" % (pc, O.routine_name(pc)) for pc in unexec) or "none"),
+         "stores that land outside RAM and hardware: " + (", ".join("$%04X (%s) %d stores to %s" % (pc, O.routine_name(pc), n, r) for (pc, r), n in sorted(stray.items())) or "none"),
+         ""]
+    for r in ORDER:
+        s = st.get(r, {})
+        d = dyn.get(r, {})
+        L.append("%-15s %s: %d store instructions in %d routines, %d executed: %s" % (r, REGION_INFO[r][0], sum(len(v) for v in s.values()), len(s), sum(len(d.get(k, ())) for k in s),
+                                                                                  ", ".join("%s %d/%d" % (k, len(d.get(k, ())), len(v)) for k, v in sorted(s.items()))))
+    return L
+
+
+def main():
+    a = sys.argv
+    frames = int(a[a.index("--frames") + 1]) if "--frames" in a else 3000
+    rec, stats, dyn, st, unexec, stray = build(frames)
+    ev = lines_evidence(rec, stats, dyn, st, unexec, stray, frames)
+    txt = chr(10).join(ev) + chr(10)
+    if "--write" in a:
+        with open(os.path.join(ROOT, a[a.index("--write") + 1]), "w", encoding="utf-8", newline=chr(10)) as fh:
+            fh.write(txt)
+    if "--doc" in a:
+        with open(os.path.join(ROOT, a[a.index("--doc") + 1]), "w", encoding="utf-8", newline=chr(10)) as fh:
+            fh.write(chapter(rec, stats, dyn, st, unexec, stray, frames))
+    print(txt)
+
+
+def chapter(rec, stats, dyn, st, unexec, stray, frames):
+    total = sum(rec.stores.values())
+    nout = sum(1 for pc, r in O.STATIC.items() if r & O.OUTPUT)
+    P = []
+    w = P.append
+    w("# 42 - Output processing (stage 64)")
+    w("")
+    w("GENERATED by `python -I tools/analyze_output.py --write analysis/evidence-output-summary.txt --doc docs/42-output-processing.md` from the write map of `tools/output_map.py`, the display lists decoded from the ROM and the curated text of the tool; tests: `tests/test_output.py`. The inventory of the chips the game writes is `33` (stage 57) and `35` (stage 59: every write to ANTIC, GTIA and POKEY traced); the sound is `22`; the colours `15`; the pictures `16`, `20`; the screens `19`, `21`. This chapter is the **memory side**: where the game's pictures and text live, which instruction writes which region, and how a frame turns the state into outputs.")
+    w("")
+    w("## 1. The result")
+    w("")
+    w("- **The game has five kinds of output** (section 2): the **screen** (character memory the display list shows: the maze band, the status rows, the title), the **player-missile pages** (Pac-Man, the four ghosts, the pop-up score), the **character sets** (written once by `Start`), the **colours and positions** in the chip registers (and their OS shadows), and the **sound** (POKEY). Nothing else leaves the program.")
+    w("- **Every store of the ROM is classified by the regions it can write** (section 4): of the %d store instructions of the ROM, %d can write an output region, and each of the 16 output regions has a short, named list of writer routines." % (len(O.STATIC), nout))
+    w("- **The classification was checked on the machine**: the real code run on the concrete 6502 over %d frames of three kinds of set-up, rare paths, %d display-list interrupts and the start-up expansion made **%s stores, none outside its instruction's classification**; %d of the %d output stores ran (the others are direct stores of the end of the eaten-ghost pause and the key loop, exact by their address and seen live in `33`)." % (stats["frames"], stats.get("interrupts", 0), "{:,}".format(total), nout - len(unexec), nout))
+    w("- **Two strays of the original** are in the map and in the port's way if it copies the code instead of the behaviour (section 6): `InitDisplay2` ends with a jump into the ghost-drawing loop with X = `$81`, so it writes 16 bytes of the **cartridge ROM** page `$A5` (no effect); and the first display-list interrupt, when the colour of band 1 is 0 (the attract-mode fade), writes one byte to `$D111` (no hardware there).")
+    w("")
+    w("## 2. The outputs")
+    w("")
+    w("| Output | Where it lives | Written when | Format (for the port) |")
+    w("|---|---|---|---|")
+    w("| the maze band of the game screen | `MazeScreen` `$0C00-$0F97`: 23 rows of 40 character codes (mode 4, 8 lines a row) | the dots and pellets as they are eaten (`EatDotAtPacMan`), the blinking pellets, the lives row, the level indicator, READY!, the bonus item; the whole band when a board starts (`Copy0800To0C00`) | one byte a cell: a glyph of the game character set (`$3000`, 101 glyphs of 8 lines) |")
+    w("| the two status lines | `StatusRows` `$2000-$204F`: 2 rows of 40 (mode 2) | the labels 1UP / 2UP (`DrawLabel1UP`, `DrawLabel2UP`, blinking), the six score digits of a player (`AddToScore`), the high score (`CompareHighScore`), the title's cleared scores | a cell is `$10 + digit` for a digit, blank = 0; the score cells are `$202A-$202F` (player 1) and `$2047-$204C` (player 2) |")
+    w("| the title screen | `TitleScreen` `$1C00-$1FFF` and the last row at `$0F70` (modes 6, 7, 4) | one frame of the title states (`FrameDispatch`, `$A6D7-$A78B`) | glyphs of the title set (`$1800`, 20 glyphs, the logo) and of the game set (the icon row) |")
+    w("| the ghosts and Pac-Man | the player-missile pages `$2300-$27FF` (`PMBASE` = `$20`, single-line resolution: one byte a scan line) | every frame, each moving entity redrawn at its row: 16 rows copied from a picture buffer (`StepAndDrawEntity`, `DrawAllInPlace`); the pop-up score (`GhostEaten`); the death animation (`DeathAnimation`); the tunnel mask (`ClipEntityAtTunnel`) | page `$2300`: the four missiles = Pac-Man's body (2 bits each) and the pop-up digits; pages `$2400-$2700`: ghost 0 to 3 |")
+    w("| the positions | GTIA `HPOSP0-3` / `HPOSM0-3` | with each redraw | the X of the entity (colour clocks) |")
+    w("| the colours | the OS shadows `PCOLR0-3` / `COLOR0-4` (the OS copies them to GTIA in its vertical blank, with the attract-mode transform) and the colour registers the display-list interrupts write | the board start (`LoadShadowColors`), the ghost states (`PCOLR`), the level-end flash, five bands a frame (`DliColors`) | `33`, `15`, `35` |")
+    w("| the display | the display list (`$BFA3` game, `$BF81` title: ROM), `SDMCTL` = `$3E`, `GRACTL`, `PRIOR`, `CHBASE` (changed by the interrupts) | `Start`, `SetDisplayList`, the interrupts | section 3 |")
+    w("| the sound | POKEY `AUDF1-4`, `AUDC1-4`, `AUDCTL` | the 31 sound-register writes of `22` | section 5 |")
+    w("")
+    w("## 3. The display lists")
+    w("")
+    w("The two display lists are in the ROM (`$BFA3` for the game, `$BF81` for the title); an ANTIC mode 2 row is 40 characters of 8 lines, mode 4 and 6 and 7 as marked (the table has the scan lines of the NTSC screen, the visible part starting at line 8).")
+    w("")
+    w("**The game screen** (`$BFA3`, `CHBASE` = `$30`, the game character set; five display-list interrupts):")
+    w("")
+    w(dl_table(0xBFA3))
+    w("")
+    w("**The title screen** (`$BF81`, `CHBASE` = `$18` for the logo band, `$30` for the rest; five interrupts):")
+    w("")
+    w(dl_table(0xBF81))
+    w("")
+    w("The interrupts (`35` has them line by line) write the colour registers at the start of a band, each after a `WSYNC`. `DliHandler1` (the game; the band counter `zp_18` is cleared at the frame's entry and counts the interrupts 0 to 4): band 0 (line 39) `CHBASE` := `$30` (the game set after the two status rows); band 1 (line 47) `COLPF1` := the item colour, `COLPF2` := `DliColors[0]`; band 2 (line 207) `COLPF1` := `DliColors[1]`; band 3 (line 215) `COLPF3` := `DliColors[2]`, `COLPF0` := `DliColors[3]`; band 4 (line 231) the player colours and `COLPF3` := 0. `DliHandler2` (the title): band 0 `CHBASE` := `$18`, `COLPF2` := `DliColors[0]`, `COLPF1` := `DliColors[1]`; the other bands `CHBASE` := `DliChbaseTable[band]`. `DliColors` = `(ColorsDli xor COLRSH) and DRKMSK` (peach, red, gold, light green; the attract-mode fade). `DMACTL` = `$3E` gives the standard playfield with players and missiles in single-line resolution; what the ANTIC DMA takes is in `39` section 4.")
+    w("")
+    w("## 4. The write map")
+    w("")
+    w("Every instruction of the ROM that writes memory (`sta`, `stx`, `sty`, `inc`, `dec`, the shifts of memory) is classified by the regions it can reach: a direct address by its address, an indexed store (`sta abs,x`) by the 256 bytes from its base, a zero-page store by the zero page, and each of the 14 `sta (zp),y` by the pointer's values (`29`). The table gives the **output regions** only; the zero page and the stack are the game's state (`25`, `30`).")
+    w("")
+    w(region_table(dyn, st))
+    w("")
+    w("(`n / m`: n of the m store instructions that can write the region ran on the concrete machine; the rest are direct stores listed in section 7. `Start` expands the maze, the tables and the character sets once (`WriteDstByte`); no other instruction ever writes `OriginalMaze`, `RamTables`, `GameCharset` or `TitleCharset`.)")
+    w("")
+    w("Reading the table as a pipeline: **the state** (positions, directions, states, timers, counters: `25`) is turned into **pictures** by `StepAndDrawEntity` (a ghost: 16 rows from `$BAC0 + shape` into the buffer `$0410`, then into its page at its row, `HPOSP` := X), `DrawAllInPlace` (all four ghosts and Pac-Man without moving them: the board start, the level end, the death), `GhostEaten` (the pop-up), `DeathAnimation` (Pac-Man's last picture rows), and into **text and cells** by `AddToScore` (the score digits), `DrawLives`, `DrawLevelIndicator`, `EatDotAtPacMan`, `BlinkPowerPellets` / `ShowPowerPellets`, `BonusItemUpdate`, `ClearReadyText`, `TurnControl` (the READY! and PLAYER ONE / TWO text). The routine that draws is also the one that moves: **drawing is the last step of an entity's update**, so the screen of a frame is the state after that frame's update.")
+    w("")
+    w("## 5. The sound")
+    w("")
+    w("Sound is the one output with no memory form: 31 sound-register writes in 11 routines drive the four POKEY channels, and `22` has each sound with its numbers and its three layers of checking (the registers, the emulator's waveform, the recorded wave). The summary the port needs: **channel 1** the dot sweep, the start tune (with channel 2), the bonus item, the death glide, the ghost-eaten sweep (with channels 3 and 4, `AUDCTL` = `$84`); **channel 2** the siren, the frightened wobble and the eyes sound, with the priority eyes > frightened > siren and a mute for the 34 frames of a ghost eaten; every other channel is silent (`ClearPokeyRegisters`). All sounds are driven by the frame counter and the game state (`24`): the sound is a function of the state and the frame, never of the input directly.")
+    w("")
+    w("## 6. Two strays of the original")
+    w("")
+    w("- **`InitDisplay2` writes 16 bytes of ROM.** The routine (`$A610`) clears the player and sound registers, installs the title display list and colours, and then ends with `jmp $B985`, the shared tail of the ghost-drawing loop; at that point X = `$81`, so the tail forms `DstPtr` = `$A5` + the old low byte and copies 16 rows of whatever `SrcPtr` points to into the cartridge: the writes are ignored by the hardware. Live: the 881 calls of a 20-second title session all had X = `$81`, `DstPtrH` = `$A5` (`analysis/raw-logs/id2.txt`); the models make the %s stores of the map to the ROM page. The page `$A500-$A50F` read at every frame entry of that session (`analysis/raw-logs/romstray.txt`) equals the ROM file in every frame: the writes change nothing. A port must **not** reproduce it." % ", ".join("{:,}".format(n) for (pc, r), n in stray.items() if r == "Rom"))
+    w("- **Band 1's colour of 0 clears the players' colours through a wrong index.** In `DliHandler1` the second band loads `DliColors[0]` into X and branches on the flags of that load: when the colour is 0 (the attract-mode fade of `$3A`: `($3A xor COLRSH) and DRKMSK`) the branch falls through into the loop that zeroes `COLPM3..0` with X = 0, `dex` makes it `$FF`, and the store `sta COLPM0,x` goes to `$D111` (no hardware), once. The effect is none; the intended effect (the last band clears the player colours) does not happen in that band.")
+    w("")
+    w("## 7. Verification")
+    w("")
+    w("- **The classification** (`tools/output_map.py`): %d store instructions, %d with an output target; run on the concrete 6502 (`tools/cpu6502.py`): %d handler frames (the game, play and title set-ups of `tools/algorithm_models7.py` with the entities placed where the maze lets them stand and the maze pointer inside the maze), the level-end stages, the eaten-ghost pause, the death animation, `EatDotAtPacMan` and `BonusItemUpdate` on random cells, %d display-list interrupts, the start-up expansion: **%s stores, 0 outside the classification of their instruction**." % (len(O.STATIC), nout, stats["frames"], stats.get("interrupts", 0), "{:,}".format(total)))
+    w("- **Not run by these models** (%d of %d output stores, all direct stores, classified exactly by their address): %s. The key loop's stores to `CH` and the restart's `GPRIOR` are in `38` / `40` and `35`; the end of the eaten-ghost pause is run live in `18`." % (len(unexec), nout, ", ".join("`$%04X` (%s)" % (pc, O.routine_name(pc)) for pc in unexec)))
+    w("- **Every chip register write** is a static site and was traced live (`35`: 4.66 million writes, 0 outside the 71 sites); **every I/O instruction ran live** (`33`: 133 of 133). The screen memory and the player-missile pages were compared with the models over 30,000 frames with the whole memory compared (`31` section 5); the colours of 482,764 pixels (`15`), the nine pictures of Pac-Man and the ghost shapes against screenshots (`16`, `20`).")
+    w("")
+    w("## 8. For the port")
+    w("")
+    w("- **A renderer needs, per frame: the maze band** (23 x 40 cells of glyph codes, `MazeScreen`), **two status rows** (80 cells), **five movable objects** (four ghosts, Pac-Man) with their 16 picture rows, positions, colours and priority, **the pop-up and the death pictures**, **the colour bands** (five a frame) and **the title screen**; the data are in `12` (glyphs, shapes, text) and the state that selects them in `25` / `30`.")
+    w("- **The order** of a frame's output is the order of the update: Pac-Man, the dot, the ghosts from 3 down to 0, each drawn at the end of its update (`24` section 4.3); a port that draws once at the end of the frame gets the same picture.")
+    w("- **Do not copy the strays** of section 6; do copy the **cell codes** and the **row-by-row colour bands**, which are visible.")
+    w("- **The 8-bit shifts**: the game moves a ghost by 1 pixel and an entity's picture by whole rows; `HPOSP` takes the X in colour clocks (2 per pixel of mode 4), the Y is the row of the first picture line in the page: `16`, `20`.")
+    w("")
+    w("## 9. Limits")
+    w("")
+    w("- The classification of the 14 `sta (zp),y` instructions is read from the pointer analysis of `29` and confirmed by the run; the other stores are classified by address, which is exact.")
+    w("- The concrete runs use the random frame set-ups of the stage-55 models, constrained to positions the maze allows; a state outside what a game can reach (a GameState of 5, an entity at Y = `$FF`, a pointer into the original maze) does write elsewhere, which is why the models constrain them (section 7).")
+    w("- Nothing here is pixel-exact: the pixels are ANTIC's and GTIA's, and were checked against Altirra's screen in `15`, `16` and `20` (Altirra 4.40, NTSC and PAL); a real Atari was not available (OV-42b).")
+    return chr(10).join(P) + chr(10)
+
+
+if __name__ == "__main__":
+    main()
