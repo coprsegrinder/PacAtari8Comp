@@ -120,11 +120,11 @@ assembles `src/asm/pacman.s` with ca65 / ld65 (`external-tools/cc65`) and compar
 python -m unittest discover -s tests -p "test_*.py"      # all; or name modules: python -m unittest tests.test_shell tests.test_behaviour
 ```
 
-every test module (102 of them); the long ones (the comparisons with the ROM) take minutes.
+every test module (103 of them); the long ones (the comparisons with the ROM) take minutes.
 
 ## 5. The Python side
 
-**197 tools** in `tools/` and **102 test modules** in `tests/`, all Python 3 with the standard library, **except**:
+**198 tools** in `tools/` and **103 test modules** in `tests/`, all Python 3 with the standard library, **except**:
 
 | Module | Files that import it | Used for |
 |---|---|---|
