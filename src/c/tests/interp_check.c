@@ -551,6 +551,42 @@ static void test_crt_source(void)
     interp_out_free(&o);
 }
 
+/* the animation of the game is the game's: whatever the number of pictures a second (1, 2, 3, 5 and 7 to a game frame), every game frame is the nearer one for some picture, in order, none left out (the mouth of
+ * Pac-Man goes through all its shapes as in the native picture: the shape of a picture is the shape of the nearer frame) */
+static void test_every_frame_shown(void)
+{
+    static const int per_frame[5] = {1, 2, 3, 5, 7};          /* pictures to a game frame: 60, 120, 180, 300, 420 a second */
+    int pf, bad_order = 0, left_out = 0, k;
+
+    for (pf = 0; pf < 5; pf++) {
+        InterpOut o;
+        InterpDirty d;
+        unsigned long last = 0, n = 0;
+        long seen[400];
+
+        memset(seen, 0, sizeof seen);
+        CHECK(interp_out_init(&o) == 0 && interp_out_size(&o, 384, 240) == 0);
+        g_limit = NFRAMES - 1;
+        for (n = 500; n < 700; n++) {
+            for (k = 0; k < per_frame[pf]; k++) {
+                double t = (double)n + (double)k / (double)per_frame[pf];
+                interp_render(&o, get_game, NULL, t, g_limit, &d);
+                if (o.base_id < last || o.base_id > last + 1) {
+                    bad_order += last != 0;
+                }
+                last = o.base_id;
+                seen[o.base_id - 500 < 400 ? o.base_id - 500 : 399]++;
+            }
+        }
+        for (n = 501; n < 699; n++) {
+            left_out += seen[n - 500] == 0;                        /* a game frame no picture of which was the nearer one */
+        }
+        interp_out_free(&o);
+    }
+    CHECK(bad_order == 0);
+    CHECK(left_out == 0);
+}
+
 int main(void)
 {
     if (assets_load(&assets, ASSET_DEFAULT_PATH, blob_buf, sizeof blob_buf) != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {
@@ -568,6 +604,7 @@ int main(void)
     test_smoothness();
     test_no_mixing();
     test_box();
+    test_every_frame_shown();
     test_crt_source();
     test_jumps();
     test_score_replaces_pacman();

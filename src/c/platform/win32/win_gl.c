@@ -205,6 +205,8 @@ typedef BOOL(WINAPI *SwapIntervalFn)(int);
 static HWND gl_wnd;
 static HDC gl_dc;
 static HGLRC gl_rc;
+static SwapIntervalFn gl_swap_interval;
+static int gl_interval_now = -1;
 static GLuint gl_vao, gl_vbo_fbo, gl_vbo_screen;
 static char gl_info[320];
 static int gl_w = 1, gl_h = 1;
@@ -315,9 +317,8 @@ int crt_gl_open(HWND parent, char *err, size_t errcap)
     GLFUNCS(X_LOAD)
 #undef X_LOAD
     swap_interval = (SwapIntervalFn)gl_proc_address("wglSwapIntervalEXT");
-    if (swap_interval != NULL) {
-        swap_interval(0);                                                                       /* the program paces the pictures itself */
-    }
+    gl_swap_interval = swap_interval;
+    crt_gl_interval(0);                                                                        /* the program paces the pictures itself, unless it asks the monitor to */
     snprintf(gl_info, sizeof gl_info, "%s, OpenGL %s", (const char *)glGetString(GL_RENDERER), (const char *)glGetString(GL_VERSION));
     glGenVertexArrays(1, &gl_vao);
     glBindVertexArray(gl_vao);
@@ -390,6 +391,14 @@ void crt_gl_resize(int w, int h)
 const char *crt_gl_renderer(void)
 {
     return gl_info;
+}
+
+void crt_gl_interval(int n)
+{
+    if (gl_swap_interval != NULL && n != gl_interval_now) {
+        gl_swap_interval(n);
+        gl_interval_now = n;
+    }
 }
 
 void crt_gl_swap(void)

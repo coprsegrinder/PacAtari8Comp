@@ -6,7 +6,7 @@ Checklist stage 91: "Document functions, variables, structures, algorithms, modu
 
 ## 1. The source at a glance
 
-- **107 files, 15724 lines** under `src/c` (43 headers, 64 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
+- **107 files, 15761 lines** under `src/c` (43 headers, 64 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
 - **237 functions declared in headers** (without the tests), **52 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
 - **Layers** (an arrow is "uses"): `shell` -> `app` -> `core`; `shell` -> `render`, `audio`, `assets`; `app`, `assets`, `core` -> `platform`; `render`, `audio` -> `core`. Nothing in `core` or `app` includes a system header or opens a file.
 
@@ -164,7 +164,7 @@ flowchart TD
 | `frontend_check.c` | 167 | Stage J: |
 | `fs_sandbox.c` | 191 | The file sandbox test (docs/51 section 2a, stage 75b): |
 | `interp_audit.c` | 250 | The audit of the in-between pictures (docs/69), run over whole games by tools/check_interp.py: |
-| `interp_check.c` | 583 | The in-between pictures of the FPS option (src/c/render/interp.c, docs/69): |
+| `interp_check.c` | 620 | The in-between pictures of the FPS option (src/c/render/interp.c, docs/69): |
 | `menu_check.c` | 377 | The pause menu and the graphics options (src/c/shell/menu.c, docs/68): |
 | `platform_check.c` | 294 | Stage 77b: |
 | `pure_functions.c` | 373 | The table of the pure functions for the vector runner (stage 76a): |

@@ -29,6 +29,7 @@ int crt_chain_passes(const CrtChain *c);
 int crt_chain_render(CrtChain *c, const uint32_t *bgra, int w, int h, int vx, int vy, int vw, int vh, unsigned frame, char *err, size_t errcap);
 
 void crt_gl_swap(void);                                /* shows what was drawn */
+void crt_gl_interval(int n);                           /* the swap waits for every n-th refresh of the monitor (0: it does not wait): the pictures are then paced by the monitor itself */
 
 /* the viewport of the last render as RGBA (row 0 the top), for the tests; call before crt_gl_swap */
 int crt_gl_readback(uint8_t *rgba, int vw, int vh);

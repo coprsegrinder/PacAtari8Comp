@@ -135,6 +135,21 @@ def one(cc):
     st = open(st_path, encoding="utf-8").read() if os.path.exists(st_path) else ""
     m3 = re.search(r"RESULT: (\d+) passed, (\d+) failed", st)
     step("%s: started with nothing set: borderless fullscreen, the monitor's resolution and refresh rate chosen from the lists (exact or nearest)" % cc, r2.returncode == 0 and bool(m3) and m3.group(2) == "0" and m3.group(1) == "4", "; ".join(re.findall(r"PASS  (?:starts at the monitor.s \w+|starts in borderless fullscreen): (.*)", st))[:260])
+    # the game's own logic does not depend on how the picture is made: the same scenario with several FPS choices and CRT shaders, each recorded and replayed headless (the state, run, video and sound digests of the
+    # recording equal the replay's), the game at its own speed, the sound not running dry more than the start of a shader makes it
+    for label, extra in (("native", ["--fps", "native"]), ("native + guest shader", ["--fps", "native", "--crt", "guest"]), ("60 + zfast shader", ["--fps", "60", "--crt", "zfast"]),
+                         ("180", ["--fps", "180"]), ("180 + guest shader", ["--fps", "180", "--crt", "guest"]), ("uncapped + aperture shader", ["--fps", "uncapped", "--crt", "aperture"])):
+        t = time.time()
+        r5 = run([play, "--root", root, "--windowed", "--selftest", "600", "--seed", "5", "--record", "logs/mx.pmrp"] + extra, timeout=200)
+        rp = os.path.join(root, "logs", "selftest.txt")
+        tx = open(rp, encoding="utf-8").read() if os.path.exists(rp) else ""
+        h5 = run([head, "run", "logs/mx.pmrp", "--video", "--audio", "--root", root])
+        a5, b5 = digests(tx), digests(h5.stdout)
+        fps5 = re.search(r"\(([\d.]+) frames/s", tx)
+        ur = re.search(r"underruns: (\d+)", tx)
+        ok5 = r5.returncode == 0 and "frames run: 600" in tx and a5 == b5 and "?" not in a5.values() and bool(fps5) and 58.0 <= float(fps5.group(1)) <= 61.0 and bool(ur) and int(ur.group(1)) <= 3
+        step("%s, %s: the game made through it (600 frames) replays headless to the same digests, at the game's own speed, the sound not running dry" % (cc, label), ok5,
+             "%s frames/s, %s underruns, %.0f s" % (fps5.group(1) if fps5 else "?", ur.group(1) if ur else "?", time.time() - t))
     crts = re.findall(r"^PASS  crt shader \d \(.*", text, re.M)
     step("%s: each CRT shader (guest-advanced-ntsc, zfast-crt-composite, aperture) and off, chosen through the menu in the running game: the picture read back from the OpenGL window is lit, differs from the plain picture, no pass failed" % cc, len(crts) == 4, "%d of 4: %s" % (len(crts), "; ".join(re.findall(r"PASS  crt shader \d \((\S+)\): (\d+x\d+) picture from the chain \((\d+) passes\)", text) and ["%s %s %s passes" % t for t in re.findall(r"PASS  crt shader \d \((\S+)\): (\d+x\d+) picture from the chain \((\d+) passes\)", text)])))
     r3 = run([play, "--root", root, "--crttest", "--seed", "7"], timeout=200)

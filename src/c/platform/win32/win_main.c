@@ -462,6 +462,7 @@ static int crt_errors;                   /* pictures the chain failed to make (t
 static int crt_shot_req;                 /* a test asks for the pixels of the next picture */
 static uint8_t *crt_shot;
 static int crt_shot_w, crt_shot_h;
+static int crt_want_interval;            /* how the swap of the OpenGL window waits: 0 not at all, n for every n-th refresh of the monitor (the pictures are then paced by it) */
 static double crt_ms_render, crt_ms_swap;   /* how long the last picture took to give to OpenGL, and to swap (the trace shows them) */
 static char crt_why[2000];                /* why the shaders are not available, for the log */
 
@@ -506,6 +507,7 @@ static void crt_render_last(void)
         crt_shot_req = 0;
     }
     t_mid = pm_time_ns();
+    crt_gl_interval(crt_want_interval);
     crt_gl_swap();
     crt_ms_render = (double)(t_mid - t_start_ns) / 1e6;
     crt_ms_swap = (double)(pm_time_ns() - t_mid) / 1e6;
@@ -572,6 +574,7 @@ static void present(void)
         return;
     }
     if (crt_active) {                                                   /* the CRT shader makes the picture, in the OpenGL window */
+        crt_want_interval = 0;
         crt_render_last();
         return;
     }
@@ -938,6 +941,9 @@ static int interp_step(uint64_t t_start_ns)
 
     if (target == MENU_FPS_UNCAPPED) {
         /* as many pictures as there are: one whenever the picture is not the one before */
+    } else if (crt_active && target >= 55 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
+        /* with a CRT shader the OpenGL swap waits for every n-th refresh of the monitor and so is the clock itself: the picture is drawn, the swap returns when it is on its way to the screen (not for the rates below 55: a swap that long would keep the game and the sound waiting) */
+        crt_want_interval = (menu.monitor_hz + target / 2) / target;
     } else if (dwm_flush != NULL && target >= 30 && menu.monitor_hz >= target && ((menu.monitor_hz + target / 2) / target) * target >= menu.monitor_hz - 1 && ((menu.monitor_hz + target / 2) / target) * target <= menu.monitor_hz + 1) {
         /* the monitor's refresh is the tick when the rate fits it (180 on 180 Hz, 60 or 90 on 180 Hz, 60 on 59.94): every n-th refresh, so that no picture is shown a refresh too long or too short */
         static uint64_t last_flush;
@@ -971,6 +977,9 @@ static int interp_step(uint64_t t_start_ns)
         if (now > next_tick_ns + 3 * period) {                  /* far behind (the window was dragged): start again from now */
             next_tick_ns = now + period;
         }
+    }
+    if (!(crt_active && crt_want_interval > 0 && target >= 55 && menu.monitor_hz >= target)) {
+        crt_want_interval = 0;                                  /* a rate the monitor's refresh does not fit (or no shader): the swap does not wait */
     }
     tau = game_time(now, t_start_ns);
     if (tau < 0.0) {

@@ -118,7 +118,7 @@ static void test_fps(void)
     menu_key(&m, MK_DOWN);
     CHECK(m.cursor == 2 && !m.fps_changed && !m.changed);
     n = menu_lines(&m, l);
-    CHECK(n == 8 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < 180 >") != NULL && l[5].item && !l[5].selected && strstr(l[5].text, "CRT SHADER: < OFF >") != NULL);
+    CHECK(n == 8 && l[4].item && l[4].selected && strstr(l[4].text, "FPS: < 180 >") != NULL && l[5].item && !l[5].selected && strstr(l[5].text, "CRT SHADER: < NONE >") != NULL);
     start = m.fps;
     menu_key(&m, MK_RIGHT);
     CHECK(m.fps == start + 1 && m.fps_changed && !m.changed && menu_fps(&m) == MENU_FPS_UNCAPPED);
@@ -156,7 +156,7 @@ static void test_crt(void)
     MenuLine l[MENU_MAX_LINES];
     int i;
 
-    CHECK(menu_crt_count == 4 && strcmp(menu_crt_names[0], "OFF") == 0 && strcmp(menu_crt_files[0], "") == 0);
+    CHECK(menu_crt_count == 4 && strcmp(menu_crt_names[0], "NONE") == 0 && strcmp(menu_crt_files[0], "") == 0);
     CHECK(strstr(menu_crt_files[1], "crt-guest-advanced-ntsc.slangp") && strstr(menu_crt_files[2], "zfast-crt-composite.slangp") && strstr(menu_crt_files[3], "crt-aperture.slangp"));
     menu_init(&m, 0, 5, 0, 0);
     CHECK(m.crt == 0 && !m.crt_changed);                    /* off to start with */
@@ -174,7 +174,7 @@ static void test_crt(void)
         CHECK(strstr(l[5].text, menu_crt_names[i]) != NULL && l[5].selected);
         m.crt_changed = 0;
     }
-    menu_key(&m, MK_RIGHT);                                 /* round to off */
+    menu_key(&m, MK_RIGHT);                                 /* round to none */
     CHECK(m.crt == 0 && m.crt_changed);
     menu_key(&m, MK_LEFT);                                  /* and back */
     CHECK(m.crt == 3);
@@ -182,7 +182,7 @@ static void test_crt(void)
     CHECK(m.crt == 0);
     m.crt_unavailable = 1;                                  /* the front end could not start them */
     menu_lines(&m, l);
-    CHECK(strstr(l[5].text, "NOT AVAILABLE") != NULL);
+    CHECK(strstr(l[5].text, "SHADERS NOT AVAILABLE") != NULL);
     m.crt = 2;
     menu_lines(&m, l);
     CHECK(strstr(l[5].text, "NOT AVAILABLE") == NULL);
