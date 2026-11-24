@@ -77,7 +77,9 @@ static void take_shadows(const World *w, uint8_t c[9], uint8_t *chbase)
     for (k = 0; k < 4; k++) {
         c[5 + k] = chip_colour(w, w->shadow[0xC0 + k]);    /* PCOLR0-3 */
     }
-    *chbase = w->shadow[0xF4];                              /* CHBAS */
+    /* CHBAS ($02F4): the game never writes it; the OS sets it to $E0 (its own font) at reset, and the status rows are drawn with that font until the first interrupt of the frame.  The World starts from
+     * a power-on RAM without the OS reset, so its shadow is 0: use the OS value (a game that did write CHBAS would be honoured by a non-zero shadow). */
+    *chbase = w->shadow[0xF4] != 0 ? w->shadow[0xF4] : 0xE0;
 }
 
 /* what the display-list interrupt handlers of the game write after their WSYNC (docs/35, src/asm/pacman.s $A573-$A5FC); `band` is BandCounter */
