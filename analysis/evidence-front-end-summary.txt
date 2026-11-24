@@ -1,0 +1,25 @@
+Stage J (docs/67-windows-front-end.md): the interactive front end checked against the headless shell (tools/check_front_end.py), 2026-11-24
+
+PASS  gcc: build everything (strict C99, -Werror): pacman_a8_play and pacman_a8  (0 warnings or errors)
+PASS  gcc, sound device is the clock: 1,200 frames of a real window with real key messages  (20.5 s)
+PASS  gcc, sound device is the clock: the recorded game run headless gives the same state, run, video and audio digests  (b907912d8dd495ad)
+PASS  gcc: the window's own pixels equal the frame  (0 of 92160 differ)
+PASS  gcc: the sound device never ran dry and no picture gap passed 40 ms  (underruns 0, gaps 0)
+PASS  gcc, sound device is the clock: the frame rate is within 0.5 % of 59.923  (60.106 frames/s)
+PASS  gcc: the pause key was recorded as exactly two presses
+PASS  gcc: the sound the device played (loopback capture) matches the sound handed to it  (this process only; correlation 0.9912 at 30 ms, 1629 of 1635 blocks played, level 0.996)
+PASS  gcc, system timer is the clock: 1,200 frames of a real window with real key messages  (20.5 s)
+PASS  gcc, system timer is the clock: the recorded game run headless gives the same state, run, video and audio digests  (b907912d8dd495ad)
+PASS  gcc, system timer is the clock: the frame rate is within 1.0 % of 59.923  (59.912 frames/s)
+PASS  clang: build everything (strict C99, -Werror): pacman_a8_play and pacman_a8  (0 warnings or errors)
+PASS  clang, sound device is the clock: 1,200 frames of a real window with real key messages  (20.5 s)
+PASS  clang, sound device is the clock: the recorded game run headless gives the same state, run, video and audio digests  (b907912d8dd495ad)
+PASS  clang: the window's own pixels equal the frame  (0 of 92160 differ)
+PASS  clang: the sound device never ran dry and no picture gap passed 40 ms  (underruns 0, gaps 0)
+PASS  clang, sound device is the clock: the frame rate is within 0.5 % of 59.923  (60.089 frames/s)
+PASS  clang: the pause key was recorded as exactly two presses
+PASS  clang: the sound the device played (loopback capture) matches the sound handed to it  (this process only; correlation 0.9844 at 30 ms, 1629 of 1635 blocks played, level 0.996)
+PASS  clang, system timer is the clock: 1,200 frames of a real window with real key messages  (20.5 s)
+PASS  clang, system timer is the clock: the recorded game run headless gives the same state, run, video and audio digests  (b907912d8dd495ad)
+PASS  clang, system timer is the clock: the frame rate is within 1.0 % of 59.923  (59.881 frames/s)
+ALL PASSED: 22 steps, 0 failed, 91 s
