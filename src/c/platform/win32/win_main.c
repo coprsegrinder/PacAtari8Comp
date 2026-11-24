@@ -1,17 +1,21 @@
 /* platform/win32/win_main.c - the Windows 11 front end of the port: a window, the keyboard and XInput pads, the sound device (stage J, docs/67).
- *   pacman_a8_play [--root DIR] [--scale N] [--fullscreen] [--no-audio] [--seed N] [--record FILE] [--ppm FILE] [--selftest FRAMES] [--exact]
+ *   pacman_a8_play [--root DIR] [--scale N] [--fullscreen] [--no-audio] [--seed N] [--record FILE] [--ppm FILE] [--selftest FRAMES] [--menutest] [--exact]
  * It is the interactive twin of the headless shell: the same Shell, the same renderer, the same sound model, driven by the player instead of a replay.  What it adds is only what a machine does around the game:
  *   - keyboard / pad -> FrontKeys -> FrameInput (shell/frontend.c, portable and tested), one per frame;
  *   - the frame clock: the sound device's buffer (the game runs a frame whenever the device has less than two frames of sound queued), or the system timer when there is no device (--no-audio);
- *   - the picture: the renderer's 384 x 240 pixels, stretched to the window at the 4:3 shape of an Atari picture tube, black bars around it;
+ *   - the picture: the renderer's 384 x 240 pixels (1.6 : 1) at a whole-number scale when that fills the area well, else as large as fits, nearest pixel, centred, black around it, never stretched (shell/menu.c display_fit);
+ *   - the pause menu (ESC) and the graphics options (display mode, resolution): while a menu is open no game frame runs (shell/menu.c; docs/68);
  *   - the high score under save/, the replay of the game under --record (a recorded game replays headlessly to the same digests: the proof that this front end adds nothing to the game).
- * Keys: arrows / WASD stick, Ctrl / Z / X / Enter fire (Enter also START), F2 START, F3 SELECT, F4 OPTION, Space / P pause, Alt+Enter or F11 full screen, Esc quit.  Pads (XInput): D-pad or left stick,
+ * Keys: arrows / WASD stick, Ctrl / Z / X / Enter fire (Enter also START), F2 START, F3 SELECT, F4 OPTION, Space / P pause, Alt+Enter or F11 full screen, Esc the pause menu.  Pads (XInput): D-pad or left stick,
  * A / B fire, Start = START, Back = SELECT, X / Y = OPTION; pad 2 is player 2; the keyboard drives both ports (hot-seat play on one keyboard).
  * --selftest FRAMES: plays a built-in scenario by posting real key messages to its own window, runs FRAMES frames, writes logs/selftest.txt (the digests, the timing, the sound device's underruns, a comparison of
- * the window's pixels with the frame) and quits.  --exact makes the window client exactly 384 x 240 pixels with no stretching (the pixel comparison needs it). */
+ * the window's pixels with the frame) and quits.  --exact makes the window client exactly 384 x 240 pixels with no stretching (the pixel comparison needs it).
+ * --menutest: drives the pause menu and the graphics options by real key messages (ESC, arrows, Enter, F11, Alt+Enter), checks that the game is frozen while a menu is open, and that every display mode and
+ * resolution gives the layout of display_fit and the picture the window really shows (logs/menutest.txt). */
 #include <windows.h>
 
 #include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +25,7 @@
 #include "../../audio/audio.h"
 #include "../../render/render.h"
 #include "../../shell/frontend.h"
+#include "../../shell/menu.h"
 #include "../../shell/replay.h"
 #include "../../shell/shell.h"
 #include "../fs.h"
@@ -37,7 +42,7 @@
 #define TITLE "Pac-Man (Atari 8-bit) - C port"
 
 typedef struct Options {
-    int scale, fullscreen, no_audio, exact;
+    int scale, fullscreen, no_audio, exact, menutest;
     long selftest;
     uint32_t seed;
     int have_seed;
@@ -68,8 +73,9 @@ static HWND hwnd;
 static volatile int quit;
 static uint8_t key_down[256];
 static int pause_edge;
-static int fullscreen;
-static WINDOWPLACEMENT saved_place;
+static int fullscreen;                   /* the display mode as applied to the window: 1 borderless fullscreen */
+static Menu menu;                        /* the pause menu and the display settings (shell/menu.c) */
+static int menu_dirty;                   /* the menu or the picture behind it must be drawn again */
 static LONG saved_style;
 
 /* ---------------------------------------------------------------- digests (the same as the headless shell's, so that a recorded game can be compared) */
@@ -220,46 +226,82 @@ static void keys_now(FrontKeys *k)
 
 /* ---------------------------------------------------------------- the window */
 
-static void toggle_fullscreen(void)
+/* the display mode and the size of the window, from the settings of the menu (menu.fullscreen, menu.res): borderless fullscreen covers the monitor; windowed makes a window whose client area is the selected
+ * resolution (as much of it as the monitor's work area has room for), centred on the monitor.  Nothing of the game is touched, so a change is immediate and the game goes on where it was. */
+static void apply_display(void)
 {
-    if (!fullscreen) {
-        MONITORINFO mi;
-        mi.cbSize = sizeof mi;
-        saved_place.length = sizeof saved_place;
-        GetWindowPlacement(hwnd, &saved_place);
-        saved_style = GetWindowLong(hwnd, GWL_STYLE);
-        if (GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mi)) {
-            SetWindowLong(hwnd, GWL_STYLE, (LONG)((DWORD)saved_style & ~(DWORD)WS_OVERLAPPEDWINDOW));
-            SetWindowPos(hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
-            fullscreen = 1;
-            ShowCursor(FALSE);
-        }
-    } else {
-        SetWindowLong(hwnd, GWL_STYLE, saved_style);
-        SetWindowPlacement(hwnd, &saved_place);
-        SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
-        fullscreen = 0;
-        ShowCursor(TRUE);
-    }
-}
+    MONITORINFO mi;
+    RECT r;
+    DWORD style;
+    int cw, ch, fw, fh, workw, workh;
 
-/* the destination rectangle of the picture in a client area of cw x ch: the 4:3 shape of the original's picture, centred (opt.exact: the pixels as they are) */
-static void dest_rect(int cw, int ch, int *x, int *y, int *w, int *h)
-{
-    if (opt.exact) {
-        *x = *y = 0;
-        *w = RENDER_W;
-        *h = RENDER_H;
+    mi.cbSize = sizeof mi;
+    if (hwnd == NULL || !GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mi)) {
         return;
     }
-    *h = ch;
-    *w = (int)((long)ch * 4 / 3);
-    if (*w > cw) {
-        *w = cw;
-        *h = (int)((long)cw * 3 / 4);
+    if (IsZoomed(hwnd) || IsIconic(hwnd)) {                     /* a maximized or minimized window is made a normal one first: the size and place below are of the normal window */
+        ShowWindow(hwnd, SW_RESTORE);
     }
-    *x = (cw - *w) / 2;
-    *y = (ch - *h) / 2;
+    if (menu.fullscreen) {
+        SetWindowLong(hwnd, GWL_STYLE, (LONG)(WS_POPUP | WS_VISIBLE));
+        SetWindowPos(hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top,
+                     SWP_NOOWNERZORDER | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        if (!fullscreen) {
+            ShowCursor(FALSE);
+        }
+        fullscreen = 1;
+    } else {
+        style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+        menu_size(&menu, &cw, &ch);
+        SetRect(&r, 0, 0, cw, ch);
+        AdjustWindowRect(&r, style, FALSE);
+        fw = (r.right - r.left) - cw;
+        fh = (r.bottom - r.top) - ch;
+        workw = mi.rcWork.right - mi.rcWork.left;
+        workh = mi.rcWork.bottom - mi.rcWork.top;
+        if (cw + fw > workw) {
+            cw = workw - fw;
+        }
+        if (ch + fh > workh) {
+            ch = workh - fh;
+        }
+        SetWindowLong(hwnd, GWL_STYLE, (LONG)style);
+        SetWindowPos(hwnd, HWND_NOTOPMOST, mi.rcWork.left + (workw - (cw + fw)) / 2, mi.rcWork.top + (workh - (ch + fh)) / 2, cw + fw, ch + fh,
+                     SWP_NOOWNERZORDER | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        if (fullscreen) {
+            ShowCursor(TRUE);
+        }
+        fullscreen = 0;
+    }
+    saved_style = GetWindowLong(hwnd, GWL_STYLE);
+    InvalidateRect(hwnd, NULL, FALSE);
+    menu_dirty = 1;
+}
+
+/* F11 and Alt+Enter: the other display mode, at the resolution selected */
+static void toggle_fullscreen(void)
+{
+    menu.fullscreen = !menu.fullscreen;
+    apply_display();
+}
+
+/* the picture in a client area of cw x ch (opt.exact: the pixels as they are).  In a window the picture may use the whole client area; in borderless fullscreen it may use the centred area of the
+ * selected resolution (a monitor smaller than the resolution gives the monitor): display_fit makes it a whole-number scale when that uses the area well, else the largest that fits, always 1.6 : 1 */
+static void layout(int cw, int ch, DisplayRect *r)
+{
+    int aw = cw, ah = ch;
+
+    if (opt.exact) {
+        memset(r, 0, sizeof *r);
+        r->w = RENDER_W;
+        r->h = RENDER_H;
+        r->scale_num = r->scale_den = r->integer = 1;
+        return;
+    }
+    if (fullscreen) {
+        menu_size(&menu, &aw, &ah);
+    }
+    display_fit(cw, ch, aw, ah, r);
 }
 
 static void present(void)
@@ -267,6 +309,7 @@ static void present(void)
     HDC dc;
     RECT rc;
     BITMAPINFO bi;
+    DisplayRect pr;
     int x, y, w, h;
 
     if (hwnd == NULL) {
@@ -274,7 +317,11 @@ static void present(void)
     }
     dc = GetDC(hwnd);
     GetClientRect(hwnd, &rc);
-    dest_rect(rc.right, rc.bottom, &x, &y, &w, &h);
+    layout(rc.right, rc.bottom, &pr);
+    x = pr.x;
+    y = pr.y;
+    w = pr.w;
+    h = pr.h;
     if (x > 0 || y > 0) {                                     /* the bars */
         RECT r;
         HBRUSH b = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -297,6 +344,76 @@ static void present(void)
     SetStretchBltMode(dc, COLORONCOLOR);                       /* no blur: the pixels of the original */
     StretchDIBits(dc, x, y, w, h, 0, 0, RENDER_W, RENDER_H, bgra, &bi, DIB_RGB_COLORS, SRCCOPY);
     ReleaseDC(hwnd, dc);
+}
+
+/* ---------------------------------------------------------------- the menu */
+
+static int menu_resync;                  /* the menu was closed: the timer clock must not try to make up the time spent in it */
+
+static void menu_event(MenuKey k)
+{
+    int was_open = menu_is_open(&menu);
+
+    menu_key(&menu, k);
+    if (menu.quit) {
+        quit = 1;
+    }
+    if (menu.changed) {
+        menu.changed = 0;
+        apply_display();
+    }
+    if (was_open != menu_is_open(&menu)) {
+        pause_edge = 0;
+        if (was_open) {
+            menu_resync = 1;
+        }
+    }
+    menu_dirty = 1;
+}
+
+static int menu_key_of(unsigned vk, MenuKey *k)
+{
+    switch (vk) {
+    case VK_UP: case 'W': *k = MK_UP; return 1;
+    case VK_DOWN: case 'S': *k = MK_DOWN; return 1;
+    case VK_LEFT: case 'A': *k = MK_LEFT; return 1;
+    case VK_RIGHT: case 'D': *k = MK_RIGHT; return 1;
+    case VK_RETURN: case VK_SPACE: *k = MK_SELECT; return 1;
+    case VK_ESCAPE: *k = MK_BACK; return 1;
+    default: return 0;
+    }
+}
+
+/* the pad drives the menu too: D-pad or left stick move, A selects, B goes back; Start + Back together open it (a pad has no Esc) */
+static void pad_menu_poll(void)
+{
+    static unsigned prev;
+    XIn x;
+    unsigned m = 0, e;
+
+    if (pad_read(0, &x)) {
+        WORD b = x.buttons;
+        m |= (unsigned)((b & XB_UP) != 0 || x.ly > STICK_DEAD) << 0;
+        m |= (unsigned)((b & XB_DOWN) != 0 || x.ly < -STICK_DEAD) << 1;
+        m |= (unsigned)((b & XB_LEFT) != 0 || x.lx < -STICK_DEAD) << 2;
+        m |= (unsigned)((b & XB_RIGHT) != 0 || x.lx > STICK_DEAD) << 3;
+        m |= (unsigned)((b & XB_A) != 0) << 4;
+        m |= (unsigned)((b & XB_B) != 0) << 5;
+        m |= (unsigned)((b & XB_START) != 0) << 6;
+        m |= (unsigned)((b & XB_BACK) != 0) << 7;
+    }
+    e = m & ~prev;
+    prev = m;
+    if (menu_is_open(&menu)) {
+        if (e & 1u) { menu_event(MK_UP); }
+        if (e & 2u) { menu_event(MK_DOWN); }
+        if (e & 4u) { menu_event(MK_LEFT); }
+        if (e & 8u) { menu_event(MK_RIGHT); }
+        if (e & 16u) { menu_event(MK_SELECT); }
+        if (e & 32u) { menu_event(MK_BACK); }
+    } else if ((m & 0xC0u) == 0xC0u && (e & 0xC0u) != 0) {
+        menu_event(MK_BACK);
+    }
 }
 
 static LRESULT CALLBACK wnd_proc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
@@ -322,14 +439,23 @@ static LRESULT CALLBACK wnd_proc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
         if (msg == WM_SYSKEYDOWN && vk != VK_F10 && vk != VK_MENU) {
             return DefWindowProc(h, msg, wp, lp);
         }
+        if (vk == VK_F11) {
+            if (!repeat) {
+                toggle_fullscreen();
+            }
+            return 0;
+        }
+        if (menu_is_open(&menu) || vk == VK_ESCAPE) {             /* ESC opens the menu; while it is open the keys are its keys, not the game's */
+            MenuKey mk;
+            if (menu_key_of(vk, &mk) && (!repeat || (mk != MK_BACK && mk != MK_SELECT))) {
+                menu_event(mk);
+            }
+            return 0;
+        }
         if (!repeat) {
             key_down[vk] = 1;
             if (vk == VK_SPACE || vk == 'P') {                 /* a PRESS: the keyboard interrupt of the original does not repeat it */
                 pause_edge = 1;
-            } else if (vk == VK_ESCAPE) {
-                quit = 1;
-            } else if (vk == VK_F11) {
-                toggle_fullscreen();
             }
         }
         return 0;
@@ -361,7 +487,7 @@ static int make_window(HINSTANCE inst)
     WNDCLASSA wc;
     RECT r;
     DWORD style = WS_OVERLAPPEDWINDOW;
-    int cw = opt.exact ? RENDER_W : 320 * opt.scale, ch = opt.exact ? RENDER_H : 240 * opt.scale;
+    int cw, ch;
 
     memset(&wc, 0, sizeof wc);
     wc.lpfnWndProc = wnd_proc;
@@ -371,6 +497,7 @@ static int make_window(HINSTANCE inst)
     if (!RegisterClassA(&wc)) {
         return 0;
     }
+    menu_size(&menu, &cw, &ch);
     SetRect(&r, 0, 0, cw, ch);
     AdjustWindowRect(&r, style, FALSE);
     hwnd = CreateWindowA(wc.lpszClassName, TITLE, style, CW_USEDEFAULT, CW_USEDEFAULT, r.right - r.left, r.bottom - r.top, NULL, NULL, inst, NULL);
@@ -379,9 +506,7 @@ static int make_window(HINSTANCE inst)
     }
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
-    if (opt.fullscreen) {
-        toggle_fullscreen();
-    }
+    apply_display();                                          /* the size and place of the window, and borderless fullscreen when asked for */
     return 1;
 }
 
@@ -453,6 +578,100 @@ static void make_bgra(void)
         bgra[4 * i + 2] = rgb[3 * i];
         bgra[4 * i + 3] = 0;
     }
+}
+
+
+/* the menu is drawn into the 384 x 240 picture itself (so it scales with the picture): the frame darkened, a panel, the text in the OS font (the glyphs of the renderer's character set at $E000; the menu's
+ * text is upper case: the OS font has screen codes 0-63 for the ASCII $20-$5F) */
+static void put_px(int x, int y, unsigned r, unsigned g, unsigned b)
+{
+    if (x >= 0 && x < RENDER_W && y >= 0 && y < RENDER_H) {
+        uint8_t *p = bgra + 4 * ((size_t)y * RENDER_W + (size_t)x);
+        p[0] = (uint8_t)b;
+        p[1] = (uint8_t)g;
+        p[2] = (uint8_t)r;
+    }
+}
+
+static void put_text(int x, int y, const char *t, unsigned r, unsigned g, unsigned b)
+{
+    for (; *t != '\0'; t++, x += 8) {
+        unsigned c = (unsigned char)*t;
+        int row, bit;
+
+        if (c < 0x20u || c > 0x5Fu) {
+            continue;
+        }
+        for (row = 0; row < 8; row++) {
+            uint8_t bits = ram_image[0xE000 + (c - 0x20u) * 8u + (unsigned)row];
+            for (bit = 0; bit < 8; bit++) {
+                if ((bits >> (7 - bit)) & 1) {
+                    put_px(x + bit, y + row, r, g, b);
+                }
+            }
+        }
+    }
+}
+
+static void draw_menu(void)
+{
+    MenuLine l[MENU_MAX_LINES];
+    int n = menu_lines(&menu, l), i, widest = 0, bx, by, bw, bh;
+    size_t k;
+
+    if (n == 0) {
+        return;
+    }
+    for (k = 0; k < (size_t)RENDER_W * RENDER_H; k++) {
+        bgra[4 * k] = (uint8_t)(bgra[4 * k] >> 2);
+        bgra[4 * k + 1] = (uint8_t)(bgra[4 * k + 1] >> 2);
+        bgra[4 * k + 2] = (uint8_t)(bgra[4 * k + 2] >> 2);
+    }
+    for (i = 0; i < n; i++) {
+        int len = (int)strlen(l[i].text);
+        if (len > widest) {
+            widest = len;
+        }
+    }
+    bw = widest * 8 + 40;
+    bh = n * 14 + 20;
+    bx = (RENDER_W - bw) / 2;
+    by = (RENDER_H - bh) / 2;
+    for (i = by; i < by + bh; i++) {
+        int j;
+        for (j = bx; j < bx + bw; j++) {
+            int edge = i == by || i == by + bh - 1 || j == bx || j == bx + bw - 1;
+            if (edge) {
+                put_px(j, i, 230, 230, 230);
+            } else {
+                put_px(j, i, 0, 0, 0);
+            }
+        }
+    }
+    for (i = 0; i < n; i++) {
+        int len = (int)strlen(l[i].text), tx = bx + (bw - len * 8) / 2, ty = by + 10 + i * 14;
+
+        if (l[i].heading) {
+            put_text(tx, ty, l[i].text, 255, 210, 60);
+        } else if (l[i].selected) {
+            put_text(tx, ty, l[i].text, 255, 255, 255);
+            put_text(bx + 8, ty, ">", 255, 210, 60);
+        } else if (l[i].item) {
+            put_text(tx, ty, l[i].text, 150, 150, 150);
+        } else {
+            put_text(tx, ty, l[i].text, 110, 110, 110);
+        }
+    }
+}
+
+/* the picture behind the menu (or the game's own) drawn to the window */
+static void show_frame(void)
+{
+    make_bgra();
+    if (menu_is_open(&menu)) {
+        draw_menu();
+    }
+    present();
 }
 
 /* ---------------------------------------------------------------- the self test: real key messages posted to this window at set frames */
@@ -535,6 +754,359 @@ static long compare_window(void)
         }
     }
     return bad;
+}
+
+/* ---------------------------------------------------------------- the menu test: real key messages, then what the window really shows */
+
+enum { OP_KEY, OP_SYSKEY, OP_WAIT, OP_FRAMES, OP_CHECK };
+enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT };
+
+typedef struct Op {
+    int kind, a, b;
+} Op;
+
+static Op mt_ops[1200];
+static int mt_n, mt_i;
+static DWORD mt_until;
+static PmFile *mt_log;
+static int mt_pass, mt_fail;
+static unsigned long mt_f0;
+static uint64_t mt_h0;
+
+static void mt_add(int kind, int a, int b)
+{
+    if (mt_n < (int)(sizeof mt_ops / sizeof mt_ops[0])) {
+        mt_ops[mt_n].kind = kind;
+        mt_ops[mt_n].a = a;
+        mt_ops[mt_n].b = b;
+        mt_n++;
+    }
+}
+
+static void mt_key(int vk)
+{
+    mt_add(OP_KEY, vk, 0);
+    mt_add(OP_WAIT, 80, 0);
+}
+
+static void mt_result(int ok, const char *what, const char *fmt, ...)
+{
+    char buf[500];
+    va_list ap;
+
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof buf, fmt, ap);
+    va_end(ap);
+    if (ok) {
+        mt_pass++;
+    } else {
+        mt_fail++;
+    }
+    if (mt_log != NULL) {
+        pm_fs_printf(mt_log, "%s  %s: %s\n", ok ? "PASS" : "FAIL", what, buf);
+    }
+}
+
+static void mt_build(void)
+{
+    int pass, i;
+
+    mt_add(OP_FRAMES, 640, 0);                         /* the game is running (START at 150, then the stick) */
+    mt_add(OP_KEY, VK_ESCAPE, 0);                      /* ESC opens the menu */
+    mt_add(OP_WAIT, 100, 0);
+    mt_add(OP_CHECK, CK_SNAPSHOT, 0);
+    mt_add(OP_WAIT, 700, 0);
+    mt_add(OP_CHECK, CK_FROZEN, 0);                    /* 700 ms of the menu: not one frame, not one bit of the game's state */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_key(VK_ESCAPE);                                 /* ESC in the main menu resumes */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_CLOSED);
+    mt_add(OP_WAIT, 500, 0);
+    mt_add(OP_CHECK, CK_RUNNING, 0);
+    mt_key(VK_ESCAPE);                                 /* and again: the main menu's items */
+    mt_add(OP_WAIT, 100, 0);
+    mt_add(OP_CHECK, CK_SNAPSHOT, 0);
+    mt_key(VK_UP);
+    mt_add(OP_CHECK, CK_CURSOR, 2);
+    mt_key(VK_DOWN);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_key(VK_DOWN);
+    mt_add(OP_CHECK, CK_CURSOR, 1);
+    mt_key(VK_RETURN);                                 /* Graphics Options */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_GRAPHICS);
+    mt_key(VK_ESCAPE);                                 /* ESC: back to the main menu, on Graphics Options */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
+    mt_add(OP_CHECK, CK_CURSOR, 1);
+    mt_key(VK_RETURN);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_GRAPHICS);
+    mt_add(OP_CHECK, CK_MODE, 0);
+    mt_add(OP_WAIT, 200, 0);
+    mt_add(OP_CHECK, CK_PICTURE, 0);                   /* the window as it starts */
+    for (pass = 0; pass < 2; pass++) {
+        if (pass == 1) {
+            mt_key(VK_RIGHT);                          /* Display Mode: Borderless Fullscreen, at once */
+            mt_add(OP_WAIT, 300, 0);
+            mt_add(OP_CHECK, CK_MODE, 1);
+            mt_add(OP_CHECK, CK_PICTURE, 0);
+        }
+        mt_key(VK_DOWN);
+        for (i = 0; i < menu_resolution_count; i++) {  /* every resolution of the list, in this display mode */
+            mt_key(VK_RIGHT);
+            mt_add(OP_WAIT, 220, 0);
+            mt_add(OP_CHECK, CK_PICTURE, 0);
+        }
+        mt_key(VK_UP);
+    }
+    mt_add(OP_KEY, VK_F11, 0);                         /* F11 and Alt+Enter, from fullscreen and back */
+    mt_add(OP_WAIT, 350, 0);
+    mt_add(OP_CHECK, CK_MODE, 0);
+    mt_add(OP_CHECK, CK_PICTURE, 0);
+    mt_add(OP_SYSKEY, VK_RETURN, 0);
+    mt_add(OP_WAIT, 350, 0);
+    mt_add(OP_CHECK, CK_MODE, 1);
+    mt_add(OP_CHECK, CK_PICTURE, 0);
+    mt_add(OP_KEY, VK_F11, 0);
+    mt_add(OP_WAIT, 350, 0);
+    mt_add(OP_CHECK, CK_MODE, 0);
+    mt_add(OP_CHECK, CK_PICTURE, 0);
+    mt_add(OP_CHECK, CK_FROZEN, 0);                    /* all of that with the game frozen */
+    mt_key(VK_ESCAPE);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
+    mt_key(VK_UP);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_key(VK_RETURN);                                 /* Resume Game */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_CLOSED);
+    mt_add(OP_WAIT, 600, 0);
+    mt_add(OP_CHECK, CK_RUNNING, 0);
+    mt_key(VK_ESCAPE);                                 /* Quit Game */
+    mt_key(VK_UP);
+    mt_add(OP_CHECK, CK_CURSOR, 2);
+    mt_key(VK_RETURN);
+    mt_add(OP_CHECK, CK_QUIT, 0);
+}
+
+static void check_mode(int want)
+{
+    MONITORINFO mi;
+    RECT wr, cr;
+    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mi);
+    GetWindowRect(hwnd, &wr);
+    GetClientRect(hwnd, &cr);
+    if (want) {
+        int ok = menu.fullscreen == 1 && fullscreen == 1 && !(style & WS_CAPTION) && wr.left == mi.rcMonitor.left && wr.top == mi.rcMonitor.top && wr.right == mi.rcMonitor.right &&
+                 wr.bottom == mi.rcMonitor.bottom && cr.right == mi.rcMonitor.right - mi.rcMonitor.left && cr.bottom == mi.rcMonitor.bottom - mi.rcMonitor.top;
+        mt_result(ok, "mode borderless fullscreen", "window %ldx%ld at %ld,%ld, monitor %ldx%ld, no frame: %s", wr.right - wr.left, wr.bottom - wr.top, wr.left, wr.top,
+                  mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, (style & WS_CAPTION) ? "frame present" : "yes");
+    } else {
+        int ok = menu.fullscreen == 0 && fullscreen == 0 && (style & WS_CAPTION) == WS_CAPTION && wr.left >= mi.rcWork.left && wr.top >= mi.rcWork.top && wr.right <= mi.rcWork.right &&
+                 wr.bottom <= mi.rcWork.bottom;
+        mt_result(ok, "mode windowed", "window %ldx%ld at %ld,%ld, client %ldx%ld, frame: %s", wr.right - wr.left, wr.bottom - wr.top, wr.left, wr.top, cr.right, cr.bottom,
+                  (style & WS_CAPTION) == WS_CAPTION ? "yes" : "no");
+    }
+}
+
+/* what the window shows, copied back out of the screen, against what the layout says it should show */
+static void check_picture(void)
+{
+    MONITORINFO mi;
+    RECT cr, fr;
+    DisplayRect r;
+    HDC dc, mem;
+    HBITMAP bmp, old;
+    BITMAPINFO bi;
+    uint8_t *got;
+    int cw, ch, rw, rh, ex_w, ex_h, x, y, ok, size_ok;
+    long outside = 0, exact_bad = 0, nn_bad = 0, inside = 0;
+    char what[64];
+    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mi);
+    GetClientRect(hwnd, &cr);
+    cw = cr.right;
+    ch = cr.bottom;
+    menu_size(&menu, &rw, &rh);
+    if (menu.fullscreen) {                                    /* the client area is the monitor, the picture may use the selected resolution (at most the monitor) */
+        ex_w = mi.rcMonitor.right - mi.rcMonitor.left;
+        ex_h = mi.rcMonitor.bottom - mi.rcMonitor.top;
+    } else {                                                  /* the client area is the selected resolution, or what the work area has room for */
+        SetRect(&fr, 0, 0, rw, rh);
+        AdjustWindowRect(&fr, (DWORD)style, FALSE);
+        ex_w = rw;
+        ex_h = rh;
+        if (ex_w + (fr.right - fr.left - rw) > mi.rcWork.right - mi.rcWork.left) {
+            ex_w = mi.rcWork.right - mi.rcWork.left - (fr.right - fr.left - rw);
+        }
+        if (ex_h + (fr.bottom - fr.top - rh) > mi.rcWork.bottom - mi.rcWork.top) {
+            ex_h = mi.rcWork.bottom - mi.rcWork.top - (fr.bottom - fr.top - rh);
+        }
+    }
+    size_ok = cw == ex_w && ch == ex_h;
+    layout(cw, ch, &r);
+    snprintf(what, sizeof what, "%s %dx%d%s", menu.fullscreen ? "fullscreen" : "windowed", rw, rh, menu.res >= 0 ? "" : " (window)");
+    dc = GetDC(hwnd);
+    mem = CreateCompatibleDC(dc);
+    bmp = CreateCompatibleBitmap(dc, cw, ch);
+    old = (HBITMAP)SelectObject(mem, bmp);
+    BitBlt(mem, 0, 0, cw, ch, dc, 0, 0, SRCCOPY);
+    SelectObject(mem, old);
+    got = (uint8_t *)malloc((size_t)cw * (size_t)ch * 4u);
+    if (got == NULL) {
+        DeleteObject(bmp);
+        DeleteDC(mem);
+        ReleaseDC(hwnd, dc);
+        mt_result(0, what, "out of memory");
+        return;
+    }
+    memset(&bi, 0, sizeof bi);
+    bi.bmiHeader.biSize = sizeof bi.bmiHeader;
+    bi.bmiHeader.biWidth = cw;
+    bi.bmiHeader.biHeight = -ch;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
+    GetDIBits(mem, bmp, 0, (UINT)ch, got, &bi, DIB_RGB_COLORS);
+    DeleteObject(bmp);
+    DeleteDC(mem);
+    ReleaseDC(hwnd, dc);
+    for (y = 0; y < ch; y++) {
+        for (x = 0; x < cw; x++) {
+            const uint8_t *g = got + 4 * ((size_t)y * (size_t)cw + (size_t)x);
+            if (x < r.x || x >= r.x + r.w || y < r.y || y >= r.y + r.h) {
+                if (g[0] != 0 || g[1] != 0 || g[2] != 0) {
+                    outside++;
+                }
+            } else {
+                int sx = (int)(((long)(2 * (x - r.x) + 1) * RENDER_W) / (2L * r.w)), sy = (int)(((long)(2 * (y - r.y) + 1) * RENDER_H) / (2L * r.h));
+                const uint8_t *e = bgra + 4 * ((size_t)sy * RENDER_W + (size_t)sx);
+
+                inside++;
+                if (g[0] != e[0] || g[1] != e[1] || g[2] != e[2]) {
+                    int dx, dy, hit = 0;
+                    exact_bad++;
+                    for (dy = -1; dy <= 1 && !hit; dy++) {          /* a nearest-pixel stretch may differ from the centre rule by one source pixel at an edge; a blend matches none */
+                        for (dx = -1; dx <= 1 && !hit; dx++) {
+                            int tx = sx + dx, ty = sy + dy;
+                            if (tx >= 0 && tx < RENDER_W && ty >= 0 && ty < RENDER_H) {
+                                const uint8_t *n = bgra + 4 * ((size_t)ty * RENDER_W + (size_t)tx);
+                                hit = g[0] == n[0] && g[1] == n[1] && g[2] == n[2];
+                            }
+                        }
+                    }
+                    if (!hit) {
+                        nn_bad++;
+                    }
+                }
+            }
+        }
+    }
+    free(got);
+    {
+        long aspect = (long)r.w * RENDER_H - (long)r.h * RENDER_W;
+        int aspect_ok = aspect <= RENDER_W && aspect >= -RENDER_W;                     /* 1.6 : 1 to within a pixel */
+        int centred = (2 * r.x + r.w - cw) >= -1 && (2 * r.x + r.w - cw) <= 1 && (2 * r.y + r.h - ch) >= -1 && (2 * r.y + r.h - ch) <= 1;
+        int fits = r.w <= cw && r.h <= ch;
+        ok = size_ok && aspect_ok && centred && fits && outside == 0 && nn_bad == 0 && (!r.integer || exact_bad == 0) && inside == (long)r.w * r.h;
+        mt_result(ok, what, "client %dx%d (expected %dx%d), picture %dx%d at %d,%d, scale %s%ld.%02ld, aspect %s, centred %s, outside the picture %ld pixels not black, inside %ld of %ld differ from the centre rule, %ld blended",
+                  cw, ch, ex_w, ex_h, r.w, r.h, r.x, r.y, r.integer ? "whole " : "fitted ", (long)r.w * 100 / RENDER_W / 100, (long)r.w * 100 / RENDER_W % 100, aspect_ok ? "1.6:1" : "WRONG",
+                  centred ? "yes" : "NO", outside, exact_bad, inside, nn_bad);
+    }
+}
+
+static void dump_bgra(const char *path)
+{
+    PmFile *pf = pm_fs_open(path, "wb");
+    size_t i;
+
+    if (pf != NULL) {
+        pm_fs_printf(pf, "P6\n%d %d\n255\n", RENDER_W, RENDER_H);
+        for (i = 0; i < (size_t)RENDER_W * RENDER_H; i++) {
+            uint8_t px[3];
+            px[0] = bgra[4 * i + 2];
+            px[1] = bgra[4 * i + 1];
+            px[2] = bgra[4 * i];
+            pm_fs_write(pf, px, 3);
+        }
+        pm_fs_close(pf);
+    }
+}
+
+static void mt_check(int id, int arg)
+{
+    switch (id) {
+    case CK_SNAPSHOT:
+        mt_f0 = frames_run;
+        mt_h0 = shell_state_hash(&shell);
+        mt_result(menu_is_open(&menu), "snapshot", "frames run %lu, state hash %016llx, menu %s", mt_f0, (unsigned long long)mt_h0, menu_is_open(&menu) ? "open" : "closed");
+        break;
+    case CK_FROZEN: {
+        uint64_t h = shell_state_hash(&shell);
+        mt_result(menu_is_open(&menu) && frames_run == mt_f0 && h == mt_h0, "game frozen", "frames run %lu (was %lu), state hash %016llx (was %016llx)", frames_run, mt_f0, (unsigned long long)h, (unsigned long long)mt_h0);
+        break;
+    }
+    case CK_SCREEN:
+        mt_result(menu.screen == arg, "menu screen", "screen %d, expected %d", menu.screen, arg);
+        if (arg == MENU_MAIN || arg == MENU_GRAPHICS) {          /* the picture of the menu, for the eye (the first time each screen is shown) */
+            static int shot[3];
+            if (!shot[arg]) {
+                shot[arg] = 1;
+                dump_bgra(arg == MENU_MAIN ? "logs/menu_main.ppm" : "logs/menu_graphics.ppm");
+            }
+        }
+        break;
+    case CK_CURSOR:
+        mt_result(menu.cursor == arg, "menu cursor", "item %d, expected %d", menu.cursor, arg);
+        break;
+    case CK_RUNNING:
+        mt_result(!menu_is_open(&menu) && frames_run > mt_f0 + 10 && shell_state_hash(&shell) != mt_h0, "game running again", "frames run %lu (was %lu)", frames_run, mt_f0);
+        break;
+    case CK_MODE:
+        check_mode(arg);
+        break;
+    case CK_PICTURE:
+        check_picture();
+        break;
+    case CK_QUIT:
+        mt_result(menu.quit == 1 && quit == 1, "quit game", "the menu set quit=%d, the program quit=%d", menu.quit, quit);
+        break;
+    default:
+        break;
+    }
+}
+
+static void menutest_step(void)
+{
+    DWORD now = GetTickCount();
+    const Op *o;
+
+    if (mt_i >= mt_n || (LONG)(now - mt_until) < 0) {
+        return;
+    }
+    o = &mt_ops[mt_i++];
+    switch (o->kind) {
+    case OP_FRAMES:
+        if (frames_run < (unsigned long)o->a) {
+            mt_i--;
+        }
+        break;
+    case OP_WAIT:
+        mt_until = now + (DWORD)o->a;
+        break;
+    case OP_KEY:
+        PostMessage(hwnd, WM_KEYDOWN, (WPARAM)o->a, (LPARAM)1);
+        PostMessage(hwnd, WM_KEYUP, (WPARAM)o->a, (LPARAM)0xC0000001);
+        break;
+    case OP_SYSKEY:
+        PostMessage(hwnd, WM_SYSKEYDOWN, (WPARAM)o->a, (LPARAM)0x20000001);
+        PostMessage(hwnd, WM_SYSKEYUP, (WPARAM)o->a, (LPARAM)0xE0000001);
+        break;
+    default:
+        mt_check(o->a, o->b);
+        break;
+    }
 }
 
 /* ---------------------------------------------------------------- the main loop */
@@ -646,19 +1218,21 @@ static void parse_args(int argc, char **argv)
 {
     int i;
 
-    opt.scale = 3;
+    opt.scale = 0;                                              /* 0: the 1280 x 720 window of the resolution list (the picture at 3 x) */
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--root") == 0 && i + 1 < argc) {
             opt.root = argv[++i];
         } else if (strcmp(argv[i], "--scale") == 0 && i + 1 < argc) {
             opt.scale = atoi(argv[++i]);
             if (opt.scale < 1 || opt.scale > 8) {
-                opt.scale = 3;
+                opt.scale = 0;
             }
         } else if (strcmp(argv[i], "--fullscreen") == 0) {
             opt.fullscreen = 1;
         } else if (strcmp(argv[i], "--no-audio") == 0) {
             opt.no_audio = 1;
+        } else if (strcmp(argv[i], "--menutest") == 0) {
+            opt.menutest = 1;
         } else if (strcmp(argv[i], "--exact") == 0) {
             opt.exact = 1;
         } else if (strcmp(argv[i], "--seed") == 0 && i + 1 < argc) {
@@ -688,6 +1262,13 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     (void)show;
     SetProcessDPIAware();
     parse_args(__argc, __argv);
+    if (opt.exact) {                                            /* the pixel comparison of the self test: the client area is the picture itself */
+        menu_init(&menu, 0, -1, RENDER_W, RENDER_H);
+    } else if (opt.scale > 0) {
+        menu_init(&menu, opt.fullscreen, -1, RENDER_W * opt.scale, RENDER_H * opt.scale);
+    } else {
+        menu_init(&menu, opt.fullscreen, MENU_DEFAULT_RES, 0, 0);
+    }
     if (opt.root == NULL) {
         /* Started by a double click, the current folder is the program's own.
          * Look for the main folder (the one holding original/Pac-Man.rom) in the
@@ -734,14 +1315,14 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     shell_init(&shell, ram_image + 0x3000, opt.seed, 0);
     (void)shell_make_folders();
-    if (opt.selftest <= 0) {
+    if (opt.selftest <= 0 && !opt.menutest) {
         (void)shell_highscore_load(&shell);
     }
     render_init(&renderer, ram_image);
     audio_init(&audio, AUDIO_RATE);
     front_init(&front, 0);
     xinput_load();
-    if (opt.record != NULL || opt.selftest > 0) {
+    if (opt.record != NULL || opt.selftest > 0 || opt.menutest) {
         replay_writer_init(&writer, record_buf, sizeof record_buf, opt.seed, 0, 0);
     }
     if (!opt.no_audio) {
@@ -755,7 +1336,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
             if (wa_session_state(wa, &vv, &mm) == 0 && mm == 1) {   /* Windows keeps a mute per program (the volume mixer): a muted program is silent whatever it plays */
                 (void)shell_log("the sound of this program is muted in the Windows volume mixer");
             }
-            if (opt.selftest > 0) {
+            if (opt.selftest > 0 || opt.menutest) {
                 (void)wa_set_volume(wa, SELFTEST_VOLUME);          /* a test does not blast the player's speakers; the measurement allows for it */
             }
         }
@@ -768,6 +1349,10 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         return 2;
     }
     (void)rep;
+    if (opt.menutest) {
+        mt_log = pm_fs_open("logs/menutest.txt", "wb");
+        mt_build();
+    }
     t_start = t_prev = pm_time_ns();
     while (!quit) {
         unsigned n = 0;
@@ -777,6 +1362,27 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         if (opt.selftest > 0) {
             post_scenario(frames_run);
             pump();
+        } else if (opt.menutest) {
+            post_scenario(frames_run < 639 ? frames_run : 639);     /* the game is played up to the frame the menu test opens the menu at */
+            menutest_step();
+            pump();
+        }
+        pad_menu_poll();
+        if (menu_is_open(&menu)) {                              /* a pause: no frame of the game, no sound written; the picture behind the menu stays */
+            if (menu_dirty) {
+                show_frame();
+                menu_dirty = 0;
+            }
+            Sleep(8);
+            continue;
+        }
+        if (menu_dirty) {
+            show_frame();
+            menu_dirty = 0;
+        }
+        if (menu_resync) {                                      /* the timer clock goes on from the frame the game is at, not from the wall clock of before the menu */
+            menu_resync = 0;
+            t_start = pm_time_ns() - (uint64_t)((double)frames_run / FRAME_HZ * 1e9);
         }
         if (wa != NULL) {                                       /* the sound device is the clock */
             int q = wa_queued(wa);
@@ -828,7 +1434,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     if (writer.buf != NULL) {
         size_t size = 0;
-        const char *path = opt.record != NULL ? opt.record : "logs/selftest.pmrp";
+        const char *path = opt.record != NULL ? opt.record : (opt.menutest ? "logs/menutest.pmrp" : "logs/selftest.pmrp");
         ReplayError e = replay_writer_finish(&writer, &size);
         if (e == REPLAY_OK) {
             (void)shell_make_folders();
@@ -838,11 +1444,30 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
             ok = 0;
         }
     }
-    if (opt.selftest <= 0) {                                    /* a test does not touch the player's high score */
+    if (opt.selftest <= 0 && !opt.menutest) {                   /* a test does not touch the player's high score */
         (void)shell_highscore_save(&shell);
     }
     if (opt.ppm != NULL) {
         write_ppm(opt.ppm);
+    }
+    while (opt.menutest && mt_i < mt_n && quit) {              /* the checks after the last key: Quit Game ended the loop before the script's last step ran */
+        if (mt_ops[mt_i].kind == OP_CHECK) {
+            mt_check(mt_ops[mt_i].a, mt_ops[mt_i].b);
+        }
+        mt_i++;
+    }
+    if (mt_log != NULL) {
+        pm_fs_printf(mt_log, "frames run: %lu\n", frames_run);
+        pm_fs_printf(mt_log, "final state hash: %016llx\n", (unsigned long long)last_hash);
+        pm_fs_printf(mt_log, "run digest: %016llx\n", (unsigned long long)shell_digest(&shell));
+        pm_fs_printf(mt_log, "video digest: %016llx\n", (unsigned long long)vdig);
+        pm_fs_printf(mt_log, "audio digest: %016llx\n", (unsigned long long)adig);
+        pm_fs_printf(mt_log, "script finished: %s (%d of %d steps)\n", mt_i >= mt_n ? "yes" : "NO", mt_i, mt_n);
+        pm_fs_printf(mt_log, "RESULT: %d passed, %d failed\n", mt_pass, mt_fail);
+        pm_fs_close(mt_log);
+        if (mt_fail != 0 || mt_i < mt_n) {
+            ok = 0;
+        }
     }
     if (opt.selftest > 0) {
         rep = pm_fs_open("logs/selftest.txt", "wb");

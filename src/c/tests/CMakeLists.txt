@@ -125,3 +125,9 @@ add_executable(frontend_check frontend_check.c)
 target_link_libraries(frontend_check pm_shell pm_assets pm_app pm_core pm_platform)
 add_test(NAME frontend_check COMMAND frontend_check WORKING_DIRECTORY ${PM_MAIN_DIR})
 set_tests_properties(frontend_check PROPERTIES FIXTURES_REQUIRED asset_blob PASS_REGULAR_EXPRESSION "frontend_check: OK")
+
+# the pause menu and the graphics options (docs/68): the key paths and the layout of the picture; needs no asset blob
+add_executable(menu_check menu_check.c)
+target_link_libraries(menu_check pm_shell)
+add_test(NAME menu_check COMMAND menu_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(menu_check PROPERTIES PASS_REGULAR_EXPRESSION "menu_check: OK")

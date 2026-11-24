@@ -9,6 +9,8 @@ Per compiler (gcc, clang): build the whole C port from scratch in build/play/<cc
   6b the sound the device really played (captured by WASAPI loopback of this process alone, at a low volume of 0.3 = an amplitude of 0.09) matches the sound handed to it: the loudness curves
      of 10 ms blocks correlate >= 0.95, the device played 98 % or more of the blocks with sound, and its level is 0.9 to 1.1 of what was handed over;
   7  the same with `--no-audio` (the system timer is the clock): the digests equal, the rate within 1 %.
+  8  `--menutest` (docs/68): the pause menu and the graphics options driven by real key messages: the game is frozen while a menu is open, both display modes and all 20 resolutions give the layout
+     of `display_fit` and the picture the window really shows (read back from the screen: 1.6:1, centred, black around it, nearest pixel), and the game recorded through the menu replays headless to the same digests.
 Usage: python -I tools/check_front_end.py [--cc gcc|clang ...] [--write analysis/evidence-front-end-summary.txt]   (Windows only; needs a display and a sound device)"""
 import os
 import re
@@ -103,6 +105,23 @@ def one(cc):
             detail = ("this program is muted in the Windows volume mixer: unmute it there" if muted else
                       "%s; correlation %s at %s ms, %s of %s blocks played, level %s" % (sc.group(1) if sc else "?", m.group(1) if m else "?", m.group(2) if m else "?", g.group(2) if g else "?", g.group(1) if g else "?", m.group(3) if m else "?"))
             step("%s: the sound the device played (loopback capture) matches the sound handed to it" % cc, ok, detail)
+    # the pause menu and the graphics options (docs/68): real key messages (ESC, arrows, Enter, F11, Alt+Enter); frozen game; every display mode and resolution; what the window really shows
+    if os.path.exists(os.path.join(root, "logs")):
+        shutil.rmtree(os.path.join(root, "logs"))
+    t = time.time()
+    r = run([play, "--root", root, "--menutest", "--seed", "7"], timeout=300)
+    rep = os.path.join(root, "logs", "menutest.txt")
+    text = open(rep, encoding="utf-8").read() if os.path.exists(rep) else ""
+    m = re.search(r"RESULT: (\d+) passed, (\d+) failed", text)
+    step("%s: the menu test: every check passed (menu keys, frozen game, both display modes, every resolution, F11, Alt+Enter, Quit Game)" % cc,
+         r.returncode == 0 and bool(m) and m.group(2) == "0" and int(m.group(1)) >= 60 and "script finished: yes" in text, "%s passed, %s failed, %.0f s" % (m.group(1) if m else "?", m.group(2) if m else "?", time.time() - t))
+    frozen = re.findall(r"PASS  game frozen: .*", text)
+    step("%s: the game was frozen while a menu was open (frames run and the whole state hash unchanged), twice" % cc, len(frozen) == 2, "%d checks" % len(frozen))
+    pics = re.findall(r"^PASS  (?:windowed|fullscreen) \d+x\d+.*aspect 1\.6:1, centred yes, outside the picture 0 pixels not black, inside \d+ of \d+ differ from the centre rule, 0 blended", text, re.M)
+    step("%s: all 20 resolutions in both display modes: 1.6:1, centred, black around, nearest pixel (nothing blended)" % cc, len(pics) >= 40, "%d pictures checked" % len(pics))
+    h = run([head, "run", "logs/menutest.pmrp", "--video", "--audio", "--root", root])
+    a2, b2 = digests(text), digests(h.stdout)
+    step("%s: the game recorded through the menu run headless gives the same state, run, video and audio digests" % cc, a2 == b2 and "?" not in a2.values(), "%s" % a2["run"])
 
 
 def main():

@@ -8,12 +8,12 @@ Stage J of `PROGRESS.md`: "Native Windows 11 port" - the playable program. `pacm
 |---|---|
 | **Input** (`shell/frontend.c`, portable, `ctest frontend_check`) | Keys and pads of the moment become the `FrameInput` of the frame: the stick is four switches (a direction and its opposite together give neither), the trigger and the console keys are 0 when pressed, the pause key is a **press** (the OS keyboard interrupt stores `$21` in `CH` once and sets `KEYDEL` = 3, which counts down once a frame; the game accepts it at 0 and clears `CH` itself: docs/41, docs/45), the OS clock counts one a frame, attract mode never engages, RANDOM comes from the model with a seed taken from the clock (`--seed` fixes it) |
 | **Frame clock** | **The sound device**: the game runs a frame whenever the device has less than about two frames (1,500 samples) queued, so picture and sound cannot drift apart; the pace is the original's 59.92 frames a second (44,100 Hz / 735.99 samples a frame). With `--no-audio`, or when there is no device: the system timer at 59.9227 Hz |
-| **Picture** | The renderer's 384 x 240 pixels, drawn with `StretchDIBits` (no smoothing) at the 4:3 shape of the original's picture, centred with black bars; `--scale N`, `--fullscreen`, F11 / Alt+Enter |
+| **Picture** | The renderer's 384 x 240 pixels, drawn with `StretchDIBits` (no smoothing), **1.6 : 1 and never stretched** (since the menu of docs/68; the first version of this stage stretched to 4:3), centred with black around it; `--scale N`, `--fullscreen`, F11 / Alt+Enter, and the graphics options of the pause menu (docs/68) |
 | **Sound** | WASAPI shared mode, float, 44,100 Hz, a 100 ms buffer, the mono sound on both channels; Windows converts when the mix format differs |
 | **Pads** | XInput, loaded when the program starts (no import library, no failure without it); pad 1 is player 1, pad 2 player 2; the keyboard drives both ports (hot-seat play on one keyboard) |
 | **Save and record** | The high score under `save/` through `platform/fs.c` like the headless shell; `--record FILE` writes the game played as a replay |
 
-Keys: arrows / WASD stick; Ctrl, Z, X, Enter fire (Enter is also START); F2 START, F3 SELECT, F4 OPTION; Space or P pause; Alt+Enter or F11 full screen; Esc quit. Pads: D-pad or left stick, A / B fire, Start = START, Back = SELECT, X / Y = OPTION.
+Keys: arrows / WASD stick; Ctrl, Z, X, Enter fire (Enter is also START); F2 START, F3 SELECT, F4 OPTION; Space or P pause; Alt+Enter or F11 full screen; **Esc the pause menu (docs/68; it was quit before)**. Pads: D-pad or left stick, A / B fire, Start = START, Back = SELECT, X / Y = OPTION.
 
 ## 2. How it was checked (`tools/check_front_end.py`, `analysis/evidence-front-end-summary.txt`)
 
@@ -40,7 +40,7 @@ The self test (`--selftest 1200 --exact`) plays a scenario by **posting real key
 
 - **No person played it.** Everything above is measured from the program's own signals and a loopback capture; how it feels in the hand, and what the speakers make of the sound, is not measured.
 - **No pad was tried** (none is attached here): the XInput path loads and reports no pad; the button mapping is from the code.
-- **Full screen** (F11, Alt+Enter) and window sizes other than the exact 384 x 240 were not measured; the 4:3 stretch is by nearest pixel, so at most scales some pixel columns are one pixel wider than others (the original's pixels were not square either).
+- **Full screen** and window sizes other than the exact 384 x 240 were not measured by this stage; they are measured by the menu test of docs/68 (all display modes and 20 resolutions).
 - **One unexplained observation**: the first self test of the session had 8,916 of 92,160 window pixels differing from the frame; the 24 later runs (all of `check_front_end`'s and the manual ones) had 0. A partly covered window at start is the likely cause; it was not reproduced and not proved.
 - NTSC only (as the whole port); Windows 11 on one machine, one sound device; gcc and clang (MinGW-w64 / WinLibs), not MSVC.
 - The self test needs a display, a sound device and a Windows that has the process loopback; the game itself does not need the loopback.

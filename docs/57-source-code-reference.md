@@ -6,8 +6,8 @@ Checklist stage 91: "Document functions, variables, structures, algorithms, modu
 
 ## 1. The source at a glance
 
-- **95 files, 12189 lines** under `src/c` (39 headers, 56 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
-- **212 functions declared in headers** (without the tests), **31 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
+- **98 files, 12662 lines** under `src/c` (40 headers, 58 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
+- **218 functions declared in headers** (without the tests), **37 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
 - **Layers** (an arrow is "uses"): `shell` -> `app` -> `core`; `shell` -> `render`, `audio`, `assets`; `app`, `assets`, `core` -> `platform`; `render`, `audio` -> `core`. Nothing in `core` or `app` includes a system header or opens a file.
 
 ```mermaid
@@ -139,6 +139,8 @@ flowchart TD
 | `frontend.c` | 71 | see frontend.h. |
 | `frontend.h` | 43 | what any interactive front end does between the player and the game (stage J, docs/67): |
 | `main.c` | 343 | the headless shell of the Pac-Man (Atari 8-bit) port (stage 80d). |
+| `menu.c` | 201 | the pause menu and the graphics options (docs/68); |
+| `menu.h` | 70 | the pause menu and the graphics options of the interactive front end (docs/68). |
 | `replay.c` | 269 | see replay.h. |
 | `replay.h` | 82 | recorded inputs of a game, one record a frame (stage 80d, docs/51, docs/49 D3). |
 | `shell.c` | 325 | see shell.h. |
@@ -155,6 +157,7 @@ flowchart TD
 | `constants_check.c` | 44 | stage 94: |
 | `frontend_check.c` | 167 | Stage J: |
 | `fs_sandbox.c` | 191 | The file sandbox test (docs/51 section 2a, stage 75b): |
+| `menu_check.c` | 202 | The pause menu and the graphics options (src/c/shell/menu.c, docs/68): |
 | `platform_check.c` | 294 | Stage 77b: |
 | `pure_functions.c` | 373 | The table of the pure functions for the vector runner (stage 76a): |
 | `pure_functions.h` | 25 | The table of the pure functions for the vector runner (stage 76a). |
@@ -197,6 +200,12 @@ flowchart TD
 | `FrontPad` | struct | `shell/frontend.h` | 1 | the five switches of one joystick: 1 = pressed |
 | `FrontKeys` | struct | `shell/frontend.h` | 3 | what is pressed at the moment of the frame; `pause` is 1 for exactly one frame per press (the edge) |
 | `Frontend` | struct | `shell/frontend.h` | 2 | the front end's state between frames: the OS clock and the key delay |
+| `MenuResolution` | struct | `shell/menu.h` | 2 | one entry of the resolution list: the size of the area the picture may use, and the aspect ratio it is filed under |
+| `Menu` | enum | `shell/menu.h` | 11 | which screen of the menu is shown (closed: the game runs) |
+| `Menu` | enum | `shell/menu.h` | 9 | the keys the menu understands (the front end maps keyboard and pad onto them) |
+| `Menu` | struct | `shell/menu.h` | 7 | the menu's whole state: the screen shown, the cursor, and the two display settings |
+| `MenuLine` | struct | `shell/menu.h` | 4 | one line of the menu as the front end draws it |
+| `DisplayRect` | struct | `shell/menu.h` | 3 | where the picture goes in a client area, and at what scale |
 | `FrameInput` | struct | `shell/replay.h` | 3 | the inputs of one frame: sticks, triggers, console, key, key delay, clock, the attract values and, when the replay carries them, the frame's RANDOM bytes |
 | `ReplayError` | enum | `shell/replay.h` | 12 | why a replay is refused |
 | `Replay` | struct | `shell/replay.h` | 8 | a replay held in memory and the place in it |
@@ -542,6 +551,17 @@ Every function declared in a header, by module. **ROM** is the routine of the or
 |---|---|---|---|
 | `front_init` |  | `shell/frontend.c:30` | the front end at power-on: the OS clock starts at `start_clock`, no key is pending |
 | `front_frame` |  | `shell/frontend.c:36` | the FrameInput of one frame from what is pressed now: no RANDOM bytes (the model gives them); counts the key delay down and the clock up |
+
+### `shell/menu.h`
+
+| Function | ROM | Defined | What it does |
+|---|---|---|---|
+| `menu_init` |  | `shell/menu.c:18` | a closed menu with these display settings (res -1: the window size custom_w x custom_h) |
+| `menu_is_open` |  | `shell/menu.c:27` | 1 while a menu is shown: the game is paused |
+| `menu_key` |  | `shell/menu.c:61` | closed: only MK_BACK (ESC) does anything, it opens the menu |
+| `menu_lines` |  | `shell/menu.c:129` | the text to draw; returns the number of lines |
+| `menu_size` |  | `shell/menu.c:32` | the selected resolution |
+| `display_fit` |  | `shell/menu.c:157` | the picture in a client area of cw x ch when the picture may use the centred area aw x ah of it (aw, ah are clamped to the client) |
 
 ### `shell/replay.h`
 

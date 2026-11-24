@@ -28,7 +28,7 @@ note "system: $(uname -sr) $(uname -m)"
 for d in platform core app assets render audio shell; do
   mkdir -p "$OUT/obj/$d"
   case $d in
-    shell) files="replay.c shell.c frontend.c" ;;
+    shell) files="replay.c shell.c frontend.c menu.c" ;;
     assets) files="assets.c sha256.c rom_layout.c rom_install.c" ;;
     *) files=$(cd $S/$d && ls *.c | grep -v '^main.c$' | grep -v '^install_assets.c$') ;;
   esac
@@ -62,6 +62,7 @@ exe audio_check "" $S/tests/audio_check.c
 exe audio_selftest "" $S/tests/audio_selftest.c
 exe shell_selftest "" $S/tests/shell_selftest.c
 exe frontend_check "" $S/tests/frontend_check.c
+exe menu_check "" $S/tests/menu_check.c
 
 B="$OUT/bin"
 run_expect() { # name, regex, command...
@@ -90,6 +91,7 @@ run_expect assets_check "assets_check: ok, 85 entries" $B/assets_check resources
 run_expect audio_selftest "" $B/audio_selftest
 run_expect shell_selftest "shell_selftest: OK" $B/shell_selftest
 run_expect frontend_check "frontend_check: OK" $B/frontend_check
+run_expect menu_check "menu_check: OK" $B/menu_check
 
 vecset() { # name, prefix, args
   n=$1; p=$2; a=$3
