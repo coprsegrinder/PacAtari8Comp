@@ -6,8 +6,8 @@ Checklist stage 91: "Document functions, variables, structures, algorithms, modu
 
 ## 1. The source at a glance
 
-- **92 files, 11906 lines** under `src/c` (38 headers, 54 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
-- **210 functions declared in headers** (without the tests), **28 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
+- **95 files, 12187 lines** under `src/c` (39 headers, 56 implementation files), in 8 modules; plus the C-free build files (`CMakeLists.txt` in each folder). C99, clang / gcc, CMake (Ninja).
+- **212 functions declared in headers** (without the tests), **31 structures and enumerations**; 71 of the functions are routines of the original and carry its name and ROM address in their comment.
 - **Layers** (an arrow is "uses"): `shell` -> `app` -> `core`; `shell` -> `render`, `audio`, `assets`; `app`, `assets`, `core` -> `platform`; `render`, `audio` -> `core`. Nothing in `core` or `app` includes a system header or opens a file.
 
 ```mermaid
@@ -136,6 +136,8 @@ flowchart TD
 
 | File | Lines | What it is |
 |---|---|---|
+| `frontend.c` | 71 | see frontend.h. |
+| `frontend.h` | 43 | what any interactive front end does between the player and the game (stage J, docs/67): |
 | `main.c` | 343 | the headless shell of the Pac-Man (Atari 8-bit) port (stage 80d). |
 | `replay.c` | 269 | see replay.h. |
 | `replay.h` | 82 | recorded inputs of a game, one record a frame (stage 80d, docs/51, docs/49 D3). |
@@ -151,6 +153,7 @@ flowchart TD
 | `audio_selftest.c` | 220 | Stage 80c: |
 | `boot_tables.h` | 24 | what every test program that uses the core's tables does first (stage 80a): |
 | `constants_check.c` | 44 | stage 94: |
+| `frontend_check.c` | 167 | Stage J: |
 | `fs_sandbox.c` | 191 | The file sandbox test (docs/51 section 2a, stage 75b): |
 | `platform_check.c` | 294 | Stage 77b: |
 | `pure_functions.c` | 373 | The table of the pure functions for the vector runner (stage 76a): |
@@ -191,6 +194,9 @@ flowchart TD
 | `Renderer` | struct | `render/render.h` | 6 | the renderer's state: the three character sets and the colour registers latched for the next frame |
 | `Audio` | struct | `audio/audio.h` | 2 | the audio front end: the POKEY model and the number of the next frame |
 | `PokeyEvent` | struct | `audio/pokey.h` | 4 | one timed change of the POKEY model: the time, the kind (mode, AUDF or level), the channel or AUDCTL, and the value |
+| `FrontPad` | struct | `shell/frontend.h` | 1 | the five switches of one joystick: 1 = pressed |
+| `FrontKeys` | struct | `shell/frontend.h` | 3 | what is pressed at the moment of the frame; `pause` is 1 for exactly one frame per press (the edge) |
+| `Frontend` | struct | `shell/frontend.h` | 2 | the front end's state between frames: the OS clock and the key delay |
 | `FrameInput` | struct | `shell/replay.h` | 3 | the inputs of one frame: sticks, triggers, console, key, key delay, clock, the attract values and, when the replay carries them, the frame's RANDOM bytes |
 | `ReplayError` | enum | `shell/replay.h` | 12 | why a replay is refused |
 | `Replay` | struct | `shell/replay.h` | 8 | a replay held in memory and the place in it |
@@ -529,6 +535,13 @@ Every function declared in a header, by module. **ROM** is the routine of the or
 | Function | ROM | Defined | What it does |
 |---|---|---|---|
 | `write_clock_stamp` |  | `audio/write_clock.c:4` | the cycles (relative to the frame start) of the n writes of one frame; increasing, at least 4 apart |
+
+### `shell/frontend.h`
+
+| Function | ROM | Defined | What it does |
+|---|---|---|---|
+| `front_init` |  | `shell/frontend.c:30` | the front end at power-on: the OS clock starts at `start_clock`, no key is pending |
+| `front_frame` |  | `shell/frontend.c:36` | the FrameInput of one frame from what is pressed now: no RANDOM bytes (the model gives them); counts the key delay down and the clock up |
 
 ### `shell/replay.h`
 
