@@ -114,11 +114,14 @@ def one(cc):
     text = open(rep, encoding="utf-8").read() if os.path.exists(rep) else ""
     m = re.search(r"RESULT: (\d+) passed, (\d+) failed", text)
     step("%s: the menu test: every check passed (menu keys, frozen game, both display modes, every resolution, F11, Alt+Enter, Quit Game)" % cc,
-         r.returncode == 0 and bool(m) and m.group(2) == "0" and int(m.group(1)) >= 60 and "script finished: yes" in text, "%s passed, %s failed, %.0f s" % (m.group(1) if m else "?", m.group(2) if m else "?", time.time() - t))
+         r.returncode == 0 and bool(m) and m.group(2) == "0" and int(m.group(1)) >= 90 and "script finished: yes" in text, "%s passed, %s failed, %.0f s" % (m.group(1) if m else "?", m.group(2) if m else "?", time.time() - t))
     frozen = re.findall(r"PASS  game frozen: .*", text)
     step("%s: the game was frozen while the help or a menu was open (frames run and the whole state hash unchanged), three times" % cc, len(frozen) == 3, "%d checks" % len(frozen))
     pics = re.findall(r"^PASS  (?:windowed|fullscreen) \d+x\d+.*aspect 1\.6:1, centred yes, outside the picture 0 pixels not black, inside \d+ of \d+ differ from the centre rule, 0 blended", text, re.M)
     step("%s: all 20 resolutions in both display modes: 1.6:1, centred, black around, nearest pixel (nothing blended)" % cc, len(pics) >= 40, "%d pictures checked" % len(pics))
+    fpsl = re.findall(r"^PASS  fps choice \d+: .*", text, re.M)
+    cpu = [int(c) for c in re.findall(r"CPU (\d+) % of one core", text)]
+    step("%s: every FPS choice (monitor, native, 30 to 180, uncapped) measured in the running game: the pictures a second are the number chosen, the game stays at 59.92" % cc, len(fpsl) == 11 and "NOTE" not in text, "%d choices, CPU %d to %d %% of one core" % (len(fpsl), min(cpu) if cpu else 0, max(cpu) if cpu else 0))
     h = run([head, "run", "logs/menutest.pmrp", "--video", "--audio", "--root", root])
     a2, b2 = digests(text), digests(h.stdout)
     step("%s: the game recorded through the menu run headless gives the same state, run, video and audio digests" % cc, a2 == b2 and "?" not in a2.values(), "%s" % a2["run"])

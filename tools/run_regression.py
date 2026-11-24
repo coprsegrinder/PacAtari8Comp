@@ -1,5 +1,5 @@
 """Stage 89 (regression): one command that re-runs the verification of the C port, so that a later change cannot break what was verified without being noticed.
-  quick (default, about 10 minutes): build with gcc (Release, strict C99, -Werror) -> ctest (41 tests) -> the golden games: every replay of the set below is played by the built shell with the renderer and the sound
+  quick (default, about 10 minutes): build with gcc (Release, strict C99, -Werror) -> ctest (42 tests) -> the golden games: every replay of the set below is played by the built shell with the renderer and the sound
           chip on, and its state hash, run digest, video digest and audio digest must equal the line of analysis/golden-digests.txt (made by --update-golden from a build verified against the ROM) -> the Python
           tests of the C port (tests/test_c_*.py are long and left to --full; the shell, behaviour and C-against-ROM tests run).
   --full  adds: every test module of the project (about 35 minutes), the same with clang, the C against the ROM frame by frame on every golden replay (tools/check_c_vs_rom.py: the whole state, every frame), and the Linux build and tests in WSL

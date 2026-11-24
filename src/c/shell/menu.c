@@ -12,8 +12,11 @@ const MenuResolution menu_resolutions[] = {
 };
 const int menu_resolution_count = (int)(sizeof menu_resolutions / sizeof menu_resolutions[0]);
 
+const int menu_fps_values[] = {MENU_FPS_MONITOR, MENU_FPS_NATIVE, 30, 60, 75, 90, 120, 144, 165, 180, MENU_FPS_UNCAPPED};
+const int menu_fps_count = (int)(sizeof menu_fps_values / sizeof menu_fps_values[0]);
+
 #define MAIN_ITEMS 3        /* Resume Game, Graphics Options, Quit Game */
-#define GRAPHICS_ITEMS 2    /* Display Mode, Resolution */
+#define GRAPHICS_ITEMS 3    /* Display Mode, Resolution, FPS */
 
 void menu_init(Menu *m, int fullscreen, int res, int custom_w, int custom_h)
 {
@@ -50,6 +53,22 @@ static void step_resolution(Menu *m, int dir)
         m->res = (m->res + dir + n) % n;
     }
     m->changed = 1;
+}
+
+static void step_fps(Menu *m, int dir)
+{
+    m->fps = (m->fps + dir + menu_fps_count) % menu_fps_count;
+    m->fps_changed = 1;
+}
+
+int menu_fps(const Menu *m)
+{
+    int v = menu_fps_values[m->fps];
+
+    if (v == MENU_FPS_MONITOR) {
+        return m->monitor_hz > 0 ? m->monitor_hz : 60;
+    }
+    return v;
 }
 
 static void toggle_mode(Menu *m)
@@ -124,8 +143,10 @@ void menu_key(Menu *m, MenuKey k)
     case MK_SELECT:
         if (m->cursor == 0) {
             toggle_mode(m);
-        } else {
+        } else if (m->cursor == 1) {
             step_resolution(m, k == MK_LEFT ? -1 : 1);
+        } else {
+            step_fps(m, k == MK_LEFT ? -1 : 1);
         }
         break;
     default:
@@ -182,6 +203,23 @@ int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
         put_line(&out[n++], buf, 0, 1, m->cursor == 0);
         snprintf(buf, sizeof buf, "RESOLUTION: < %d X %d (%s) >", w, h, m->res >= 0 ? menu_resolutions[m->res].aspect : "WINDOW");
         put_line(&out[n++], buf, 0, 1, m->cursor == 1);
+        {
+            int v = menu_fps_values[m->fps];
+            if (v == MENU_FPS_MONITOR) {
+                if (m->monitor_hz > 0) {
+                    snprintf(buf, sizeof buf, "FPS: < MONITOR (%d HZ) >", m->monitor_hz);
+                } else {
+                    snprintf(buf, sizeof buf, "FPS: < MONITOR >");
+                }
+            } else if (v == MENU_FPS_NATIVE) {
+                snprintf(buf, sizeof buf, "FPS: < NATIVE (59.92) >");
+            } else if (v == MENU_FPS_UNCAPPED) {
+                snprintf(buf, sizeof buf, "FPS: < UNCAPPED >");
+            } else {
+                snprintf(buf, sizeof buf, "FPS: < %d >", v);
+            }
+            put_line(&out[n++], buf, 0, 1, m->cursor == 2);
+        }
         put_line(&out[n++], "", 0, 0, 0);
         put_line(&out[n++], "ESC: BACK", 0, 0, 0);
     }

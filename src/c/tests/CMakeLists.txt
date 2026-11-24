@@ -131,3 +131,12 @@ add_executable(menu_check menu_check.c)
 target_link_libraries(menu_check pm_shell)
 add_test(NAME menu_check COMMAND menu_check WORKING_DIRECTORY ${PM_MAIN_DIR})
 set_tests_properties(menu_check PROPERTIES PASS_REGULAR_EXPRESSION "menu_check: OK")
+
+# the in-between pictures of the FPS option (docs/69): made from the frames of a played game
+add_executable(interp_check interp_check.c)
+target_link_libraries(interp_check pm_shell pm_render pm_assets pm_app pm_core pm_platform)
+if(UNIX)
+  target_link_libraries(interp_check m)
+endif()
+add_test(NAME interp_check COMMAND interp_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(interp_check PROPERTIES FIXTURES_REQUIRED asset_blob PASS_REGULAR_EXPRESSION "interp_check: OK")

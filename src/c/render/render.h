@@ -46,6 +46,21 @@ void render_reset(Renderer *r);
 /* draw one frame into `colour` (RENDER_W * RENDER_H bytes, row by row: the GTIA colour byte of every pixel).  `w->hpos` are the positions the game wrote (HPOSP0-3, HPOSM0-3). */
 void render_frame(Renderer *r, const World *w, uint8_t colour[RENDER_W * RENDER_H]);
 
+/* what a frame is made of before the players and missiles are put over the playfield (docs/69: the in-between pictures of the FPS option are made from it) */
+typedef struct RenderLayers {
+    uint8_t pri[RENDER_W * RENDER_H];   /* the playfield of each pixel: 0 background, 1-4 playfield 0-3 */
+    uint8_t col[RENDER_W * RENDER_H];   /* the colour byte of that playfield pixel */
+    uint8_t cov[RENDER_W * RENDER_H];   /* the players and missiles on each pixel: bit k player k, bit 4 + k missile k */
+    uint8_t regs[RENDER_H][9];          /* COLPF0-3, COLBK, COLPM0-3 at each line (the display-list interrupts change them between the rows) */
+    uint8_t prior;                      /* PRIOR: the order of players and playfields */
+} RenderLayers;
+
+/* render_frame, and the layers of the frame as well when `layers` is not NULL (`colour` is the same either way) */
+void render_frame_layers(Renderer *r, const World *w, uint8_t colour[RENDER_W * RENDER_H], RenderLayers *layers);
+
+/* the colour byte GTIA gives a pixel from its layers: the same rule render_frame uses */
+uint8_t render_compose(const uint8_t regs[9], uint8_t prior, uint8_t pri, uint8_t col, uint8_t cov);
+
 /* the same picture in RGB (3 bytes a pixel) through the measured NTSC palette */
 void render_to_rgb(const uint8_t colour[RENDER_W * RENDER_H], uint8_t rgb[RENDER_W * RENDER_H * 3]);
 

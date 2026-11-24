@@ -23,6 +23,7 @@
 #include "../../assets/assets.h"
 #include "../../assets/rom_install.h"
 #include "../../audio/audio.h"
+#include "../../render/interp.h"
 #include "../../render/render.h"
 #include "../../shell/frontend.h"
 #include "../../shell/menu.h"
@@ -77,6 +78,7 @@ static int fullscreen;                   /* the display mode as applied to the w
 static Menu menu;                        /* the pause menu and the display settings (shell/menu.c) */
 static int menu_dirty;                   /* the menu or the picture behind it must be drawn again */
 static LONG saved_style;
+static void detect_monitor_hz(void);
 
 /* ---------------------------------------------------------------- digests (the same as the headless shell's, so that a recorded game can be compared) */
 
@@ -239,6 +241,7 @@ static void apply_display(void)
     if (hwnd == NULL || !GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mi)) {
         return;
     }
+    detect_monitor_hz();
     if (IsZoomed(hwnd) || IsIconic(hwnd)) {                     /* a maximized or minimized window is made a normal one first: the size and place below are of the normal window */
         ShowWindow(hwnd, SW_RESTORE);
     }
@@ -304,6 +307,112 @@ static void layout(int cw, int ch, DisplayRect *r)
     display_fit(cw, ch, aw, ah, r);
 }
 
+/* ---------------------------------------------------------------- the FPS option: in-between pictures (docs/69) */
+
+#define RING 8                           /* the game frames kept for the in-between pictures */
+#define SAMPLES_PER_FRAME (AUDIO_RATE / FRAME_HZ)
+static InterpFrame *ring;                /* the last RING game frames, with their layers */
+static InterpPair ring_pair[RING];       /* how the objects moved from the frame before to this one */
+static unsigned long ring_id[RING];
+static int ring_ok[RING];
+static InterpOut iout;                   /* the picture made for the window */
+static int iout_have;                    /* iout is what the window shows */
+static const uint8_t *shown_colour;      /* the colours of the nearest game frame to the picture shown (the menu is drawn over it); NULL: the last frame */
+static double audio_written;             /* samples handed to the sound device */
+static double tau_a;                     /* the game time (in frames) of the picture to show, as of tau_t0 */
+static uint64_t tau_t0;
+static int tau_valid;
+static uint64_t next_tick_ns;
+static unsigned long tick_count, blit_count;    /* pictures made at a tick, and pictures that differed from the one before (the FPS test counts them) */
+typedef HRESULT(WINAPI *DwmFlushFn)(void);
+static DwmFlushFn dwm_flush;
+static int bars_x = -1, bars_y = -1, bars_w = -1, bars_h = -1, bars_cw = -1, bars_ch = -1;
+
+static int interp_wanted(void)
+{
+    return ring != NULL && !opt.exact && opt.selftest <= 0 && menu_fps(&menu) != MENU_FPS_NATIVE;
+}
+
+static void detect_monitor_hz(void)
+{
+    MONITORINFOEXA mi;
+    DEVMODEA dm;
+
+    if (hwnd == NULL) {
+        return;
+    }
+    memset(&mi, 0, sizeof mi);
+    mi.cbSize = sizeof mi;
+    if (!GetMonitorInfoA(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), (MONITORINFO *)&mi)) {
+        return;
+    }
+    memset(&dm, 0, sizeof dm);
+    dm.dmSize = sizeof dm;
+    if (EnumDisplaySettingsA(mi.szDevice, ENUM_CURRENT_SETTINGS, &dm) && dm.dmDisplayFrequency > 1) {
+        menu.monitor_hz = (int)dm.dmDisplayFrequency;
+    }
+}
+
+/* the window gets the picture of iout: all of it, or the rectangles of d; the black around it is drawn when the layout changed */
+static void present_interp(const InterpDirty *d)
+{
+    HDC dc;
+    RECT rc;
+    BITMAPINFO bi;
+    DisplayRect pr;
+    int i, full;
+
+    if (hwnd == NULL || iout.work == NULL) {
+        return;
+    }
+    GetClientRect(hwnd, &rc);
+    layout(rc.right, rc.bottom, &pr);
+    if (pr.w != iout.ow || pr.h != iout.oh) {                 /* the window changed size since the picture was made: the next picture is made at the new size */
+        return;
+    }
+    dc = GetDC(hwnd);
+    full = d == NULL || d->full;
+    if (pr.x != bars_x || pr.y != bars_y || pr.w != bars_w || pr.h != bars_h || rc.right != bars_cw || rc.bottom != bars_ch) {
+        HBRUSH b = (HBRUSH)GetStockObject(BLACK_BRUSH);
+        RECT r;
+        SetRect(&r, 0, 0, rc.right, pr.y);
+        FillRect(dc, &r, b);
+        SetRect(&r, 0, pr.y + pr.h, rc.right, rc.bottom);
+        FillRect(dc, &r, b);
+        SetRect(&r, 0, pr.y, pr.x, pr.y + pr.h);
+        FillRect(dc, &r, b);
+        SetRect(&r, pr.x + pr.w, pr.y, rc.right, pr.y + pr.h);
+        FillRect(dc, &r, b);
+        bars_x = pr.x;
+        bars_y = pr.y;
+        bars_w = pr.w;
+        bars_h = pr.h;
+        bars_cw = rc.right;
+        bars_ch = rc.bottom;
+        full = 1;
+    }
+    memset(&bi, 0, sizeof bi);
+    bi.bmiHeader.biSize = sizeof bi.bmiHeader;
+    bi.bmiHeader.biWidth = iout.ow;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
+    if (full) {
+        bi.bmiHeader.biHeight = -iout.oh;
+        StretchDIBits(dc, pr.x, pr.y, iout.ow, iout.oh, 0, 0, iout.ow, iout.oh, iout.work, &bi, DIB_RGB_COLORS, SRCCOPY);
+    } else {
+        for (i = 0; i < d->n; i++) {                           /* only what moved: each rectangle holds an object's old and new place */
+            int x0 = d->r[i][0], y0 = d->r[i][1], w = d->r[i][2] - d->r[i][0], h = d->r[i][3] - d->r[i][1];
+            if (w <= 0 || h <= 0) {
+                continue;
+            }
+            bi.bmiHeader.biHeight = -h;
+            StretchDIBits(dc, pr.x + x0, pr.y + y0, w, h, x0, 0, w, h, iout.work + (size_t)y0 * (size_t)iout.ow, &bi, DIB_RGB_COLORS, SRCCOPY);
+        }
+    }
+    ReleaseDC(hwnd, dc);
+}
+
 static void present(void)
 {
     HDC dc;
@@ -313,6 +422,10 @@ static void present(void)
     int x, y, w, h;
 
     if (hwnd == NULL) {
+        return;
+    }
+    if (iout_have && !menu_is_open(&menu) && interp_wanted()) {         /* the picture of the FPS option is what the window shows */
+        present_interp(NULL);
         return;
     }
     dc = GetDC(hwnd);
@@ -362,10 +475,19 @@ static void menu_event(MenuKey k)
         menu.changed = 0;
         apply_display();
     }
+    if (menu.fps_changed) {                                   /* the FPS: the next pictures are made the new way, from the game time the sound is at */
+        menu.fps_changed = 0;
+        next_tick_ns = 0;
+        tau_valid = 0;
+        iout_have = 0;
+        shown_colour = NULL;
+    }
     if (was_open != menu_is_open(&menu)) {
         pause_edge = 0;
         if (was_open) {
             menu_resync = 1;
+            tau_valid = 0;
+            next_tick_ns = 0;
         }
     }
     menu_dirty = 1;
@@ -556,7 +678,22 @@ static void run_frame(void)
         (void)replay_writer_add(&writer, &in);
     }
     last_hash = shell_frame(&shell, &in);
-    render_frame(&renderer, &shell.world, colour);              /* every frame: the renderer carries the colours of the frame before */
+    if (interp_wanted()) {                                      /* every frame: the renderer carries the colours of the frame before; the layers are kept for the in-between pictures */
+        size_t slot = (size_t)(frames_run % RING), prev = (size_t)((frames_run + RING - 1) % RING);
+        InterpFrame *f = &ring[slot];
+        render_frame_layers(&renderer, &shell.world, f->colour, &f->layers);
+        interp_prepare(f);
+        memcpy(colour, f->colour, sizeof colour);
+        ring_ok[slot] = 1;
+        ring_id[slot] = frames_run;
+        if (frames_run > 0 && ring_ok[prev] && ring_id[prev] == frames_run - 1) {
+            interp_pair(&ring[prev], f, &ring_pair[slot]);
+        } else {
+            memset(&ring_pair[slot], 0, sizeof ring_pair[slot]);
+        }
+    } else {
+        render_frame(&renderer, &shell.world, colour);
+    }
     vdig = fnv64(vdig, colour, sizeof colour);
     got = audio_frame(&audio, &shell.world, pcm, sizeof pcm / sizeof pcm[0]);
     adig = hash_pcm(adig, pcm, got);
@@ -569,15 +706,142 @@ static void run_frame(void)
             game_pcm_n += got;
         }
         (void)wa_write(wa, pcm, got);
+        audio_written += (double)got;
     }
     frames_run++;
+}
+
+/* ---------------------------------------------------------------- one picture of the FPS option */
+
+static const InterpFrame *ring_get(unsigned long id)
+{
+    size_t s = (size_t)(id % RING);
+
+    return (ring_ok[s] && ring_id[s] == id) ? &ring[s] : NULL;
+}
+
+/* which game time (in frames) the picture of this moment shows: the frame the sound device is playing, so that picture and sound are one; the model runs on the clock at exactly the game's rate and is
+ * pulled to the device's position slowly (the device's queue is read in steps), so the speed of the game is the original's whatever the display does */
+static double game_time(uint64_t now, uint64_t t_start_ns)
+{
+    double pred, meas, dt, gain;
+    int q;
+
+    if (wa == NULL) {
+        return (double)(now - t_start_ns) * FRAME_HZ / 1e9;
+    }
+    q = wa_queued(wa);
+    if (q < 0) {
+        q = 0;
+    }
+    meas = (audio_written - (double)q) / SAMPLES_PER_FRAME;
+    if (!tau_valid) {
+        tau_a = meas;
+        tau_t0 = now;
+        tau_valid = 1;
+        return tau_a;
+    }
+    dt = (double)(now - tau_t0) / 1e9;
+    pred = tau_a + dt * FRAME_HZ;
+    gain = 1.0 - exp(-dt / 0.25);
+    tau_a = pred + gain * (meas - pred);
+    tau_t0 = now;
+    return tau_a;
+}
+
+/* waits for the next picture time (or not), makes the picture of this moment and shows it; returns 1 when it made one */
+static int interp_step(uint64_t t_start_ns)
+{
+    const int target = menu_fps(&menu);
+    uint64_t now = pm_time_ns();
+    const InterpFrame *fa, *fb;
+    const InterpPair *pp = NULL;
+    InterpDirty d;
+    RECT rc;
+    DisplayRect pr;
+    double tau, phi;
+    long A;
+    int changed;
+
+    if (target == MENU_FPS_UNCAPPED) {
+        /* as many pictures as there are: one whenever the picture is not the one before */
+    } else if (menu_fps_values[menu.fps] == MENU_FPS_MONITOR && dwm_flush != NULL && target >= 50) {
+        static uint64_t last_flush;
+        (void)dwm_flush();                                      /* the monitor's own refresh is the tick */
+        now = pm_time_ns();
+        if (now - last_flush < 1500000u) {                      /* DwmFlush came back at once (the window is minimised or covered): do not spin */
+            Sleep(2);
+            now = pm_time_ns();
+        }
+        last_flush = now;
+    } else {
+        uint64_t period = (uint64_t)(1e9 / (double)target);
+        if (next_tick_ns == 0) {
+            next_tick_ns = now;
+        }
+        if (now < next_tick_ns) {
+            if (next_tick_ns - now > 1500000u) {
+                Sleep(1);
+            } else {
+                YieldProcessor();
+            }
+            return 0;
+        }
+        next_tick_ns += period;
+        if (now > next_tick_ns + 3 * period) {                  /* far behind (the window was dragged): start again from now */
+            next_tick_ns = now + period;
+        }
+    }
+    tau = game_time(now, t_start_ns);
+    if (tau < 0.0) {
+        tau = 0.0;
+    }
+    A = (long)floor(tau);
+    phi = tau - (double)A;
+    fa = ring_get((unsigned long)A);
+    fb = ring_get((unsigned long)A + 1u);
+    if (fa == NULL) {                                           /* the frame is not there (just after the FPS was changed, or the game is not at that frame yet): the newest there is */
+        unsigned long id = frames_run > 0 ? frames_run - 1u : 0u;
+        fa = ring_get(id);
+        if (fa == NULL) {
+            Sleep(1);
+            return 0;
+        }
+        A = (long)id;
+        phi = 0.0;
+        fb = NULL;
+    }
+    if (fb != NULL) {
+        pp = &ring_pair[(size_t)(((unsigned long)A + 1u) % RING)];
+    } else {
+        phi = 0.0;
+    }
+    GetClientRect(hwnd, &rc);
+    layout(rc.right, rc.bottom, &pr);
+    if (pr.w < 1 || pr.h < 1 || interp_out_size(&iout, pr.w, pr.h) != 0) {
+        Sleep(1);
+        return 0;
+    }
+    interp_render(&iout, fa, fb, pp, phi, (unsigned long)A, &d);
+    shown_colour = (fb != NULL && phi >= 0.5) ? fb->colour : fa->colour;
+    iout_have = 1;
+    changed = d.full || d.n > 0;
+    tick_count++;
+    if (changed) {
+        present_interp(&d);
+        blit_count++;
+    } else if (target == MENU_FPS_UNCAPPED) {
+        tick_count--;
+        Sleep(1);                                               /* nothing new to show: do not spin */
+    }
+    return 1;
 }
 
 static void make_bgra(void)
 {
     size_t i;
 
-    render_to_rgb(colour, rgb);
+    render_to_rgb(shown_colour != NULL ? shown_colour : colour, rgb);
     for (i = 0; i < (size_t)RENDER_W * RENDER_H; i++) {
         bgra[4 * i] = rgb[3 * i + 2];
         bgra[4 * i + 1] = rgb[3 * i + 1];
@@ -765,7 +1029,7 @@ static long compare_window(void)
 /* ---------------------------------------------------------------- the menu test: real key messages, then what the window really shows */
 
 enum { OP_KEY, OP_SYSKEY, OP_WAIT, OP_FRAMES, OP_CHECK };
-enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT };
+enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END };
 
 typedef struct Op {
     int kind, a, b;
@@ -778,6 +1042,19 @@ static PmFile *mt_log;
 static int mt_pass, mt_fail;
 static unsigned long mt_f0;
 static uint64_t mt_h0;
+static unsigned long mt_ticks0, mt_blits0, mt_frames0;     /* the counters at the start of an FPS measurement */
+static uint64_t mt_t0;
+static double mt_cpu0;                                   /* the CPU time of the process (s) at the start of an FPS measurement */
+
+static double process_cpu_seconds(void)
+{
+    FILETIME c, e, k, u;
+
+    if (!GetProcessTimes(GetCurrentProcess(), &c, &e, &k, &u)) {
+        return 0.0;
+    }
+    return ((double)(((unsigned long long)k.dwHighDateTime << 32) | k.dwLowDateTime) + (double)(((unsigned long long)u.dwHighDateTime << 32) | u.dwLowDateTime)) / 1e7;
+}
 
 static void mt_add(int kind, int a, int b)
 {
@@ -893,6 +1170,27 @@ static void mt_build(void)
     mt_add(OP_CHECK, CK_MODE, 0);
     mt_add(OP_CHECK, CK_PICTURE, 0);
     mt_add(OP_CHECK, CK_FROZEN, 0);                    /* all of that with the game frozen */
+    mt_key(VK_DOWN);                                   /* the FPS: every choice in turn, each measured for two seconds in the running game */
+    mt_key(VK_DOWN);
+    mt_add(OP_CHECK, CK_CURSOR, 2);
+    for (i = 1; i <= menu_fps_count; i++) {
+        mt_key(VK_RIGHT);
+        mt_add(OP_CHECK, CK_FPS_BEGIN, 0);             /* (the counters are read again after the settling time) */
+        mt_key(VK_ESCAPE);
+        mt_key(VK_ESCAPE);                             /* the game runs again */
+        mt_add(OP_WAIT, 500, 0);
+        mt_add(OP_CHECK, CK_FPS_BEGIN, 1);
+        mt_add(OP_WAIT, 2000, 0);
+        mt_add(OP_CHECK, CK_FPS_END, i % menu_fps_count);
+        mt_key(VK_ESCAPE);                             /* back to the FPS item of the graphics options */
+        mt_key(VK_DOWN);
+        mt_key(VK_RETURN);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+    }
+    mt_key(VK_UP);
+    mt_key(VK_UP);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
     mt_key(VK_ESCAPE);
     mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
     mt_key(VK_UP);
@@ -1092,6 +1390,44 @@ static void mt_check(int id, int arg)
     case CK_PICTURE:
         check_picture();
         break;
+    case CK_FPS_BEGIN:
+        if (arg == 1) {
+            mt_ticks0 = tick_count;
+            mt_blits0 = blit_count;
+            mt_frames0 = frames_run;
+            mt_t0 = pm_time_ns();
+            mt_cpu0 = process_cpu_seconds();
+        }
+        break;
+    case CK_FPS_END: {
+        double dt = (double)(pm_time_ns() - mt_t0) / 1e9;
+        double game = (double)(frames_run - mt_frames0) / dt;
+        double ticks = (double)(tick_count - mt_ticks0) / dt;
+        double blits = (double)(blit_count - mt_blits0) / dt;
+        double cpu = (process_cpu_seconds() - mt_cpu0) / dt * 100.0;
+        int v = menu_fps(&menu), idx = menu.fps, ok;
+        char what[64];
+
+        snprintf(what, sizeof what, "fps choice %d", idx);
+        if (IsIconic(hwnd)) {                                                    /* a test needs its window on the screen: something minimised it (not this program): note it and bring it back */
+            if (mt_log != NULL) {
+                pm_fs_printf(mt_log, "NOTE  the window was minimised during choice %d (by something else); restored\n", idx);
+            }
+            ShowWindow(hwnd, SW_RESTORE);
+        }
+        ok = fabs(game - FRAME_HZ) / FRAME_HZ <= 0.02;                           /* the game runs at its own rate whatever is shown */
+        if (v == MENU_FPS_NATIVE) {
+            ok = ok && ticks >= 25.0 && !iout_have;
+            mt_result(ok, what, "native: the game %.2f frames/s (the original runs at 59.92), %.1f pictures/s, no in-between pictures; CPU %.0f %% of one core", game, ticks, cpu);
+        } else if (v == MENU_FPS_UNCAPPED) {
+            ok = ok && blits >= 120.0 && iout_have;
+            mt_result(ok, what, "uncapped: the game %.2f frames/s, %.1f different pictures/s; CPU %.0f %% of one core", game, blits, cpu);
+        } else {
+            ok = ok && fabs(ticks - (double)v) / (double)v <= 0.06 && iout_have;
+            mt_result(ok, what, "%s %d: the game %.2f frames/s, %.1f pictures/s, %.1f of them different from the one before; CPU %.0f %% of one core", idx == 0 ? "the monitor's" : "fixed", v, game, ticks, blits, cpu);
+        }
+        break;
+    }
     case CK_QUIT:
         mt_result(menu.quit == 1 && quit == 1, "quit game", "the menu set quit=%d, the program quit=%d", menu.quit, quit);
         break;
@@ -1344,6 +1680,22 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     render_init(&renderer, ram_image);
     audio_init(&audio, AUDIO_RATE);
     front_init(&front, 0);
+    ring = (InterpFrame *)malloc((size_t)RING * sizeof(InterpFrame));
+    (void)interp_out_init(&iout);
+    {                                                           /* the timer resolution (Sleep) and the monitor's refresh (DwmFlush), loaded so that the program needs neither library to start */
+        HMODULE m = LoadLibraryA("winmm.dll");
+        if (m != NULL) {
+            typedef UINT(WINAPI * TimeBeginFn)(UINT);
+            TimeBeginFn tb = (TimeBeginFn)(void (*)(void))GetProcAddress(m, "timeBeginPeriod");
+            if (tb != NULL) {
+                (void)tb(1);
+            }
+        }
+        m = LoadLibraryA("dwmapi.dll");
+        if (m != NULL) {
+            dwm_flush = (DwmFlushFn)(void (*)(void))GetProcAddress(m, "DwmFlush");
+        }
+    }
     xinput_load();
     if (opt.record != NULL || opt.selftest > 0 || opt.menutest) {
         replay_writer_init(&writer, record_buf, sizeof record_buf, opt.seed, 0, 0);
@@ -1406,6 +1758,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         if (menu_resync) {                                      /* the timer clock goes on from the frame the game is at, not from the wall clock of before the menu */
             menu_resync = 0;
             t_start = pm_time_ns() - (uint64_t)((double)frames_run / FRAME_HZ * 1e9);
+            if (interp_wanted()) {
+                t_start += (uint64_t)(2.0 / FRAME_HZ * 1e9);          /* the pictures are of the time two frames before the frames made */
+            }
         }
         if (wa != NULL) {                                       /* the sound device is the clock */
             int q = wa_queued(wa);
@@ -1415,7 +1770,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
                 q = wa_queued(wa);
             }
         } else {                                                /* the system timer is */
-            due_target = (unsigned long)((double)(pm_time_ns() - t_start) * FRAME_HZ / 1e9);
+            due_target = (unsigned long)((double)(pm_time_ns() - t_start) * FRAME_HZ / 1e9) + (interp_wanted() ? 2u : 0u);
             while (frames_run < due_target && n < MAX_CATCH_UP && !(opt.selftest > 0 && (long)frames_run >= opt.selftest)) {
                 run_frame();
                 n++;
@@ -1424,9 +1779,14 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
                 t_start += (uint64_t)(((double)(due_target - frames_run) / FRAME_HZ) * 1e9);
             }
         }
-        if (n > 0) {
+        if (interp_wanted()) {
+            (void)interp_step(t_start);
+        } else if (n > 0) {
             make_bgra();
+            shown_colour = NULL;
+            iout_have = 0;
             present();
+            tick_count++;
             t_now = pm_time_ns();
             if (frames_run > (unsigned long)n) {
                 uint64_t d = t_now - t_prev;

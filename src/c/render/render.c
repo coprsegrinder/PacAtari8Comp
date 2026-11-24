@@ -317,7 +317,21 @@ void render_reset(Renderer *r)
     r->have_latched = 0;
 }
 
+uint8_t render_compose(const uint8_t regs[9], uint8_t prior, uint8_t pri, uint8_t col, uint8_t cov)
+{
+    Regs g;
+
+    memcpy(g.c, regs, sizeof g.c);
+    g.chbase = 0;
+    return pixel_colour(&g, prior, pri, col, cov);
+}
+
 void render_frame(Renderer *r, const World *w, uint8_t colour[RENDER_W * RENDER_H])
+{
+    render_frame_layers(r, w, colour, NULL);
+}
+
+void render_frame_layers(Renderer *r, const World *w, uint8_t colour[RENDER_W * RENDER_H], RenderLayers *L)
 {
     Regs g;
     Line l;
@@ -342,6 +356,15 @@ void render_frame(Renderer *r, const World *w, uint8_t colour[RENDER_W * RENDER_
 
     for (y = 0; y < RENDER_H; y++) {                       /* an empty screen to start with */
         memset(colour + y * RENDER_W, g.c[REG_BK], RENDER_W);
+    }
+    if (L != NULL) {
+        memset(L->pri, 0, sizeof L->pri);
+        memset(L->col, g.c[REG_BK], sizeof L->col);
+        memset(L->cov, 0, sizeof L->cov);
+        for (y = 0; y < RENDER_H; y++) {
+            memcpy(L->regs[y], g.c, sizeof g.c);
+        }
+        L->prior = prior;
     }
 
     if (!(dma & 0x20u)) {
@@ -389,6 +412,13 @@ void render_frame(Renderer *r, const World *w, uint8_t colour[RENDER_W * RENDER_
             objects_line(w, line, cov);
             for (x = 0; x < RENDER_W; x++) {
                 out[x] = pixel_colour(&g, prior, l.pri[x], l.col[x], cov[x]);
+            }
+            if (L != NULL) {
+                int row = line - RENDER_FIRST_LINE;
+                memcpy(L->pri + row * RENDER_W, l.pri, RENDER_W);
+                memcpy(L->col + row * RENDER_W, l.col, RENDER_W);
+                memcpy(L->cov + row * RENDER_W, cov, RENDER_W);
+                memcpy(L->regs[row], g.c, sizeof g.c);
             }
         }
         if (n > 0) {

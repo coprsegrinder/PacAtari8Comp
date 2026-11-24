@@ -42,7 +42,7 @@ Not tried (OV-72): MSVC, macOS, a 32-bit or big-endian target, other C libraries
 ## 3. How the C port is built
 
 - **CMake 3.16 or later**, C standard 99 with extensions off, and for clang and gcc `-Wall -Wextra -Wpedantic -Wconversion -Werror`. No option of its own: the compiler is chosen with `-DCMAKE_C_COMPILER`, the build type with `-DCMAKE_BUILD_TYPE` (Release and Debug are tested).
-- **7 libraries** (`pm_app`, `pm_assets`, `pm_audio`, `pm_core`, `pm_platform`, `pm_render`, `pm_shell`), **17 executables** (`assets_check`, `audio_check`, `audio_selftest`, `constants_check`, `frontend_check`, `fs_sandbox`, `install_assets`, `menu_check`, `pacman_a8`, `pacman_a8_play`, `platform_check`, `render_check`, `shell_selftest`, `toolchain_check`, `vector_runner`, `vector_runner_swapped`, `world_check`) and **41 tests** under `ctest`. The program is `shell/pacman_a8`; the installer `assets/install_assets` makes the asset blob from the ROM.
+- **7 libraries** (`pm_app`, `pm_assets`, `pm_audio`, `pm_core`, `pm_platform`, `pm_render`, `pm_shell`), **18 executables** (`assets_check`, `audio_check`, `audio_selftest`, `constants_check`, `frontend_check`, `fs_sandbox`, `install_assets`, `interp_check`, `menu_check`, `pacman_a8`, `pacman_a8_play`, `platform_check`, `render_check`, `shell_selftest`, `toolchain_check`, `vector_runner`, `vector_runner_swapped`, `world_check`) and **42 tests** under `ctest`. The program is `shell/pacman_a8`; the installer `assets/install_assets` makes the asset blob from the ROM.
 - **No library but the C standard library** (`-lm` on Unix for the sound model); everything else is in `platform/` behind a small interface: files only through `fs.c` under the main folder, the clock through `timer.c`.
 - **Configuration at run time**: none in files or the environment. The **main folder** is the current folder, or `--root DIR`; the ROM is `original/Pac-Man.rom` under it, the blob `resources/pack/assets.pmab`, the high score and options `save/`, the log `logs/`; nothing outside the main folder is ever read or written.
 
@@ -143,7 +143,7 @@ The C sources `core/world.[ch]`, `tables.[ch]`, `constants.h`, `assets/rom_layou
 
 ## 8. Checked on a clean copy
 
-`python -I tools/check_clean_build.py` copies every file Git would keep (no `build/`, no `resources/`, no `original/`) into `build/clean-check/tree`, adds only your cartridge ROM, and then does recipes A, C, A again and D: **the build has no warnings; `ctest` with no derived data passes its tests and skips the ones that need the vectors; the vectors are made from the ROM; `ctest` then runs and passes all 41 tests; a replay is made and played, and its state, run, video and audio digests equal those of the golden game** (`analysis/evidence-clean-build-summary.txt`). The copy has no file that is not in the project.
+`python -I tools/check_clean_build.py` copies every file Git would keep (no `build/`, no `resources/`, no `original/`) into `build/clean-check/tree`, adds only your cartridge ROM, and then does recipes A, C, A again and D: **the build has no warnings; `ctest` with no derived data passes its tests and skips the ones that need the vectors; the vectors are made from the ROM; `ctest` then runs and passes all 42 tests; a replay is made and played, and its state, run, video and audio digests equal those of the golden game** (`analysis/evidence-clean-build-summary.txt`). The copy has no file that is not in the project.
 
 ## 9. Limits
 
