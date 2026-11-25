@@ -14,6 +14,7 @@
 9  a ROM left at original/Pac-Man.rom (the older layout): used without asking
 10 a folder that cannot be written to (a file where the folder resources should be): stops (exit 2) with the write-protect text
 11 no ROM, dialogs allowed (a real desktop): the question and the file chooser appear; cancelling leaves with exit 2 and makes nothing
+12 the file chooser driven for real (the file name typed in, Open pressed): a wrong file is refused with the reason and Retry brings the chooser back, the right ROM then starts the game; Cancel on the refusal leaves with exit 2; the right ROM at once starts the game; in each the ROM is not copied into the folder
 Every start is `pacman_a8_play.exe --selftest 60 --exact --windowed --no-audio --no-dialogs` (a real window for a second; no dialog can block the check)."""
 import hashlib
 import os
@@ -128,6 +129,141 @@ def dialog_flow(folder):
             proc.kill()
             return False, "did not leave after the chooser was closed"
         return has and rc == 2, "question named the ROM, 8,192 bytes and once: %s; chooser '%s'; exit %d" % (has, fc[2][:40], rc)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
+def chooser_flow(folder, first_path, then, second_path=None):
+    """drives the real dialogs of a first start with no ROM: OK on the question; the file chooser: the file name `first_path` typed in and Open pressed; if `then` is "retry" the refusal is read and Retry
+    pressed, the chooser comes up again and `second_path` is typed in and opened; if `then` is "cancel" the refusal is read and Cancel pressed; if `then` is "accept" the first file is the right one and the game
+    starts.  Returns (ok, detail, process-state): after the game has started its window is closed, and the exit code is read."""
+    import ctypes
+    from ctypes import wintypes
+    user32 = ctypes.windll.user32
+    proc = subprocess.Popen([os.path.join(folder, "pacman_a8_play.exe")], cwd=folder)
+    WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+    notes = []
+
+    def top_windows():
+        found = []
+
+        def cb(h, _):
+            pid = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(h, ctypes.byref(pid))
+            if pid.value == proc.pid and user32.IsWindowVisible(h):
+                buf = ctypes.create_unicode_buffer(256)
+                user32.GetClassNameW(h, buf, 256)
+                cls = buf.value
+                user32.GetWindowTextW(h, buf, 256)
+                found.append((h, cls, buf.value))
+            return True
+        user32.EnumWindows(WNDENUMPROC(cb), 0)
+        return found
+
+    def descendants(h):
+        out = []
+
+        def cb(c, _):
+            buf = ctypes.create_unicode_buffer(1200)
+            user32.GetWindowTextW(c, buf, 1200)
+            cl = ctypes.create_unicode_buffer(64)
+            user32.GetClassNameW(c, cl, 64)
+            out.append((c, cl.value, buf.value))
+            return True
+        user32.EnumChildWindows(h, WNDENUMPROC(cb), 0)
+        return out
+
+    def wait_for(pred, secs):
+        t = time.time()
+        while time.time() - t < secs:
+            for w in top_windows():
+                if pred(w):
+                    return w
+            if proc.poll() is not None:
+                return None
+            time.sleep(0.2)
+        return None
+
+    def press(win, label):
+        label = label.upper()
+        for c, cl, t in descendants(win[0]):
+            if cl == "Button" and t.replace("&", "").upper() == label:
+                user32.SendMessageW(c, 0x00F5, 0, 0)               # BM_CLICK
+                return True
+        return False
+
+    def type_file_name(win, path):
+        for c, cl, t in descendants(win[0]):
+            if cl == "Edit":
+                user32.SendMessageW(c, 0x000C, 0, ctypes.c_wchar_p(path))   # WM_SETTEXT
+                return True
+        return False
+
+    def question():
+        return wait_for(lambda w: w[1] == "#32770" and "Pac-Man" in w[2] and "Choose your" not in w[2], 20)
+
+    def chooser():
+        return wait_for(lambda w: w[1] == "#32770" and "Choose your Pac-Man" in w[2], 20)
+
+    try:
+        q = question()
+        if q is not None and then == "question_cancel":                    # the question of a damaged data file: it says so; Cancel leaves without a word
+            text = " ".join(t for _, cl, t in descendants(q[0]) if cl == "Static")
+            said = "damaged" in text.lower() and "ROM" in text
+            if not press(q, "Cancel"):
+                return False, "no Cancel button on the question"
+            try:
+                rc = proc.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                return False, "did not leave after Cancel"
+            return said and rc == 2, "the question says the data file is damaged: %s; Cancel: exit %d" % (said, rc)
+        if q is None or not press(q, "OK"):
+            return False, "no question to answer"
+        c = chooser()
+        if c is None or not type_file_name(c, first_path) or not press(c, "Open"):
+            return False, "the file chooser could not be driven (appeared: %s)" % (c is not None)
+        if then == "accept":
+            pass
+        else:
+            m = wait_for(lambda w: w[1] == "#32770" and "Pac-Man" in w[2] and "Choose your" not in w[2], 20)
+            if m is None:
+                return False, "no refusal appeared for the wrong file"
+            text = " ".join(t for _, cl, t in descendants(m[0]) if cl == "Static")
+            notes.append("refusal: %s" % text.replace("\n", " ")[:90])
+            if "8192" not in text and "sha256" not in text and "8,192" not in text:
+                return False, "the refusal does not say why: %s" % text[:120]
+            if "another file" not in text.lower():
+                return False, "the refusal does not offer another file: %s" % text[:120]
+            if then == "cancel":
+                if not press(m, "Cancel"):
+                    return False, "no Cancel button"
+                try:
+                    rc = proc.wait(timeout=20)
+                except subprocess.TimeoutExpired:
+                    return False, "did not leave after Cancel"
+                return rc == 2, "; ".join(notes + ["Cancel: exit %d" % rc])
+            if not press(m, "Retry"):
+                return False, "no Retry button"
+            c2 = chooser()
+            if c2 is None or not type_file_name(c2, second_path) or not press(c2, "Open"):
+                return False, "the chooser did not come up again after Retry"
+        blob = os.path.join(folder, "resources", "pack", "assets.pmab")
+        t = time.time()
+        while time.time() - t < 30 and not os.path.exists(blob):
+            time.sleep(0.2)
+        if not os.path.exists(blob):
+            return False, "the data file was not made; " + "; ".join(notes)
+        game = wait_for(lambda w: w[1] == "PacManA8Port", 30)                # the game's own window
+        if game is None:
+            return False, "the game did not start"
+        time.sleep(1.0)
+        user32.PostMessageW(game[0], 0x0010, 0, 0)                           # WM_CLOSE
+        try:
+            rc = proc.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            return False, "the game did not close"
+        return rc == 0, "; ".join(notes + ["the game started and closed: exit %d, data file %d bytes" % (rc, os.path.getsize(blob))])
     finally:
         if proc.poll() is None:
             proc.kill()
@@ -253,6 +389,25 @@ def main():
         dfolder = os.path.join(work, "dlg", top)
         ok, detail = dialog_flow(dfolder)
         step("no ROM, dialogs allowed: the program asks (the text names the ROM, 8,192 bytes, once), OK opens the file chooser, closing it leaves with exit 2 and makes nothing", ok and not os.path.exists(os.path.join(dfolder, "resources")), detail)
+        # 12 the file chooser itself, driven: a wrong file first (refused, Retry), then the right one; and Cancel on the refusal; and the right file at once
+        wrong = os.path.join(work, "not-the-rom.bin")
+        open(wrong, "wb").write(bytes(8192))
+        for label, name, args in (("a wrong file, then Retry, then the right ROM chosen in the chooser", "retry", (wrong, "retry", ext)), ("a wrong file, then Cancel on the refusal", "cancel", (wrong, "cancel")),
+                                  ("the right ROM chosen at once", "accept", (ext, "accept"))):
+            z.extractall(os.path.join(work, "ch-" + name))
+            cf = os.path.join(work, "ch-" + name, top)
+            ok, detail = chooser_flow(cf, *args)
+            made = os.path.exists(os.path.join(cf, "resources", "pack", "assets.pmab"))
+            copied = os.path.exists(os.path.join(cf, "original", "Pac-Man.rom"))
+            want_made = name != "cancel"
+            step("the file chooser driven: %s: %s" % (label, "the data file is made, the ROM is not copied into the folder, the game starts" if want_made else "leaves with exit 2, nothing made"), ok and made == want_made and not copied, detail)
+        # 13 a damaged data file, dialogs allowed: the question says it is damaged; Cancel leaves it alone
+        z.extractall(os.path.join(work, "dam"))
+        df = os.path.join(work, "dam", top)
+        os.makedirs(os.path.join(df, "resources", "pack"))
+        open(os.path.join(df, "resources", "pack", "assets.pmab"), "wb").write(b"damaged")
+        ok, detail = chooser_flow(df, None, "question_cancel")
+        step("a damaged data file, dialogs allowed: the question says it is damaged and has to be made again; Cancel leaves with exit 2 and the file as it was", ok and open(os.path.join(df, "resources", "pack", "assets.pmab"), "rb").read() == b"damaged", detail)
     finally:
         rmtree(work)
     fails = [n for n, ok, _ in LOG if not ok]

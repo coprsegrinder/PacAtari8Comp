@@ -18,7 +18,7 @@ The ROM is checked by exact size and SHA-256 (only the NTSC cartridge); **nothin
 
 `python -I tools/make_win_release.py` builds the program (clang, Release; it links only the Windows system libraries and the Universal C Runtime) and makes `build/release/pacman-a8-port-<version>-win64.zip` with its `.sha256`: a folder with `pacman_a8_play.exe`, `README.txt` (for the player), `LICENSE`, `NOTICE`, `VERSION`, `FILES.sha256`, the shader files the Graphics Options read (`src/shaders`, `third-party/crt-shaders` with the GPL text), the font's licence, and `original/README.txt`. **No ROM, no derived data, no saved data.** The zip is deterministic (sorted names, one time stamp, LF text): the same program gives the same bytes. The version is the one line of the file `VERSION` (0.2.0); the program writes it to `logs/shell.log` at every start; `tools/make_release.py` (the source archive) reads the same file.
 
-## 3. How it was checked (`tools/check_win_release.py`, 16 steps)
+## 3. How it was checked (`tools/check_win_release.py`, 20 steps)
 
 The zip is unpacked into an empty folder, as a player would, and only a ROM is given:
 
@@ -36,10 +36,12 @@ The zip is unpacked into an empty folder, as a player would, and only a ROM is g
 | a ROM left at `original/Pac-Man.rom`: used without asking | pass |
 | a folder that cannot be written to: exit 2 with the write-protect text | pass |
 | **the dialogs** (a real desktop): with no ROM the question appears (it names the ROM, 8,192 bytes, once), OK opens the file chooser, closing it leaves with exit 2 and makes nothing | pass |
+| **the real file chooser, driven** (the file name typed into the system's chooser, Open pressed, on a real desktop): a wrong file is refused with the reason ("sha256 differs") and an offer of another file, **Retry brings the chooser back, and the right ROM then makes the data file and starts the game** (the ROM is not copied into the folder, the game window is closed and the exit is 0); **Cancel on the refusal leaves with exit 2** and nothing made; the right ROM chosen at once starts the game | pass |
+| a damaged data file with dialogs allowed: the question says the data file is damaged and has to be made again; Cancel leaves with exit 2 and the file as it was | pass |
 | `ctest rom_install_check`: the same logic below the front end (wrong sizes, one byte changed, zeros; written once; a damaged file replaced by identical bytes; a refused ROM leaves a good file alone; a blocked folder) | pass |
 
 ## 4. Limits (OV-84)
 
-- **Choosing a real ROM in the file chooser, and the Retry after a refused file**, were not driven by the check (it opens the chooser and closes it); the same code path with `--rom` is tested, and the chooser itself is the system's.
+- The chooser itself is the system's; the check drives it by typing the file name and pressing Open (as a player would by typing a path), not by browsing folders with the mouse.
 - Tried on Windows 11 only (not Windows 10); not run under a reduced-rights account or from Program Files; the executable is **not signed**, so Windows SmartScreen may warn on the first start of a downloaded copy.
 - Only the clang build is packaged; gcc builds the same sources (the headless parts are tested with both) but its executable is not packaged or checked.

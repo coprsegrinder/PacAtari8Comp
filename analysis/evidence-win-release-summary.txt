@@ -1,4 +1,4 @@
-Windows release check (tools/check_win_release.py), version 0.2.0: 16 steps, 0 failed
+Windows release check (tools/check_win_release.py), version 0.2.0: 20 steps, 0 failed
 PASS  zip: every file equals FILES.sha256, and FILES.sha256 lists all the others (41 files)  (differ: [])
 PASS  zip: the files a player needs are there; the folder original holds only its README  (missing: [])
 PASS  zip: no ROM file; nothing of the cartridge and nothing of the OS ROM but the font's glyph bytes (63 pieces, the open font's bit-for-bit copy of the OS glyphs) in any file, the program included  (hits: [])
@@ -8,10 +8,14 @@ PASS  second start, no ROM anywhere: runs; the data file is untouched (the ROM i
 PASS  started from another current folder (a shortcut): the same game folder, no new data file  (exit 0, files made in the other folder: [])
 PASS  no ROM and no data file: stops with exit 2, says why in logs/shell.log, makes nothing  (exit 2)
 PASS  not the cartridge (a file of the wrong size, one byte changed, all zeros, the Atari OS ROM): refused with exit 2, nothing made
-PASS  the reason is in the log (the size, the hash)  (C:\Users\User\AppData\Local\Temp\pm-release-czffjk48\wrong.bin: the ROM is not 8192 bytes)
+PASS  the reason is in the log (the size, the hash)  (C:\Users\User\AppData\Local\Temp\pm-release-ovjgry54\wrong.bin: the ROM is not 8192 bytes)
 PASS  a ROM file that cannot be opened: said so (exit 2)
 PASS  a damaged data file with the ROM given: made again, equal to the first time  (exit 0)
 PASS  a damaged data file and no ROM: stops with exit 2 (it would ask for the ROM), the damaged file is left  (exit 2)
 PASS  a ROM left at original/Pac-Man.rom is used without asking  (exit 0)
 PASS  a folder that cannot be written to: stops with exit 2 and the write-protect text  (exit 2)
 PASS  no ROM, dialogs allowed: the program asks (the text names the ROM, 8,192 bytes, once), OK opens the file chooser, closing it leaves with exit 2 and makes nothing  (question named the ROM, 8,192 bytes and once: True; chooser 'Choose your Pac-Man (Atari 8-bit) cartri'; exit 2)
+PASS  the file chooser driven: a wrong file, then Retry, then the right ROM chosen in the chooser: the data file is made, the ROM is not copied into the folder, the game starts  (refusal:  the ROM is not the NTSC Pac-Man cartridge this port is made from (sha256 differs)  Choose; the game started and closed: exit 0, data file 9392 bytes)
+PASS  the file chooser driven: a wrong file, then Cancel on the refusal: leaves with exit 2, nothing made  (refusal:  the ROM is not the NTSC Pac-Man cartridge this port is made from (sha256 differs)  Choose; Cancel: exit 2)
+PASS  the file chooser driven: the right ROM chosen at once: the data file is made, the ROM is not copied into the folder, the game starts  (the game started and closed: exit 0, data file 9392 bytes)
+PASS  a damaged data file, dialogs allowed: the question says it is damaged and has to be made again; Cancel leaves with exit 2 and the file as it was  (the question says the data file is damaged: True; Cancel: exit 2)
