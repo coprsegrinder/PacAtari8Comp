@@ -282,20 +282,13 @@ static void make_parent_folders(const char *path)
     }
 }
 
-RomError rom_install(const char *rom_path, const char *blob_path)
+RomError rom_install_bytes(const uint8_t *rom, size_t size, const char *blob_path)
 {
-    static uint8_t rom[ROM_SIZE + 1u];
     static uint8_t blob[ASSET_BLOB_MAX];
-    PmFile *f = pm_fs_open(rom_path, "rb");
-    size_t got, len;
-    RomError e;
+    PmFile *f;
+    size_t len;
+    RomError e = rom_build_blob(rom, size, blob, sizeof blob, &len);
 
-    if (f == NULL) {
-        return ROM_OPEN_FAILED;
-    }
-    got = pm_fs_read(f, rom, sizeof rom);               /* one byte more than the ROM: a longer file is refused */
-    pm_fs_close(f);
-    e = rom_build_blob(rom, got, blob, sizeof blob, &len);
     if (e != ROM_OK) {
         return e;
     }
@@ -309,4 +302,18 @@ RomError rom_install(const char *rom_path, const char *blob_path)
         return ROM_WRITE_FAILED;
     }
     return pm_fs_close(f) == 0 ? ROM_OK : ROM_WRITE_FAILED;
+}
+
+RomError rom_install(const char *rom_path, const char *blob_path)
+{
+    static uint8_t rom[ROM_SIZE + 1u];
+    PmFile *f = pm_fs_open(rom_path, "rb");
+    size_t got;
+
+    if (f == NULL) {
+        return ROM_OPEN_FAILED;
+    }
+    got = pm_fs_read(f, rom, sizeof rom);               /* one byte more than the ROM: a longer file is refused */
+    pm_fs_close(f);
+    return rom_install_bytes(rom, got, blob_path);
 }

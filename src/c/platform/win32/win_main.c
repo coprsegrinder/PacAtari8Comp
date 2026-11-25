@@ -16,6 +16,7 @@
  * --menutest: drives the pause menu and the graphics options by real key messages (ESC, arrows, Enter, F11, Alt+Enter), checks that the game is frozen while a menu is open, and that every display mode and
  * resolution gives the layout of display_fit and the picture the window really shows (logs/menutest.txt). */
 #include <windows.h>
+#include <commdlg.h>
 
 #include <math.h>
 #include <stdarg.h>
@@ -26,6 +27,7 @@
 
 #include "../../assets/assets.h"
 #include "../../assets/rom_install.h"
+#include "../../assets/rom_layout.h"
 #include "../../audio/audio.h"
 #include "../../render/interp.h"
 #include "../../render/render.h"
@@ -53,11 +55,14 @@
 #define SELFTEST_VOLUME 0.3f             /* the self test plays at a low volume (the capture is of the sound after it) */
 #define SELFTEST_GAIN ((double)SELFTEST_VOLUME * (double)SELFTEST_VOLUME)   /* Windows volume scalars are an audio taper: the amplitude is the square of the scalar */
 #define RECORD_CAP (1u << 23)
+#ifndef PM_VERSION
+#define PM_VERSION "dev"
+#endif
 #define TITLE "Pac-Man (Atari 8-bit) - C port"
 
 typedef struct Options {
-    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest, offtest, settingstest, achtest;
-    const char *fps, *trace, *crt;
+    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest, offtest, settingstest, achtest, no_dialogs;
+    const char *fps, *trace, *crt, *rom;
     long selftest;
     uint32_t seed;
     int have_seed;
@@ -127,22 +132,121 @@ static uint64_t hash_pcm(uint64_t h, const float *x, size_t n)
 
 /* ---------------------------------------------------------------- the game's start-up (the same as the headless shell's) */
 
+/* a file anywhere on the machine, up to `cap` bytes (the player's own ROM, chosen in the dialog or given with --rom: the program's file layer only reaches inside the game folder); (size_t)-1 when it cannot be opened */
+static size_t read_any_file(const char *path, uint8_t *buf, size_t cap)
+{
+    HANDLE h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    size_t total = 0;
+    DWORD got = 0;
+
+    if (h == INVALID_HANDLE_VALUE) {
+        return (size_t)-1;
+    }
+    while (total < cap && ReadFile(h, buf + total, (DWORD)(cap - total), &got, NULL) && got > 0) {
+        total += got;
+    }
+    CloseHandle(h);
+    return total;
+}
+
+static int choose_rom_file(char *path, size_t cap)
+{
+    OPENFILENAMEA ofn;
+
+    memset(&ofn, 0, sizeof ofn);
+    ofn.lStructSize = sizeof ofn;
+    ofn.lpstrFilter = "ROM images (*.rom;*.bin;*.car)\0*.rom;*.bin;*.car\0All files (*.*)\0*.*\0";
+    ofn.lpstrFile = path;
+    ofn.nMaxFile = (DWORD)cap;
+    ofn.lpstrTitle = "Choose your Pac-Man (Atari 8-bit) cartridge ROM";
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
+    return GetOpenFileNameA(&ofn) != 0;
+}
+
+#define WRITE_HELP "The game's data file could not be written in the game folder.\n\nThe folder may be write-protected (for example Program Files). Move the game folder to a place you can write to, such as Documents, and start it again."
+
+/* the game's data files (the part of the cartridge that is data, not code) are made from the player's own ROM: once, the first time the program starts (or again if the file has been damaged or is from another version
+ * of the program).  The ROM is found in this order: --rom FILE; original/Pac-Man.rom in the game folder (as before); else the player is asked to choose the file.  It is read, checked (exact size and SHA-256 of the
+ * NTSC cartridge), cut into the data file, and never copied into the game folder or needed again.  Returns 0 when the data file is there; else 2 with the text for the player in `why` (empty when they chose to cancel). */
+static int first_run_assets(char *why, size_t cap, const char *reason)
+{
+    static uint8_t rom[ROM_SIZE + 1u];
+    char path[MAX_PATH], text[700];
+    RomError r;
+    size_t got;
+
+    why[0] = '\0';
+    if (opt.rom != NULL) {
+        got = read_any_file(opt.rom, rom, sizeof rom);
+        if (got == (size_t)-1) {
+            snprintf(why, cap, "The ROM file %s cannot be opened.", opt.rom);
+            return 2;
+        }
+        r = rom_install_bytes(rom, got, ASSET_DEFAULT_PATH);
+        if (r != ROM_OK) {
+            snprintf(why, cap, "%s: %s", opt.rom, r == ROM_WRITE_FAILED ? WRITE_HELP : rom_error_text(r));
+            return 2;
+        }
+        return 0;
+    }
+    r = rom_install(ROM_DEFAULT_PATH, ASSET_DEFAULT_PATH);       /* a ROM left at original/Pac-Man.rom still works */
+    if (r == ROM_OK) {
+        return 0;
+    }
+    if (r == ROM_WRITE_FAILED) {
+        snprintf(why, cap, "%s", WRITE_HELP);
+        return 2;
+    }
+    if (opt.no_dialogs) {
+        snprintf(why, cap, "The game's data file %s is not usable (%s) and there is no ROM to make it from (%s: %s). Give the ROM with --rom FILE.", ASSET_DEFAULT_PATH, reason, ROM_DEFAULT_PATH, rom_error_text(r));
+        return 2;
+    }
+    snprintf(text, sizeof text, "%sTo play, this program needs your own copy of the Pac-Man (Atari 8-bit) cartridge ROM: the NTSC version, a file of 8,192 bytes.\n\nIt is read once, to make the game's data files in this folder; it is not copied and not needed again.\n\nChoose the ROM file now?",
+             reason[0] != '\0' ? "The game's data file is damaged, or from another version of the program, and has to be made again.\n\n" : "");
+    if (MessageBoxA(NULL, text, TITLE, MB_OKCANCEL | MB_ICONINFORMATION) != IDOK) {
+        return 2;
+    }
+    for (;;) {
+        const char *problem;
+
+        path[0] = '\0';
+        if (!choose_rom_file(path, sizeof path)) {
+            return 2;
+        }
+        got = read_any_file(path, rom, sizeof rom);
+        if (got == (size_t)-1) {
+            problem = "That file cannot be opened.";
+        } else {
+            r = rom_install_bytes(rom, got, ASSET_DEFAULT_PATH);
+            if (r == ROM_OK) {
+                return 0;
+            }
+            if (r == ROM_WRITE_FAILED) {
+                snprintf(why, cap, "%s", WRITE_HELP);
+                return 2;
+            }
+            problem = rom_error_text(r);
+        }
+        snprintf(text, sizeof text, "%s\n\nChoose another file?", problem);
+        if (MessageBoxA(NULL, text, TITLE, MB_RETRYCANCEL | MB_ICONWARNING) != IDRETRY) {
+            return 2;
+        }
+    }
+}
+
 static int boot(char *why, size_t cap)
 {
     AssetsError e = assets_load(&assets, ASSET_DEFAULT_PATH, blob_buf, sizeof blob_buf);
 
-    if (e == ASSETS_OPEN_FAILED) {                         /* the first run: the port installs its assets from the owner's ROM */
-        RomError r = rom_install(ROM_DEFAULT_PATH, ASSET_DEFAULT_PATH);
-        if (r != ROM_OK) {
-            snprintf(why, cap, "The asset blob %s is not there and cannot be made from %s:\n%s\n\nPut your own Pac-Man (Atari 8-bit) cartridge ROM at %s in the main folder (the current folder, or --root DIR).",
-                     ASSET_DEFAULT_PATH, ROM_DEFAULT_PATH, rom_error_text(r), ROM_DEFAULT_PATH);
+    if (e != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {   /* not there yet (the first start), or damaged, or from another version: made from the ROM */
+        if (first_run_assets(why, cap, e == ASSETS_OPEN_FAILED ? "" : assets_error_text(e)) != 0) {
             return 2;
         }
         e = assets_load(&assets, ASSET_DEFAULT_PATH, blob_buf, sizeof blob_buf);
-    }
-    if (e != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {
-        snprintf(why, cap, "The asset blob %s is not usable: %s", ASSET_DEFAULT_PATH, assets_error_text(e));
-        return 2;
+        if (e != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {
+            snprintf(why, cap, "The game's data file %s is not usable: %s", ASSET_DEFAULT_PATH, assets_error_text(e));
+            return 2;
+        }
     }
     assets_ram_image(&assets, ram_image);
     return 0;
@@ -2977,6 +3081,10 @@ static void parse_args(int argc, char **argv)
         } else if (strcmp(argv[i], "--offtest") == 0) {
             opt.offtest = 1;
             opt.menutest = 1;
+        } else if (strcmp(argv[i], "--rom") == 0 && i + 1 < argc) {
+            opt.rom = argv[++i];
+        } else if (strcmp(argv[i], "--no-dialogs") == 0) {
+            opt.no_dialogs = 1;
         } else if (strcmp(argv[i], "--achtest") == 0) {
             opt.achtest = 1;
             opt.menutest = 1;
@@ -3049,10 +3157,11 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         apply_fps_option();
     }
     if (opt.root == NULL) {
-        /* Started by a double click, the current folder is the program's own.
-         * Look for the main folder (the one holding original/Pac-Man.rom) in the
-         * current folder, then in the program's folder and each folder above it. */
+        /* Started by a double click, the current folder is the program's own.  Look for the main folder (the one that holds the player's ROM at original/Pac-Man.rom, or the game's data file made from it,
+         * resources/pack/assets.pmab) in the current folder, then in the program's folder and each folder above it.  Neither found (a fresh copy of the release, before the ROM has been given): the game
+         * folder is the program's own folder, whatever the current folder is (a shortcut may start it elsewhere), so that everything is kept in one place. */
         static char found[MAX_PATH + 64];
+        static const char *const markers[2] = {"\\original\\Pac-Man.rom", "\\resources\\pack\\assets.pmab"};
         char dir[MAX_PATH];
         char probe[MAX_PATH + 64];
         int pass;
@@ -3064,13 +3173,18 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
             }
             for (;;) {
                 char *cut;
-                DWORD attr;
+                int k;
 
-                snprintf(probe, sizeof probe, "%s\\original\\Pac-Man.rom", dir);
-                attr = GetFileAttributesA(probe);
-                if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY)) {
-                    snprintf(found, sizeof found, "%s", dir);
-                    opt.root = found;
+                for (k = 0; k < 2 && opt.root == NULL; k++) {
+                    DWORD attr;
+                    snprintf(probe, sizeof probe, "%s%s", dir, markers[k]);
+                    attr = GetFileAttributesA(probe);
+                    if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY)) {
+                        snprintf(found, sizeof found, "%s", dir);
+                        opt.root = found;
+                    }
+                }
+                if (opt.root != NULL) {
                     break;
                 }
                 cut = strrchr(dir, '\\');
@@ -3080,13 +3194,30 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
                 *cut = '\0';
             }
         }
+        if (opt.root == NULL) {
+            DWORD n = GetModuleFileNameA(NULL, found, MAX_PATH);
+            char *cut = strrchr(found, '\\');
+            if (n > 0 && n < MAX_PATH && cut != NULL) {
+                *cut = '\0';
+                opt.root = found;
+            }
+        }
     }
     if (opt.root != NULL && pm_fs_set_root(opt.root) != 0) {
-        MessageBoxA(NULL, "The main folder given with --root is not usable.", TITLE, MB_OK | MB_ICONERROR);
+        if (!opt.no_dialogs) {
+            MessageBoxA(NULL, "The main folder given with --root is not usable.", TITLE, MB_OK | MB_ICONERROR);
+        }
         return 2;
     }
+    (void)shell_log("pacman_a8_play " PM_VERSION);
     if (boot(why, sizeof why) != 0) {
-        MessageBoxA(NULL, why, TITLE, MB_OK | MB_ICONERROR);
+        if (why[0] != '\0') {                                   /* empty: the player chose to cancel */
+            if (opt.no_dialogs) {
+                (void)shell_log(why);                            /* a test or a script: the text goes to logs/shell.log, no window */
+            } else {
+                MessageBoxA(NULL, why, TITLE, MB_OK | MB_ICONERROR);
+            }
+        }
         return 2;
     }
     if (!opt.have_seed) {

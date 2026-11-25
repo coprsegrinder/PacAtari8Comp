@@ -31,6 +31,9 @@ RomError rom_check(const uint8_t *rom, size_t size);
 /* check, then build the blob in memory: `out` holds *len bytes on ROM_OK */
 RomError rom_build_blob(const uint8_t *rom, size_t size, uint8_t *out, size_t cap, size_t *len);
 
+/* the same from a ROM already in memory (the player's own file chosen anywhere on the machine: it is read once and never copied into the game folder) */
+RomError rom_install_bytes(const uint8_t *rom, size_t size, const char *blob_path);
+
 /* read the ROM from `rom_path`, check it, build the blob and write it to `blob_path` (both relative to the main folder, through platform/fs.c).  Nothing is written unless everything succeeded. */
 RomError rom_install(const char *rom_path, const char *blob_path);
 

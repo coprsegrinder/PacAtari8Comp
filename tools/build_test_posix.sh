@@ -67,6 +67,7 @@ exe controls_check "" $S/tests/controls_check.c
 exe sound_check "" $S/tests/sound_check.c
 exe settings_check "" $S/tests/settings_check.c
 exe achieve_check "" $S/tests/achieve_check.c
+exe rom_install_check "" $S/tests/rom_install_check.c
 exe interp_check "" $S/tests/interp_check.c
 exe slang_check "" $S/tests/slang_check.c
 
@@ -102,6 +103,7 @@ run_expect controls_check "controls_check: OK" $B/controls_check
 run_expect sound_check "sound_check: OK" $B/sound_check
 run_expect settings_check "settings_check: OK" $B/settings_check
 run_expect achieve_check "achieve_check: OK" $B/achieve_check
+run_expect rom_install_check "rom_install_check: OK" $B/rom_install_check
 run_expect interp_check "interp_check: OK" $B/interp_check
 run_expect slang_check "slang_check: OK" $B/slang_check
 
