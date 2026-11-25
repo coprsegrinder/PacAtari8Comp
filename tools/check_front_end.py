@@ -135,6 +135,21 @@ def one(cc):
     st = open(st_path, encoding="utf-8").read() if os.path.exists(st_path) else ""
     m3 = re.search(r"RESULT: (\d+) passed, (\d+) failed", st)
     step("%s: started with nothing set: borderless fullscreen, the monitor's resolution and refresh rate chosen from the lists (exact or nearest)" % cc, r2.returncode == 0 and bool(m3) and m3.group(2) == "0" and m3.group(1) == "4", "; ".join(re.findall(r"PASS  (?:starts at the monitor.s \w+|starts in borderless fullscreen): (.*)", st))[:260])
+    # the game as the player has it, borderless fullscreen at the monitor's resolution and refresh rate (the FPS entry the program chooses): the pictures keep to the rate (a picture made and sent to the screen takes less
+    # than a refresh: it did not at 2304 x 1440 when every picture went to the graphics card whole, and every third picture then took two refreshes: the pauses the owner saw)
+    mon = re.search(r"monitor (\d+) Hz", st)
+    if mon:
+        hz = int(mon.group(1))
+        tr = os.path.join(root, "logs", "fs_trace.txt")
+        if os.path.exists(tr):
+            os.remove(tr)
+        run([play, "--root", root, "--selftest", "900", "--seed", "5", "--trace", "logs/fs_trace.txt"], timeout=200)
+        rows = [l.split() for l in open(tr, encoding="utf-8")][60:] if os.path.exists(tr) else []
+        ts = [float(r[0]) for r in rows]
+        gaps = [ts[i + 1] - ts[i] for i in range(len(ts) - 1)]
+        rate = 1000.0 * len(gaps) / sum(gaps) if gaps and sum(gaps) > 0 else 0.0
+        late = sum(1 for g in gaps if g > 1.6 * 1000.0 / hz) if gaps else 0
+        step("%s: fullscreen at the monitor's rate (%d Hz): the pictures a second are the rate (97 to 103 %%), at most 2 %% of them later than 1.6 refreshes" % (cc, hz), bool(gaps) and 0.97 * hz <= rate <= 1.03 * hz and late <= 0.02 * len(gaps), "%.1f pictures/s, %d of %d later than 1.6 refreshes" % (rate, late, len(gaps)))
     # the game's own logic does not depend on how the picture is made: the same scenario with several FPS choices and CRT shaders, each recorded and replayed headless (the state, run, video and sound digests of the
     # recording equal the replay's), the game at its own speed, the sound not running dry more than the start of a shader makes it
     for label, extra in (("native", ["--fps", "native"]), ("native + guest shader", ["--fps", "native", "--crt", "guest"]), ("75 + zfast shader", ["--fps", "75", "--crt", "zfast"]),

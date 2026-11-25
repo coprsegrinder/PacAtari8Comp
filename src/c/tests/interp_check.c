@@ -392,7 +392,7 @@ static void test_jumps(void)
     reference(&two[0], ref);
     CHECK(diff(o.work, ref, px) == 0);                     /* not moved: exactly the nearer frame's picture */
     interp_render(&o, get_two, &ctx, 0.75, 1, &d);
-    CHECK(d.full);                                         /* the nearer frame is the other one now */
+    CHECK(o.base_id == 1);                                      /* the nearer frame is the other one now */
     memset(two[1].layers.cov, 0, sizeof two[1].layers.cov);        /* the object vanishes */
     interp_prepare(&two[1]);
     interp_follow(&two[1], &two[0]);
@@ -620,6 +620,75 @@ static void test_still_mode(void)
     free(ref);
 }
 
+/* the pictures made by changing only what changed (the nearer frame changes: the bands that differ, the places of the objects) are, pixel for pixel, the pictures made from nothing, over 600 pictures of play at 3 to a game frame
+ * and at two sizes; and the places in d are enough to bring the last picture the program showed to this one (what is sent to the screen) */
+static void test_partial_equals_full(void)
+{
+    static const int sizes[2][2] = {{OW, OH}, {1152, 720}};
+    int si;
+
+    for (si = 0; si < 2; si++) {
+        InterpOut keep, fresh;
+        InterpDirty d;
+        uint32_t *shown;
+        unsigned long n;
+        int k, wrong = 0, short_d = 0, partial = 0, pics = 0;
+        size_t px = (size_t)sizes[si][0] * (size_t)sizes[si][1];
+
+        shown = (uint32_t *)malloc(px * sizeof(uint32_t));
+        CHECK(shown != NULL && interp_out_init(&keep) == 0 && interp_out_init(&fresh) == 0);
+        CHECK(interp_out_size(&keep, sizes[si][0], sizes[si][1]) == 0 && interp_out_size(&fresh, sizes[si][0], sizes[si][1]) == 0);
+        g_limit = NFRAMES - 1;
+        for (n = 300; n < 500; n++) {
+            for (k = 0; k < 3; k++) {
+                double t = (double)n + (double)k / 3.0;
+                int i, y;
+                interp_render(&keep, get_game, NULL, t, g_limit, &d);
+                fresh.base_valid = 0;                                           /* made from nothing */
+                fresh.nrect = 0;
+                interp_render(&fresh, get_game, NULL, t, g_limit, &d);
+                (void)d;
+                wrong += diff(keep.work, fresh.work, px) != 0;
+                pics++;
+                (void)i;
+                (void)y;
+            }
+        }
+        CHECK(wrong == 0);
+        CHECK(pics == 600);
+        /* what is sent: the picture shown, brought up to date with the rectangles of d, is the picture */
+        memcpy(shown, keep.work, px * sizeof(uint32_t));
+        interp_out_free(&keep);
+        interp_out_init(&keep);
+        interp_out_size(&keep, sizes[si][0], sizes[si][1]);
+        interp_render(&keep, get_game, NULL, 300.0, g_limit, &d);
+        memcpy(shown, keep.work, px * sizeof(uint32_t));
+        for (n = 300; n < 420; n++) {
+            for (k = 0; k < 3; k++) {
+                double t = (double)n + (double)k / 3.0;
+                int i, y;
+                interp_render(&keep, get_game, NULL, t, g_limit, &d);
+                if (d.full) {
+                    memcpy(shown, keep.work, px * sizeof(uint32_t));
+                } else {
+                    partial += d.n > 0;
+                    for (i = 0; i < d.n; i++) {
+                        for (y = d.r[i][1]; y < d.r[i][3]; y++) {
+                            memcpy(shown + (size_t)y * (size_t)sizes[si][0] + d.r[i][0], keep.work + (size_t)y * (size_t)sizes[si][0] + d.r[i][0], (size_t)(d.r[i][2] - d.r[i][0]) * sizeof(uint32_t));
+                        }
+                    }
+                }
+                short_d += diff(shown, keep.work, px) != 0;
+            }
+        }
+        CHECK(short_d == 0);
+        CHECK(partial > 50);                                                    /* and the places are used (not the whole picture each time) */
+        interp_out_free(&keep);
+        interp_out_free(&fresh);
+        free(shown);
+    }
+}
+
 int main(void)
 {
     if (assets_load(&assets, ASSET_DEFAULT_PATH, blob_buf, sizeof blob_buf) != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {
@@ -639,6 +708,7 @@ int main(void)
     test_box();
     test_every_frame_shown();
     test_still_mode();
+    test_partial_equals_full();
     test_crt_source();
     test_jumps();
     test_score_replaces_pacman();

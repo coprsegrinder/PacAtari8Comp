@@ -230,6 +230,78 @@ static void build_base(InterpOut *o, const InterpFrame *f)
     free(xmap);
 }
 
+/* the rectangle [x0, x1) x [y0, y1) of base (and of work) made from the colours of the frame f */
+static void base_rect(InterpOut *o, const InterpFrame *f, int x0, int y0, int x1, int y1)
+{
+    int ox, oy;
+
+    for (oy = y0; oy < y1; oy++) {
+        const uint8_t *src = f->colour + src_index(oy, o->oh, RENDER_H, 0) * RENDER_W;
+        uint32_t *brow = o->base + (size_t)oy * (size_t)o->ow;
+        for (ox = x0; ox < x1; ox++) {
+            brow[ox] = o->lut[src[src_index(ox, o->ow, RENDER_W, 0)]];
+        }
+        memcpy(o->work + (size_t)oy * (size_t)o->ow + x0, brow + x0, (size_t)(x1 - x0) * sizeof(uint32_t));
+    }
+}
+
+/* the nearer frame changed from `oldf` to `f`: only the places that differ (bands of 8 rows of the picture, as wide as the change) and the places the objects were drawn at are made again, and said in d: the
+ * whole picture (13 MB at 2304 x 1440) is not made and sent to the screen sixty times a second for a few moving things.  0 when it is not worth it (more than half of the picture changes) */
+static int rebuild_partial(InterpOut *o, const InterpFrame *oldf, const InterpFrame *f, InterpDirty *d)
+{
+    int rects[INTERP_MAX_RECTS][4], nr = 0, b, i;
+    long area = 0;
+    double sx_scale = (double)o->ow / RENDER_W, sy_scale = (double)o->oh / RENDER_H;
+
+    for (b = 0; b < RENDER_H / 8 && nr < INTERP_MAX_RECTS - INTERP_OBJECTS; b++) {
+        int y, x, minx = RENDER_W, maxx = -1;
+        for (y = b * 8; y < b * 8 + 8; y++) {
+            const uint8_t *a = oldf->colour + y * RENDER_W, *c = f->colour + y * RENDER_W;
+            if (memcmp(a, c, RENDER_W) != 0) {
+                for (x = 0; x < RENDER_W; x++) {
+                    if (a[x] != c[x]) {
+                        if (x < minx) { minx = x; }
+                        if (x > maxx) { maxx = x; }
+                    }
+                }
+            }
+        }
+        if (maxx >= 0) {
+            rects[nr][0] = (int)(minx * sx_scale) - 2;
+            rects[nr][1] = (int)(b * 8 * sy_scale) - 2;
+            rects[nr][2] = (int)((maxx + 1) * sx_scale) + 3;
+            rects[nr][3] = (int)((b * 8 + 8) * sy_scale) + 3;
+            nr++;
+        }
+    }
+    if (b < RENDER_H / 8) {
+        return 0;
+    }
+    for (i = 0; i < o->nrect && nr < INTERP_MAX_RECTS; i++) {
+        memcpy(rects[nr++], o->rect[i], sizeof rects[0]);
+    }
+    for (i = 0; i < nr; i++) {
+        if (rects[i][0] < 0) { rects[i][0] = 0; }
+        if (rects[i][1] < 0) { rects[i][1] = 0; }
+        if (rects[i][2] > o->ow) { rects[i][2] = o->ow; }
+        if (rects[i][3] > o->oh) { rects[i][3] = o->oh; }
+        if (rects[i][2] > rects[i][0] && rects[i][3] > rects[i][1]) {
+            area += (long)(rects[i][2] - rects[i][0]) * (rects[i][3] - rects[i][1]);
+        }
+    }
+    if (area * 2 > (long)o->ow * o->oh || nr > INTERP_MAX_RECTS - INTERP_OBJECTS) {
+        return 0;
+    }
+    for (i = 0; i < nr; i++) {
+        if (rects[i][2] > rects[i][0] && rects[i][3] > rects[i][1]) {
+            base_rect(o, f, rects[i][0], rects[i][1], rects[i][2], rects[i][3]);
+            memcpy(d->r[d->n++], rects[i], sizeof rects[0]);
+        }
+    }
+    o->nrect = 0;
+    return 1;
+}
+
 /* redraw the rectangle [x0, x1) x [y0, y1) of work from the layers of f, the objects drawn at their offsets (1/FIX pixels) */
 static void redraw(InterpOut *o, const InterpFrame *f, const int offx[INTERP_OBJECTS], const int offy[INTERP_OBJECTS], int x0, int y0, int x1, int y1)
 {
@@ -433,12 +505,15 @@ void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned lo
     }
     memcpy(o->last_offx, offx, sizeof offx);
     memcpy(o->last_offy, offy, sizeof offy);
-    if (!o->base_valid || o->base_id != near_id) {
+    if (o->base_valid && o->base_id != near_id && o->base_id < near_id + 64 && get(ctx, o->base_id) != NULL && rebuild_partial(o, get(ctx, o->base_id), near_f, d)) {
+        o->base_id = near_id;                                /* only the places that changed were made again (they are in d) */
+    } else if (!o->base_valid || o->base_id != near_id) {
         build_base(o, near_f);
         o->base_id = near_id;
         o->base_valid = 1;
         memcpy(o->work, o->base, (size_t)o->ow * (size_t)o->oh * sizeof(uint32_t));
         o->nrect = 0;
+        d->n = 0;
         rebuilt = 1;
     } else {
         for (i = 0; i < o->nrect; i++) {                    /* put back what the objects of the last picture covered */

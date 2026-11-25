@@ -28,6 +28,10 @@ int crt_chain_passes(const CrtChain *c);
  * cleared to black first; `frame` counts the pictures.  0 on success */
 int crt_chain_render(CrtChain *c, const uint32_t *bgra, int w, int h, int vx, int vy, int vw, int vh, unsigned frame, char *err, size_t errcap);
 
+/* the next crt_chain_render needs to send only these rectangles of the picture (x0, y0, x1, y1; x1 and y1 not included) to the graphics card, the rest being what the last picture had: n < 0 (the default
+ * after every render) means all of it.  A picture of another size is always sent whole. */
+void crt_gl_dirty(const int (*rects)[4], int n);
+
 void crt_gl_swap(void);                                /* shows what was drawn */
 void crt_gl_interval(int n);                           /* the swap waits for every n-th refresh of the monitor (0: it does not wait): the pictures are then paced by the monitor itself */
 

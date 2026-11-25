@@ -78,11 +78,13 @@ int interp_place(InterpGet get, void *ctx, double t, unsigned long newest, int k
 /* how the objects of `a` moved to `b` */
 void interp_pair(const InterpFrame *a, const InterpFrame *b, InterpPair *p);
 
+#define INTERP_MAX_RECTS 48       /* 30 bands of the picture that changed when the nearer frame changes, and the places of the objects before and after */
+
 /* what changed on `work` since the previous picture: all of it (`full`), or the rectangles r[i] = x0, y0, x1, y1 (x1 and y1 not included) */
 typedef struct InterpDirty {
     int full;
     int n;
-    int r[2 * INTERP_OBJECTS][4];
+    int r[INTERP_MAX_RECTS][4];
 } InterpDirty;
 
 /* a picture of ow x oh; 0 on success, 1 when there is no memory */

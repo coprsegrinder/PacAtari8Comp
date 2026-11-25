@@ -79,6 +79,7 @@ typedef unsigned int GLbitfield;
 #define GL_UNIFORM_OFFSET 0x8A3B
 #define GL_UNIFORM_SIZE 0x8A38
 #define GL_UNPACK_ALIGNMENT 0x0CF5
+#define GL_UNPACK_ROW_LENGTH 0x0CF2
 #define GL_PACK_ALIGNMENT 0x0D05
 #define GL_VENDOR 0x1F00
 #define GL_RENDERER 0x1F01
@@ -1094,8 +1095,18 @@ static void put_floats(uint8_t *base, int offset, int type, const float *v, int 
     }
 }
 
+static const int (*gl_dirty_r)[4];
+static int gl_dirty_n = -1;
+
+void crt_gl_dirty(const int (*rects)[4], int n)
+{
+    gl_dirty_r = rects;
+    gl_dirty_n = n;
+}
+
 int crt_chain_render(CrtChain *c, const uint32_t *bgra, int w, int h, int vx, int vy, int vw, int vh, unsigned frame, char *err, size_t errcap)
 {
+    int whole = 1;
     int i, src_w, src_h;
     GLuint src_tex;
     GLenum e;
@@ -1112,10 +1123,29 @@ int crt_chain_render(CrtChain *c, const uint32_t *bgra, int w, int h, int vx, in
         glTexStorage2D(GL_TEXTURE_2D, c->orig_mips ? levels_for(w, h) : 1, GL_RGBA8, w, h);
         c->ow = w;
         c->oh = h;
+    } else if (gl_dirty_n >= 0 && gl_dirty_r != NULL) {
+        whole = 0;
     }
     glBindTexture(GL_TEXTURE_2D, c->orig);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bgra);
+    if (whole) {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bgra);
+    } else {                                                                                    /* only what changed since the last picture */
+        int ri;
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, w);
+        for (ri = 0; ri < gl_dirty_n; ri++) {
+            int x0 = gl_dirty_r[ri][0], y0 = gl_dirty_r[ri][1], x1 = gl_dirty_r[ri][2], y1 = gl_dirty_r[ri][3];
+            if (x0 < 0) { x0 = 0; }
+            if (y0 < 0) { y0 = 0; }
+            if (x1 > w) { x1 = w; }
+            if (y1 > h) { y1 = h; }
+            if (x1 > x0 && y1 > y0) {
+                glTexSubImage2D(GL_TEXTURE_2D, 0, x0, y0, x1 - x0, y1 - y0, GL_BGRA, GL_UNSIGNED_BYTE, bgra + (size_t)y0 * (size_t)w + (size_t)x0);
+            }
+        }
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
+    gl_dirty_n = -1;
     glBindVertexArray(gl_vao);
     src_tex = c->orig;
     src_w = w;

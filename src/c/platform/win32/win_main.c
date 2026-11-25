@@ -396,7 +396,7 @@ static void detect_monitor_hz(void)
 
 /* the window gets the picture of iout: all of it, or the rectangles of d; the black around it is drawn when the layout changed */
 static int plain_gl;                     /* the OpenGL window is shown and draws the plain picture when no shader is chosen (set below, with the chains) */
-static int plain_present(const uint32_t *src, int w, int h);
+static int plain_present(const uint32_t *src, int w, int h, const InterpDirty *d);
 
 static void present_interp(const InterpDirty *d)
 {
@@ -415,7 +415,7 @@ static void present_interp(const InterpDirty *d)
         return;
     }
     if (plain_gl) {
-        (void)plain_present((const uint32_t *)iout.work, iout.ow, iout.oh);
+        (void)plain_present((const uint32_t *)iout.work, iout.ow, iout.oh, d);
         return;
     }
     dc = GetDC(hwnd);
@@ -476,6 +476,7 @@ static uint8_t *crt_shot;
 static int crt_shot_w, crt_shot_h;
 static double swap_ema_ms = -1.0;        /* how long the swap of the OpenGL window takes while it waits for the monitor (-1: not known yet); a swap that does not wait (a window, not fullscreen) is no clock, and the timer paces the pictures then */
 static int crt_want_interval;            /* how the swap of the OpenGL window waits: 0 not at all, n for every n-th refresh of the monitor (the pictures are then paced by it) */
+static double interp_ms;                 /* how long the last in-between picture took to make (the trace shows it) */
 static double crt_ms_render, crt_ms_swap;   /* how long the last picture took to give to OpenGL, and to swap (the trace shows them) */
 static char crt_why[2000];                /* why the shaders are not available, for the log */
 
@@ -538,7 +539,7 @@ static void crt_render_last(void)
 }
 
 /* the plain picture (w x h, BGRA, the part of the window `pr`) through the plain chain into the OpenGL window; 1 when it was drawn */
-static int plain_present(const uint32_t *src, int w, int h)
+static int plain_present(const uint32_t *src, int w, int h, const InterpDirty *d)
 {
     RECT rc;
     DisplayRect pr;
@@ -554,8 +555,17 @@ static int plain_present(const uint32_t *src, int w, int h)
         crt_gl_h = rc.bottom;
     }
     layout(rc.right, rc.bottom, &pr);
-    if (pr.w < 1 || pr.h < 1 || crt_chain_render(plain_chain, src, w, h, pr.x, pr.y, pr.w, pr.h, 0u, err, sizeof err) != 0) {
-        return 0;
+    {
+        uint64_t up0 = pm_time_ns();
+        if (d != NULL && !d->full) {                              /* only the places of the picture that changed go to the graphics card (the whole picture is 13 MB at 2304 x 1440) */
+            crt_gl_dirty(d->r, d->n);
+        } else {
+            crt_gl_dirty(NULL, -1);
+        }
+        if (pr.w < 1 || pr.h < 1 || crt_chain_render(plain_chain, src, w, h, pr.x, pr.y, pr.w, pr.h, 0u, err, sizeof err) != 0) {
+            return 0;
+        }
+        crt_ms_render = (double)(pm_time_ns() - up0) / 1e6;
     }
     {
         uint64_t sw0 = pm_time_ns();
@@ -643,7 +653,7 @@ static void present(void)
     }
     if (plain_gl) {
         crt_want_interval = 0;
-        (void)plain_present((const uint32_t *)bgra, RENDER_W, RENDER_H);
+        (void)plain_present((const uint32_t *)bgra, RENDER_W, RENDER_H, NULL);
         return;
     }
     dc = GetDC(hwnd);
@@ -1123,7 +1133,11 @@ static int interp_step(uint64_t t_start_ns)
             Sleep(1);
             return 0;
         }
-        interp_render(&iout, ring_get_ctx, NULL, tau, newest, &d);
+        {
+            uint64_t ir0 = pm_time_ns();
+            interp_render(&iout, ring_get_ctx, NULL, tau, newest, &d);
+            interp_ms = (double)(pm_time_ns() - ir0) / 1e6;
+        }
         nf = ring_get((unsigned long)iout.base_id);
         shown_colour = nf != NULL ? nf->colour : NULL;
         if (trace_file != NULL && nf != NULL) {
@@ -1132,7 +1146,20 @@ static int interp_step(uint64_t t_start_ns)
             for (k = 0; k < INTERP_OBJECTS; k++) {
                 pm_fs_printf(trace_file, " %.3f %.3f %.3f %.3f", nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 + iout.last_offx[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 + iout.last_offy[k] / 1024.0 : -1.0, nf->obj[k].present ? (nf->obj[k].x0 + nf->obj[k].x1) / 2.0 : -1.0, nf->obj[k].present ? (nf->obj[k].y0 + nf->obj[k].y1) / 2.0 : -1.0);
             }
-            pm_fs_printf(trace_file, " %.3f %.3f\n", crt_ms_render, crt_ms_swap);
+            {                                                   /* a hash of the picture around Pac-Man as it was composed (the stretches of unchanged picture the eye sees as pauses) */
+                unsigned long hh = 2166136261u;
+                int hx, hy, ccx = (nf->obj[4].x0 + nf->obj[4].x1) / 2, ccy = (nf->obj[4].y0 + nf->obj[4].y1) / 2;
+                for (hy = ccy - 10; hy < ccy + 10; hy++) {
+                    for (hx = ccx - 14; hx < ccx + 14; hx++) {
+                        if (hx >= 0 && hx < RENDER_W && hy >= 0 && hy < RENDER_H) {
+                            int wx = (int)(((long)hx * 2 + 1) * iout.ow / (2L * RENDER_W)), wy = (int)(((long)hy * 2 + 1) * iout.oh / (2L * RENDER_H));
+                            hh = (hh ^ iout.work[(size_t)wy * (size_t)iout.ow + (size_t)wx]) * 16777619u;
+                        }
+                    }
+                }
+                pm_fs_printf(trace_file, " %lu", hh & 0xFFFFFFFFu);
+            }
+            pm_fs_printf(trace_file, " %.3f %.3f %.3f\n", interp_ms, crt_ms_render, crt_ms_swap);
         }
     }
     iout_have = 1;
