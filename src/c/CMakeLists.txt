@@ -10,7 +10,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../VERSION)
 else()
   set(PM_VERSION "dev")
 endif()
-add_compile_definitions(PM_VERSION="${PM_VERSION}")
+add_compile_definitions($<$<COMPILE_LANGUAGE:C>:PM_VERSION="${PM_VERSION}">)      # C only: the resource compiler of the Windows front end does not take it
 
 # without a build type asked for, the optimized one: the program does a picture every few milliseconds (docs/67, 69, 70), and an unoptimized build is too slow for it
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

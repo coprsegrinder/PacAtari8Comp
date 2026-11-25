@@ -3210,6 +3210,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         return 2;
     }
     (void)shell_log("pacman_a8_play " PM_VERSION);
+    if (GetACP() != 65001) {                                     /* the manifest asks for UTF-8; Windows 10 before version 1903 ignores it: then only characters of the system's ANSI code page work in folder and file names */
+        (void)shell_log("the system's ANSI code page is in use (Windows 10 before version 1903?): the game folder and the ROM path must use only its characters");
+    }
     if (boot(why, sizeof why) != 0) {
         if (why[0] != '\0') {                                   /* empty: the player chose to cancel */
             if (opt.no_dialogs) {

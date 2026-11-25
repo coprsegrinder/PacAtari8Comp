@@ -1,0 +1,2 @@
+/* the application manifest of the Windows front end (docs/75): the program runs as the player (no elevation), is made for Windows 10 / 11, and uses UTF-8 as its code page, so that a folder or a ROM path with any character in it (not only those of the system's ANSI code page) works with every narrow file and dialog call of the program */
+1 24 "pacman_a8_play.manifest"
