@@ -14,6 +14,11 @@
 9  a ROM left at original/Pac-Man.rom (the older layout): used without asking
 10 a folder that cannot be written to (a file where the folder resources should be): stops (exit 2) with the write-protect text
 11 no ROM, dialogs allowed (a real desktop): the question and the file chooser appear; cancelling leaves with exit 2 and makes nothing
+14 paths with any character in them (Cyrillic, accented, Japanese and Chinese, an emoji): the game folder and the ROM path, first and second start, and typed into the real chooser
+15 the chooser navigated into a folder (typed), then the file name alone
+16 a game folder that cannot be written to (access denied to the user, as Program Files is to a standard user): the first start says so and leaves; the game started normally runs, the menu works, closes with exit 0, no message, nothing changed
+17 only DLLs that Windows has are imported; the manifest is in the program
+18 the first start under the Windows 8 / 7 compatibility layers (an older version reported; no run on Windows 10)
 12 the file chooser driven for real (the file name typed in, Open pressed): a wrong file is refused with the reason and Retry brings the chooser back, the right ROM then starts the game; Cancel on the refusal leaves with exit 2; the right ROM at once starts the game; in each the ROM is not copied into the folder
 Every start is `pacman_a8_play.exe --selftest 60 --exact --windowed --no-audio --no-dialogs` (a real window for a second; no dialog can block the check)."""
 import hashlib
@@ -46,9 +51,9 @@ def rmtree(p):
     shutil.rmtree(p, onerror=onerr)
 
 
-def start(folder, *extra, cwd=None, timeout=90):
+def start(folder, *extra, cwd=None, timeout=90, env=None):
     cmd = [os.path.join(folder, "pacman_a8_play.exe")] + list(extra) + ["--selftest", "60", "--exact", "--windowed", "--no-audio", "--no-dialogs", "--seed", "1"]
-    return subprocess.run(cmd, cwd=cwd or folder, capture_output=True, text=True, timeout=timeout)
+    return subprocess.run(cmd, cwd=cwd or folder, capture_output=True, text=True, timeout=timeout, env=env)
 
 
 def log_text(folder):
@@ -129,6 +134,81 @@ def dialog_flow(folder):
             proc.kill()
             return False, "did not leave after the chooser was closed"
         return has and rc == 2, "question named the ROM, 8,192 bytes and once: %s; chooser '%s'; exit %d" % (has, fc[2][:40], rc)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
+def windows_of_pid(pid):
+    import ctypes
+    from ctypes import wintypes
+    user32 = ctypes.windll.user32
+    found = []
+    WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+    def cb(h, _):
+        p = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(h, ctypes.byref(p))
+        if p.value == pid and user32.IsWindowVisible(h):
+            buf = ctypes.create_unicode_buffer(256)
+            user32.GetClassNameW(h, buf, 256)
+            found.append((h, buf.value))
+        return True
+    user32.EnumWindows(WNDENUMPROC(cb), 0)
+    return found
+
+
+def lock_folder(folder):
+    """a folder the player cannot write to (what Program Files is to a standard user): the rights to add files and folders and to write data and attributes denied to this user (not READ or SYNCHRONIZE, which starting a program needs), inherited by everything below"""
+    who = os.environ.get("USERDOMAIN", "") + "\\" + os.environ["USERNAME"]
+    r = subprocess.run(["icacls", folder, "/deny", who + ":(OI)(CI)(WD,AD,WEA,WA)"], capture_output=True, text=True)
+    return r.returncode == 0, who
+
+
+def unlock_folder(folder, who):
+    subprocess.run(["icacls", folder, "/remove:d", who, "/T", "/C", "/Q"], capture_output=True, text=True)
+
+
+def tree_state(folder):
+    out = {}
+    for r, _, fs in os.walk(folder):
+        for f in fs:
+            p = os.path.join(r, f)
+            out[os.path.relpath(p, folder)] = (os.path.getsize(p), hashlib.sha256(open(p, "rb").read()).hexdigest())
+    return out
+
+
+def play_locked(folder):
+    """the game as the player starts it (no test options), in a folder that cannot be written to: it starts, the menu is used and a setting is changed (the settings file cannot be written), the window is closed
+    with exit 0; no message appears, nothing in the folder changes"""
+    import ctypes
+    user32 = ctypes.windll.user32
+    proc = subprocess.Popen([os.path.join(folder, "pacman_a8_play.exe")], cwd=folder)
+    try:
+        game = None
+        t = time.time()
+        while time.time() - t < 30 and game is None:
+            for h, cls in windows_of_pid(proc.pid):
+                if cls == "PacManA8Port":
+                    game = h
+            if proc.poll() is not None:
+                return False, "the program left at once (exit %s)" % proc.returncode
+            time.sleep(0.2)
+        if game is None:
+            return False, "the game window did not appear"
+        time.sleep(1.5)
+        for vk in (0x1B, 0x28, 0x28, 0x28, 0x28, 0x0D, 0x25, 0x25, 0x1B, 0x1B):         # Esc, Down x4, Enter (the Sound page), Left x2 (the volume), Esc, Esc
+            user32.PostMessageW(game, 0x0100, vk, 0)
+            user32.PostMessageW(game, 0x0101, vk, 0)
+            time.sleep(0.25)
+        time.sleep(1.0)
+        dialogs = [cls for _, cls in windows_of_pid(proc.pid) if cls == "#32770"]
+        user32.PostMessageW(game, 0x0010, 0, 0)
+        try:
+            rc = proc.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            return False, "the game did not close"
+        return rc == 0 and not dialogs, "exit %d, message windows: %d" % (rc, len(dialogs))
     finally:
         if proc.poll() is None:
             proc.kill()
@@ -221,8 +301,24 @@ def chooser_flow(folder, first_path, then, second_path=None):
         if q is None or not press(q, "OK"):
             return False, "no question to answer"
         c = chooser()
-        if c is None or not type_file_name(c, first_path) or not press(c, "Open"):
-            return False, "the file chooser could not be driven (appeared: %s)" % (c is not None)
+        if c is None:
+            return False, "the file chooser did not appear"
+        for part in (first_path if isinstance(first_path, list) else [first_path]):       # a list: folders first (the chooser goes into each), the file last
+            if not type_file_name(c, part) or not press(c, "Open"):
+                return False, "the file chooser could not be driven"
+            time.sleep(0.6)
+        if then == "write_blocked":                                                        # the folder cannot be written to: the program says so, in a window, and leaves
+            m = wait_for(lambda w: w[1] == "#32770" and "Pac-Man" in w[2] and "Choose your" not in w[2], 20)
+            if m is None:
+                return False, "no message about the write-protected folder"
+            text = " ".join(t for _, cl, t in descendants(m[0]) if cl == "Static")
+            said = "write-protected" in text and "Documents" in text
+            press(m, "OK")
+            try:
+                rc = proc.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                return False, "did not leave after the message"
+            return said and rc == 2, "the message says the folder is write-protected and where to move it: %s; exit %d" % (said, rc)
         if then == "accept":
             pass
         else:
@@ -317,8 +413,9 @@ def main():
         step("zip: no ROM file; nothing of the cartridge and nothing of the OS ROM but the font's glyph bytes (%d pieces, the open font's bit-for-bit copy of the OS glyphs) in any file, the program included" % glyph_note, not [n for n in allfiles if n.lower().endswith((".rom", ".bin", ".car", ".atr"))] and not hits, "hits: %s" % hits[:3])
         # 2 reproducible
         h0 = hashlib.sha256(open(zpath, "rb").read()).hexdigest()
-        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "make_win_release.py"), "--exe", os.path.join(folder, "pacman_a8_play.exe")], cwd=ROOT, capture_output=True, text=True)
-        z2 = os.path.join(ROOT, "build", "release", "pacman-a8-port-%s-win64.zip" % VERSION)
+        gcc_zip = "-gcc" in os.path.basename(zpath)
+        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "make_win_release.py"), "--exe", os.path.join(folder, "pacman_a8_play.exe")] + (["--cc", "gcc"] if gcc_zip else []), cwd=ROOT, capture_output=True, text=True)
+        z2 = os.path.join(ROOT, "build", "release", "pacman-a8-port-%s-win64%s.zip" % (VERSION, "-gcc" if gcc_zip else ""))
         h1 = hashlib.sha256(open(z2, "rb").read()).hexdigest()
         step("made again from the same program, the zip is byte-identical", r.returncode == 0 and h0 == h1, "sha256 %s" % h1[:16])
         blob = os.path.join(folder, "resources", "pack", "assets.pmab")
@@ -408,6 +505,72 @@ def main():
         open(os.path.join(df, "resources", "pack", "assets.pmab"), "wb").write(b"damaged")
         ok, detail = chooser_flow(df, None, "question_cancel")
         step("a damaged data file, dialogs allowed: the question says it is damaged and has to be made again; Cancel leaves with exit 2 and the file as it was", ok and open(os.path.join(df, "resources", "pack", "assets.pmab"), "rb").read() == b"damaged", detail)
+        # 14 paths with any character in them (the program has a UTF-8 manifest): the game folder and the ROM path, first start and second start, and typed into the real chooser
+        names = [("Cyrillic and spaces", "\u041f\u0430\u043a-\u041c\u0430\u043d \u0438\u0433\u0440\u0430\u0442\u0430 (\u043a\u043e\u043f\u0438\u0435)"), ("accented letters", "Pac Ma\u00f1 \u00e9 \u00fc \u00df"),
+                 ("Japanese and Chinese", "\u30d1\u30c3\u30af\u30de\u30f3 \u5403\u8c46\u4eba"), ("an emoji", "Pac \U0001f352 Man")]
+        for label, name in names:
+            base = os.path.join(work, "u-" + str(abs(hash(name)) % 100000), name)
+            os.makedirs(base)
+            z.extractall(base)
+            uf = os.path.join(base, top)
+            rp = os.path.join(base, "\u043c\u043e\u044f ROM \u00e9 \u65e5\u672c \U0001f352.bin")
+            open(rp, "wb").write(rom)
+            r1 = start(uf, "--rom", rp)
+            made = os.path.exists(os.path.join(uf, "resources", "pack", "assets.pmab"))
+            r2 = start(uf)
+            step("a game folder and a ROM path with %s in them: first start, then second start without the ROM" % label, r1.returncode == 0 and made and r2.returncode == 0 and not os.path.exists(os.path.join(uf, "original", "Pac-Man.rom")), "exits %d, %d" % (r1.returncode, r2.returncode))
+        base = os.path.join(work, "u-chooser", names[0][1] + " " + names[3][1])
+        os.makedirs(base)
+        z.extractall(base)
+        uf = os.path.join(base, top)
+        rp = os.path.join(base, "\u043c\u043e\u044f ROM \u00e9 \u65e5\u672c \U0001f352.bin")
+        open(rp, "wb").write(rom)
+        ok, detail = chooser_flow(uf, rp, "accept")
+        step("the same kind of path typed into the real file chooser: the data file is made and the game starts", ok and os.path.exists(os.path.join(uf, "resources", "pack", "assets.pmab")), detail)
+        # 15 the chooser navigated: the folder typed (the chooser goes into it), then the file name alone
+        z.extractall(os.path.join(work, "nav"))
+        nf = os.path.join(work, "nav", top)
+        sub = os.path.join(work, "my roms (copy)", "\u00e9 \u65e5\u672c")
+        os.makedirs(sub)
+        open(os.path.join(sub, "pacman-8k.bin"), "wb").write(rom)
+        ok, detail = chooser_flow(nf, [sub, "pacman-8k.bin"], "accept")
+        step("the file chooser navigated into a folder (folder typed, then only the file name): the right ROM starts the game", ok and os.path.exists(os.path.join(nf, "resources", "pack", "assets.pmab")), detail)
+        # 16 a game folder that cannot be written to
+        z.extractall(os.path.join(work, "ro1"))
+        r1f = os.path.join(work, "ro1", top)
+        locked, who = lock_folder(r1f)
+        try:
+            ok, detail = chooser_flow(r1f, ext, "write_blocked") if locked else (False, "the folder could not be locked: " + who)
+        finally:
+            unlock_folder(r1f, who)
+        step("the first start in a folder that cannot be written to (as Program Files is to a standard user): the ROM is chosen, the program says the folder is write-protected and where to move it, leaves with exit 2, makes nothing", ok and not os.path.exists(os.path.join(r1f, "resources")), detail)
+        z.extractall(os.path.join(work, "ro2"))
+        r2f = os.path.join(work, "ro2", top)
+        start(r2f, "--rom", ext)
+        before = tree_state(r2f)
+        locked, who = lock_folder(r2f)
+        try:
+            ok, detail = play_locked(r2f) if locked else (False, "the folder could not be locked: " + who)
+        finally:
+            unlock_folder(r2f, who)
+        after = tree_state(r2f)
+        step("the game started normally in a folder that cannot be written to (the data file already made): it runs, the menu works and a setting can be changed (the file cannot be saved, silently), closes with exit 0, no message, nothing in the folder changed",
+             ok and before == after, detail + ("" if before == after else "; changed: %s" % sorted(set(before) ^ set(after))[:3]))
+        # 18 older Windows versions as the system can pretend them (the compatibility layers report an older version; they do not take APIs away: this is no run on Windows 10 or 7)
+        compat = []
+        for layer in ("WIN8RTM", "WIN7RTM"):
+            z.extractall(os.path.join(work, "cl-" + layer))
+            cfold = os.path.join(work, "cl-" + layer, top)
+            rr = start(cfold, "--rom", ext, env=dict(os.environ, __COMPAT_LAYER=layer))
+            compat.append((layer, rr.returncode, os.path.exists(os.path.join(cfold, "resources", "pack", "assets.pmab"))))
+        step("the first start under the Windows 8 and Windows 7 compatibility layers (an older version reported to the program): runs, the data file is made", all(c[1] == 0 and c[2] for c in compat), str(compat))
+        # 17 what the program needs from the system: only DLLs that Windows itself has (no compiler runtime to be shipped)
+        dump = subprocess.run(["objdump", "-p", os.path.join(folder, "pacman_a8_play.exe")], capture_output=True, text=True).stdout
+        dlls = sorted(set(re.findall(r"DLL Name: (\S+)", dump)), key=str.lower)
+        allowed = ("kernel32", "user32", "gdi32", "opengl32", "hid", "setupapi", "ole32", "mmdevapi", "comdlg32", "api-ms-win-crt-", "advapi32", "shell32", "winmm", "msvcrt", "dwmapi", "xinput")
+        odd = [d for d in dlls if not d.lower().startswith(allowed)]
+        manifest = "activeCodePage" in open(os.path.join(folder, "pacman_a8_play.exe"), "rb").read().decode("latin-1")
+        step("the program imports only DLLs that Windows has (%s) and carries its manifest (UTF-8, Windows 10 / 11, no elevation)" % ", ".join(dlls), not odd and manifest, "other DLLs: %s; manifest: %s" % (odd, manifest))
     finally:
         rmtree(work)
     fails = [n for n, ok, _ in LOG if not ok]

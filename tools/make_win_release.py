@@ -31,7 +31,7 @@ def run(cmd, **kw):
 
 
 def build_exe(cc):
-    build = os.path.join(ROOT, "build", "win-release")
+    build = os.path.join(ROOT, "build", "win-release" + ("-gcc" if cc == "gcc" else ""))
     r = run(["cmake", "-S", "src/c", "-B", build, "-G", "Ninja", "-DCMAKE_C_COMPILER=" + cc, "-DCMAKE_BUILD_TYPE=Release"])
     if r.returncode:
         sys.exit("configure failed:\n" + r.stdout + r.stderr)
@@ -93,7 +93,7 @@ def main():
     if not os.path.exists(exe):
         sys.exit("no program at " + exe)
     files = collect(exe)
-    path = os.path.join(OUT, "%s-%s-win64.zip" % (NAME, VERSION))
+    path = os.path.join(OUT, "%s-%s-win64%s.zip" % (NAME, VERSION, "-gcc" if cc == "gcc" else ""))
     make_zip(files, path)
     digest = hashlib.sha256(open(path, "rb").read()).hexdigest()
     with open(path + ".sha256", "w", encoding="ascii", newline="\n") as fh:
