@@ -2,6 +2,7 @@
  * says; `ctest menu_check` drives it the same way.
  *   - the menu is a pause: while it is open the front end runs no game frame at all, so nothing of the game moves (the menu never touches the World);
  *   - F1 opens the help (what the function keys do; nothing about the other controls) from anywhere, the game and both menus; F1 or ESC closes it and goes back to where it was;
+ *   - the Controls page (docs/71) has two items (Vibration and Light Bar, on / off) under the list of controls, and lists the controls of the device in use (keyboard, Xbox pad, DualShock 4, DualSense); the front end draws it with icons from controls_rows(), menu_lines() gives its text;
  *   - ESC opens it; in the main menu ESC resumes; in the graphics options ESC goes back to the main menu;
  *   - the graphics options are four settings: the CRT shader (off, or one of three: docs/70), and the display mode (windowed / borderless fullscreen), the resolution (the size of the area the picture may use) and the FPS (how many pictures a second are
  *     shown: the game's own 59.92 ("native"), a number from 30 to 180, or as many as there are).  There is no "default" choice: the front end finds the monitor's size and refresh rate and starts with the
@@ -18,7 +19,7 @@
 #define MENU_FPS_NATIVE 0        /* the FPS choices: the game's own rate, 59.92 (no in-between pictures), */
 #define MENU_FPS_UNCAPPED (-2)   /* as many as there are, */
                                  /* or a number of pictures a second */
-#define MENU_MAX_LINES 12
+#define MENU_MAX_LINES 16
 #define MENU_LINE_CHARS 48
 
 /* one entry of the resolution list: the size of the area the picture may use, and the aspect ratio it is filed under */
@@ -40,8 +41,10 @@ extern const char *const menu_crt_files[];
 extern const int menu_crt_count;
 
 /* which screen of the menu is shown (closed: the game runs) */
-typedef enum MenuScreen { MENU_CLOSED = 0, MENU_MAIN = 1, MENU_GRAPHICS = 2, MENU_HELP = 3 } MenuScreen;
+typedef enum MenuScreen { MENU_CLOSED = 0, MENU_MAIN = 1, MENU_GRAPHICS = 2, MENU_HELP = 3, MENU_CONTROLS = 4, MENU_SOUND = 5, MENU_ACH = 6 } MenuScreen;
 /* the keys the menu understands (the front end maps keyboard and pad onto them) */
+#define MENU_ACH_PAGE 8        /* the achievements page moves by this many at a time with left and right (and shows this many rows) */
+
 typedef enum MenuKey { MK_UP, MK_DOWN, MK_LEFT, MK_RIGHT, MK_SELECT, MK_BACK, MK_HELP } MenuKey;
 
 /* the menu's whole state: the screen shown, the cursor, and the two display settings */
@@ -57,6 +60,14 @@ typedef struct Menu {
     int crt;                     /* index into menu_crt_names: 0 off */
     int crt_changed;             /* set when the CRT shader changed: the front end applies it and clears this */
     int crt_unavailable;         /* set by the front end when the shaders cannot run on this machine (no OpenGL 4.5, or the files are missing): the menu says so */
+    int vibration;               /* the Controls page's two settings: 0 off, 1 light, 2 heavy (the default) */
+    int lightbar;
+    int vib_ok;                  /* set by the front end: 1 when a pad is connected (Vibration can be chosen), else the item is grayed out */
+    int bar_ok;                  /* set by the front end: 1 when a DualShock 4 or DualSense is connected (Light Bar can be chosen); else it is grayed out and shows OFF */
+    int sound_volume;            /* the Sound page: master volume 0 .. 10 (tenths; 10 is the default), mute, and the output filter (0 off, 1 soft (the default), 2 warm): applied by the front end (sound.h) */
+    int sound_mute;
+    int sound_filter;
+    int device;                  /* ControlDevice (controls.h) the Controls page shows: set by the front end to the keyboard or the pad the player used last */
     int help_from;               /* the screen the help was opened from (MENU_CLOSED: the game), where closing it goes back to */
     int quit;                    /* set by Quit Game */
     int changed;                 /* set when the display mode or the resolution changed: the front end applies it and clears this */
@@ -68,6 +79,7 @@ typedef struct MenuLine {
     int heading;                 /* 1 for a title line, 0 for an item or a hint */
     int item;                    /* 1 when the line is an item the cursor can be on */
     int selected;                /* 1 when the cursor is on it */
+    int disabled;                /* 1 for an item that cannot be chosen now (drawn grayed out) */
 } MenuLine;
 
 /* where the picture goes in a client area, and at what scale */
@@ -82,6 +94,8 @@ void menu_init(Menu *m, int fullscreen, int res, int custom_w, int custom_h);
 /* 1 while a menu is shown: the game is paused */
 int menu_is_open(const Menu *m);
 void menu_key(Menu *m, MenuKey k);                 /* closed: only MK_BACK (ESC) and MK_HELP (F1) do anything, they open the menu and the help */
+/* "OFF", "LIGHT" or "HEAVY" for 0, 1, 2 */
+const char *menu_level_name(int level);
 int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES]);   /* the text to draw; returns the number of lines */
 void menu_size(const Menu *m, int *w, int *h);     /* the selected resolution */
 int menu_fps(const Menu *m);                       /* the FPS to show: MENU_FPS_NATIVE, MENU_FPS_UNCAPPED, or pictures a second */

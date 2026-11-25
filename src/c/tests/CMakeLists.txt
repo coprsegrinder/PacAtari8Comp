@@ -127,6 +127,23 @@ add_test(NAME frontend_check COMMAND frontend_check WORKING_DIRECTORY ${PM_MAIN_
 set_tests_properties(frontend_check PROPERTIES FIXTURES_REQUIRED asset_blob PASS_REGULAR_EXPRESSION "frontend_check: OK")
 
 # the pause menu and the graphics options (docs/68): the key paths and the layout of the picture; needs no asset blob
+add_executable(controls_check controls_check.c)
+target_link_libraries(controls_check pm_shell)
+add_test(NAME controls_check COMMAND controls_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(controls_check PROPERTIES PASS_REGULAR_EXPRESSION "controls_check: OK")
+add_executable(sound_check sound_check.c)
+target_link_libraries(sound_check pm_shell)
+add_test(NAME sound_check COMMAND sound_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(sound_check PROPERTIES PASS_REGULAR_EXPRESSION "sound_check: OK")
+add_executable(settings_check settings_check.c)
+target_link_libraries(settings_check pm_shell)
+add_test(NAME settings_check COMMAND settings_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(settings_check PROPERTIES PASS_REGULAR_EXPRESSION "settings_check: OK")
+add_executable(achieve_check achieve_check.c)
+target_link_libraries(achieve_check pm_shell)
+add_test(NAME achieve_check COMMAND achieve_check WORKING_DIRECTORY ${PM_MAIN_DIR})
+set_tests_properties(achieve_check PROPERTIES PASS_REGULAR_EXPRESSION "achieve_check: OK")
+
 add_executable(menu_check menu_check.c)
 target_link_libraries(menu_check pm_shell)
 add_test(NAME menu_check COMMAND menu_check WORKING_DIRECTORY ${PM_MAIN_DIR})

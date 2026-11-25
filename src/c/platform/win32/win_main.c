@@ -9,7 +9,8 @@
  *   - the pause menu (ESC) and the graphics options (display mode, resolution): while a menu is open no game frame runs (shell/menu.c; docs/68);
  *   - the high score under save/, the replay of the game under --record (a recorded game replays headlessly to the same digests: the proof that this front end adds nothing to the game).
  * Keys: arrows / WASD stick, Ctrl / Z / X / Enter fire (Enter also START), F1 help, F2 START, F3 SELECT, F4 OPTION, Space / P pause, Alt+Enter or F11 full screen, Esc the pause menu.  Pads (XInput): D-pad or left stick,
- * A / B fire, Start = START, Back = SELECT, X / Y = OPTION; pad 2 is player 2; the keyboard drives both ports (hot-seat play on one keyboard).
+ * A / B fire, Start = START, Back = SELECT, X / Y = OPTION; pad 2 is player 2; the keyboard drives both ports (hot-seat play on one keyboard).  DualShock 4 and DualSense pads (win_pad.c, raw HID) are read as the same
+ * buttons (Cross, Circle = A, B; Square, Triangle = X, Y; Options = Start; Share / Create = Back) and get rumble and a light bar colour from the game's events (shell/haptics.c; docs/71); XInput pads rumble too.
  * --selftest FRAMES: plays a built-in scenario by posting real key messages to its own window, runs FRAMES frames, writes logs/selftest.txt (the digests, the timing, the sound device's underruns, a comparison of
  * the window's pixels with the frame) and quits.  --exact makes the window client exactly 384 x 240 pixels with no stretching (the pixel comparison needs it).
  * --menutest: drives the pause menu and the graphics options by real key messages (ESC, arrows, Enter, F11, Alt+Enter), checks that the game is frozen while a menu is open, and that every display mode and
@@ -21,20 +22,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "../../assets/assets.h"
 #include "../../assets/rom_install.h"
 #include "../../audio/audio.h"
 #include "../../render/interp.h"
 #include "../../render/render.h"
+#include "../../shell/achieve.h"
+#include "../../shell/controls.h"
 #include "../../shell/frontend.h"
+#include "../../shell/haptics.h"
+#include "../../shell/icons.h"
 #include "../../shell/menu.h"
 #include "../../shell/replay.h"
+#include "../../shell/settings.h"
 #include "../../shell/shell.h"
+#include "../../shell/sound.h"
 #include "../fs.h"
 #include "../timer.h"
 #include "win_audio.h"
 #include "win_gl.h"
+#include "win_pad.h"
+#include "win_toast.h"
 
 #define AUDIO_RATE 44100.0
 #define FRAME_HZ 59.9227                 /* NTSC: 1,789,772.5 Hz / 29,868 cycles a frame */
@@ -46,7 +56,7 @@
 #define TITLE "Pac-Man (Atari 8-bit) - C port"
 
 typedef struct Options {
-    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest, offtest;
+    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest, offtest, settingstest, achtest;
     const char *fps, *trace, *crt;
     long selftest;
     uint32_t seed;
@@ -61,6 +71,9 @@ static uint8_t colour[RENDER_W * RENDER_H];
 static uint8_t rgb[RENDER_W * RENDER_H * 3];
 static uint8_t bgra[RENDER_W * RENDER_H * 4];
 static float pcm[4096];
+static float pcm_soft[4096];             /* the speaker sound before the Sound page: the chip at four times the rate, low-passed ("Soft") */
+static float pcm_out[4096];
+static SoundFx sfx;                      /* master volume, mute and the output filter (shell/sound.h) */
 static uint8_t record_buf[RECORD_CAP];
 static Assets assets;
 static Shell shell;
@@ -144,7 +157,11 @@ typedef struct XIn {                     /* XInput, loaded when the program star
 } XIn;
 
 typedef DWORD(WINAPI *XInputGetStateFn)(DWORD, void *);
+typedef DWORD(WINAPI *XInputSetStateFn)(DWORD, void *);
 static XInputGetStateFn xinput_get;
+static XInputSetStateFn xinput_set;                  /* the rumble of XInput pads (XINPUT_VIBRATION: two WORDs, the left (big) motor and the right (small) one) */
+static int pad_kind_of[2];                           /* what is in each port now: 0 nothing, else the ControlDevice of the pad (XInput, DualShock 4, DualSense) */
+static int last_is_keyboard;                         /* the last input the player made was a key: the Controls page shows the keyboard's controls, else the pad's */
 static DWORD pad_next_probe[2];          /* a pad that is not connected is asked about once a second only: the call is slow for an empty slot */
 static int pad_present[2];
 
@@ -157,11 +174,12 @@ static void xinput_load(void)
     }
     if (m != NULL) {
         xinput_get = (XInputGetStateFn)(void (*)(void))GetProcAddress(m, "XInputGetState");
+        xinput_set = (XInputSetStateFn)(void (*)(void))GetProcAddress(m, "XInputSetState");
     }
 }
 
 /* the layout of XINPUT_STATE: DWORD packet; XINPUT_GAMEPAD { WORD buttons; BYTE lt, rt; SHORT lx, ly, rx, ry; } */
-static int pad_read(int n, XIn *x)
+static int xinput_read(int n, XIn *x)
 {
     unsigned char raw[16];
     DWORD now = GetTickCount();
@@ -195,6 +213,83 @@ static int pad_read(int n, XIn *x)
 #define XB_Y 0x8000
 #define STICK_DEAD 16000
 
+/* a PlayStation pad's state as XInput's: the cross and the stick as they are, Cross = A, Circle = B, Square = X, Triangle = Y, Options = Start, Share / Create = Back */
+static void pad_as_xinput(const PadState *p, XIn *x)
+{
+    WORD b = 0;
+
+    x->packet = 0;
+    if (p->up) { b |= XB_UP; }
+    if (p->down) { b |= XB_DOWN; }
+    if (p->left) { b |= XB_LEFT; }
+    if (p->right) { b |= XB_RIGHT; }
+    if (p->buttons & PB_OPTIONS) { b |= XB_START; }
+    if (p->buttons & PB_SHARE) { b |= XB_BACK; }
+    if (p->buttons & PB_CROSS) { b |= XB_A; }
+    if (p->buttons & PB_CIRCLE) { b |= XB_B; }
+    if (p->buttons & PB_SQUARE) { b |= XB_X; }
+    if (p->buttons & PB_TRIANGLE) { b |= XB_Y; }
+    x->buttons = b;
+    x->lx = (SHORT)p->lx;
+    x->ly = (SHORT)p->ly;
+}
+
+/* the pad of port n: an XInput pad in that port, else the next PlayStation pad (they take the ports that have no XInput pad, in the order found) */
+static int pad_read(int n, XIn *x)
+{
+    int m, j = 0, i;
+    PadKind kind;
+    int bt;
+    PadState ps;
+    static WORD prev_b[2];
+    static int prev_stick[2];
+    int active;
+
+    if (n == 0) {
+        wpad_poll();
+    }
+    if (xinput_read(n, x)) {
+        pad_kind_of[n] = CD_XINPUT;
+    } else {
+        for (m = 0; m < n; m++) {
+            if (pad_kind_of[m] != CD_XINPUT) {
+                j++;
+            }
+        }
+        if (!wpad_state(j, &kind, &bt, &ps)) {
+            pad_kind_of[n] = 0;
+            return 0;
+        }
+        pad_as_xinput(&ps, x);
+        pad_kind_of[n] = kind == PAD_DUALSENSE ? CD_DUALSENSE : CD_DS4;
+    }
+    i = (x->lx > STICK_DEAD || x->lx < -STICK_DEAD || x->ly > STICK_DEAD || x->ly < -STICK_DEAD);
+    active = (x->buttons != prev_b[n] && x->buttons != 0) || (i && !prev_stick[n]);
+    prev_b[n] = x->buttons;
+    prev_stick[n] = i;
+    if (active) {                                                /* the player touched this pad: its controls are the ones to show */
+        last_is_keyboard = 0;
+    }
+    return 1;
+}
+
+/* the device whose controls the Controls page shows: the pad in the first port that has one, unless the last input was a key */
+static int controls_device(void)
+{
+    int i;
+
+    if (!last_is_keyboard) {
+        for (i = 0; i < 2; i++) {
+            if (pad_kind_of[i] != 0) {
+                return pad_kind_of[i];
+            }
+        }
+    }
+    return CD_KEYBOARD;
+}
+
+static int swallow;                                           /* set while a menu is open; cleared once every action button has been let go after it closes */
+
 static void keys_now(FrontKeys *k)
 {
     FrontPad kb;
@@ -225,6 +320,23 @@ static void keys_now(FrontKeys *k)
                 k->select |= (uint8_t)((b & XB_BACK) != 0);
                 k->option |= (uint8_t)((b & (XB_X | XB_Y)) != 0);
             }
+        }
+    }
+    if (swallow) {                                            /* after the menu: buttons held from it do nothing until they have been let go (movement is not held back) */
+        int any = k->start || k->select || k->option, p;
+
+        for (p = 0; p < 2; p++) {
+            any |= k->pad[p].fire;
+        }
+        if (any) {
+            k->start = 0;
+            k->select = 0;
+            k->option = 0;
+            for (p = 0; p < 2; p++) {
+                k->pad[p].fire = 0;
+            }
+        } else {
+            swallow = 0;
         }
     }
     k->pause = (uint8_t)pause_edge;
@@ -292,10 +404,13 @@ static void apply_display(void)
 }
 
 /* F11 and Alt+Enter: the other display mode, at the resolution selected */
+static void settings_save_if_changed(void);
+
 static void toggle_fullscreen(void)
 {
     menu.fullscreen = !menu.fullscreen;
     apply_display();
+    settings_save_if_changed();
 }
 
 /* the picture in a client area of cw x ch (opt.exact: the pixels as they are).  In a window the picture may use the whole client area; in borderless fullscreen it may use the centred area of the
@@ -399,8 +514,13 @@ static void detect_monitor_hz(void)
 static int plain_gl;                     /* the OpenGL window is shown and draws the plain picture when no shader is chosen (set below, with the chains) */
 static int plain_present(const uint32_t *src, int w, int h, const InterpDirty *d);
 
+static uint32_t *toast_work;                               /* the picture with the achievement toast drawn into it (a copy: the picture of the FPS option is kept between pictures and is drawn into only where it changed) */
+static size_t toast_work_n;
+static int toast_prev;
+
 static void present_interp(const InterpDirty *d)
 {
+    const uint32_t *src;
     HDC dc;
     RECT rc;
     BITMAPINFO bi;
@@ -410,13 +530,28 @@ static void present_interp(const InterpDirty *d)
     if (hwnd == NULL || iout.work == NULL) {
         return;
     }
+    src = iout.work;
     GetClientRect(hwnd, &rc);
     layout(rc.right, rc.bottom, &pr);
     if (pr.w != iout.ow || pr.h != iout.oh) {                 /* the window changed size since the picture was made: the next picture is made at the new size */
         return;
     }
+    if (wtoast_active() || toast_prev) {                       /* an achievement toast: drawn into a copy of the picture, the whole picture shown (and once more after it has gone) */
+        size_t n = (size_t)iout.ow * (size_t)iout.oh;
+        if (toast_work_n < n) {
+            free(toast_work);
+            toast_work = (uint32_t *)malloc(n * sizeof(uint32_t));
+            toast_work_n = toast_work != NULL ? n : 0u;
+        }
+        if (toast_work != NULL) {
+            memcpy(toast_work, iout.work, n * sizeof(uint32_t));
+            toast_prev = wtoast_overlay((uint8_t *)toast_work, iout.ow, iout.oh) > 0;
+            src = toast_work;
+            d = NULL;
+        }
+    }
     if (plain_gl) {
-        (void)plain_present((const uint32_t *)iout.work, iout.ow, iout.oh, d);
+        (void)plain_present(src, iout.ow, iout.oh, d);
         return;
     }
     dc = GetDC(hwnd);
@@ -448,7 +583,7 @@ static void present_interp(const InterpDirty *d)
     bi.bmiHeader.biCompression = BI_RGB;
     if (full) {
         bi.bmiHeader.biHeight = -iout.oh;
-        StretchDIBits(dc, pr.x, pr.y, iout.ow, iout.oh, 0, 0, iout.ow, iout.oh, iout.work, &bi, DIB_RGB_COLORS, SRCCOPY);
+        StretchDIBits(dc, pr.x, pr.y, iout.ow, iout.oh, 0, 0, iout.ow, iout.oh, src, &bi, DIB_RGB_COLORS, SRCCOPY);
     } else {
         for (i = 0; i < d->n; i++) {                           /* only what moved: each rectangle holds an object's old and new place */
             int x0 = d->r[i][0], y0 = d->r[i][1], w = d->r[i][2] - d->r[i][0], h = d->r[i][3] - d->r[i][1];
@@ -456,7 +591,7 @@ static void present_interp(const InterpDirty *d)
                 continue;
             }
             bi.bmiHeader.biHeight = -h;
-            StretchDIBits(dc, pr.x + x0, pr.y + y0, w, h, x0, 0, w, h, iout.work + (size_t)y0 * (size_t)iout.ow, &bi, DIB_RGB_COLORS, SRCCOPY);
+            StretchDIBits(dc, pr.x + x0, pr.y + y0, w, h, x0, 0, w, h, src + (size_t)y0 * (size_t)iout.ow, &bi, DIB_RGB_COLORS, SRCCOPY);
         }
     }
     ReleaseDC(hwnd, dc);
@@ -690,6 +825,49 @@ static void present(void)
 
 /* ---------------------------------------------------------------- the menu */
 
+/* the menu's settings kept between runs (docs/73): save/settings.ini in the game's own folder.  Read once at the start; written whenever one of them has changed (a few lines, so every key press is cheap).
+ * The tests of the front end do not read or write it (so they are the same on every machine and never touch the player's file), except --settingstest, which is about exactly that. */
+static int settings_on;
+static char settings_last[SETTINGS_MAX_TEXT];
+
+static void settings_load(void)
+{
+    char text[SETTINGS_MAX_TEXT];
+    PmFile *f = pm_fs_open(SETTINGS_PATH, "rb");
+
+    if (f != NULL) {
+        size_t n = pm_fs_read(f, text, sizeof text - 1);
+        text[n] = '\0';
+        pm_fs_close(f);
+        { char ln[80]; snprintf(ln, sizeof ln, "settings: %d taken from %s", settings_parse(&menu, text), SETTINGS_PATH); (void)shell_log(ln); }
+    }
+    if (settings_format(&menu, settings_last, sizeof settings_last) == 0) {
+        settings_last[0] = '\0';
+    }
+}
+
+static void settings_save_if_changed(void)
+{
+    char text[SETTINGS_MAX_TEXT];
+    size_t n;
+    PmFile *f;
+
+    if (!settings_on || (n = settings_format(&menu, text, sizeof text)) == 0 || strcmp(text, settings_last) == 0) {
+        return;
+    }
+    (void)shell_make_folders();
+    f = pm_fs_open(SETTINGS_PATH, "wb");
+    if (f == NULL) {
+        (void)shell_log("settings: the file could not be written");
+        return;
+    }
+    (void)pm_fs_write(f, text, n);
+    (void)pm_fs_close(f);
+    memcpy(settings_last, text, n + 1);
+}
+
+static void ach_flush(int force);
+
 static int menu_resync;                  /* the menu was closed: the timer clock must not try to make up the time spent in it */
 
 static void menu_event(MenuKey k)
@@ -720,6 +898,9 @@ static void menu_event(MenuKey k)
     }
     if (was_open != menu_is_open(&menu)) {
         pause_edge = 0;
+        if (!was_open) {
+            ach_flush(1);                                         /* a pause: what has been counted is written */
+        }
         if (was_open) {
             menu_resync = 1;
             still_last = ~0ul;
@@ -728,6 +909,7 @@ static void menu_event(MenuKey k)
         }
     }
     menu_dirty = 1;
+    settings_save_if_changed();
 }
 
 static int menu_key_of(unsigned vk, MenuKey *k)
@@ -788,6 +970,10 @@ static LRESULT CALLBACK wnd_proc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
     case WM_SYSKEYDOWN: {
         unsigned vk = (unsigned)wp & 0xFFu;
         int repeat = (lp & 0x40000000) != 0;
+
+        if (vk != VK_MENU && vk != VK_SHIFT && vk != VK_CONTROL) {
+            last_is_keyboard = 1;
+        }
 
         if (msg == WM_SYSKEYDOWN && vk == VK_RETURN) {          /* Alt+Enter */
             if (!repeat) {
@@ -921,11 +1107,204 @@ static long long qpc_100ns(void)
     return (long long)((double)c.QuadPart * 1e7 / (double)f.QuadPart);
 }
 
+/* ---------------------------------------------------------------- rumble and light bar (docs/71): read from the World after each frame, never written into it */
+
+static Haptics hap;
+static HapOut hap_out;
+static int hap_paused;
+static WORD xvib_sent[2][2];
+static int xvib_have[2];
+
+static void shell_log_line(const char *line)
+{
+    (void)shell_log(line);
+}
+
+static void hap_send(void)
+{
+    int i;
+
+    unsigned vk = menu.vib_ok ? (unsigned)menu.vibration : 0u;              /* 0 off (the motors always at rest), 1 light (40%), 2 heavy (full) */
+    unsigned lk = menu.bar_ok ? (unsigned)menu.lightbar : 0u;               /* 0 off (no light), 1 light (35%), 2 heavy (full) */
+    unsigned vm = vk == 2u ? 100u : vk == 1u ? 40u : 0u, lm = lk == 2u ? 100u : lk == 1u ? 35u : 0u;
+    unsigned st = hap_out.strong * vm / 100u, wk = hap_out.weak * vm / 100u;
+    unsigned lr = hap_out.r * lm / 100u, lg = hap_out.g * lm / 100u, lb = hap_out.b * lm / 100u;
+
+    (void)wpad_feedback((uint8_t)st, (uint8_t)wk, (uint8_t)lr, (uint8_t)lg, (uint8_t)lb);
+    for (i = 0; i < 2; i++) {
+        if (xinput_set != NULL && pad_kind_of[i] == CD_XINPUT) {
+            WORD v[2];
+            v[0] = (WORD)(st * 257u);                          /* left: the big motor */
+            v[1] = (WORD)(wk * 257u);                          /* right: the small one */
+            if (!xvib_have[i] || v[0] != xvib_sent[i][0] || v[1] != xvib_sent[i][1]) {
+                (void)xinput_set((DWORD)i, v);
+                xvib_sent[i][0] = v[0];
+                xvib_sent[i][1] = v[1];
+                xvib_have[i] = 1;
+            }
+        } else {
+            xvib_have[i] = 0;
+        }
+    }
+}
+
+/* ---------------------------------------------------------------- the achievements (docs/74): found in the game's state after each frame; kept in save/achievements.pma, sealed */
+
+static Ach ach;
+static int ach_on;
+static unsigned long ach_last_save_frame;
+
+static void ach_write_file(void)
+{
+    uint8_t buf[ACH_FILE_MAX];
+    size_t n = ach_save_bytes(&ach, buf);
+    PmFile *f;
+
+    (void)shell_make_folders();
+    f = pm_fs_open(ACH_PATH, "wb");
+    if (f == NULL) {
+        (void)shell_log("achievements: the file could not be written");
+        return;
+    }
+    (void)pm_fs_write(f, buf, n);
+    (void)pm_fs_close(f);
+    ach.dirty = 0;
+}
+
+/* a file that is not sealed right (edited by hand, damaged, or from another program) is put aside as save/achievements.bad and the achievements start again */
+static void ach_load_file(void)
+{
+    uint8_t buf[ACH_FILE_MAX + 1];
+    PmFile *f = pm_fs_open(ACH_PATH, "rb");
+    size_t n;
+
+    ach_init(&ach);
+    if (f == NULL) {
+        return;
+    }
+    n = pm_fs_read(f, buf, sizeof buf);
+    (void)pm_fs_close(f);
+    if (ach_load_bytes(&ach, buf, n) != 0) {
+        PmFile *b = pm_fs_open(ACH_BAD_PATH, "wb");
+        ach_init(&ach);
+        if (b != NULL) {
+            (void)pm_fs_write(b, buf, n);
+            (void)pm_fs_close(b);
+        }
+        (void)shell_log("achievements: the file is not sealed right (edited or damaged): put aside as save/achievements.bad, starting again");
+    }
+}
+
+static void ach_flush(int force)
+{
+    if (ach_on && ach.dirty && (force || frames_run - ach_last_save_frame >= 600ul)) {
+        ach_write_file();
+        ach_last_save_frame = frames_run;
+    }
+}
+
+/* the test (--achtest, with a CRT shader on): the picture the shader made, read back from the OpenGL window, while the toast is up (after 700 ms, so it has faded in) and again after it has gone; the part of it where
+ * the toast is must differ a great deal.  The toast is drawn into the picture itself, so this is what the display gets. */
+static uint8_t *toast_a, *toast_b;
+static int toast_aw, toast_ah, toast_bw, toast_bh, toast_state;
+static ULONGLONG toast_gone_ms;
+
+static void toast_keep(uint8_t **dst, int *w, int *h)
+{
+    free(*dst);
+    *dst = (uint8_t *)malloc((size_t)crt_shot_w * (size_t)crt_shot_h * 4u);
+    if (*dst != NULL) {
+        memcpy(*dst, crt_shot, (size_t)crt_shot_w * (size_t)crt_shot_h * 4u);
+        *w = crt_shot_w;
+        *h = crt_shot_h;
+    }
+}
+
+static void toast_tick_now(void)
+{
+    wtoast_tick();
+    if (opt.achtest && crt_active) {
+        ULONGLONG now = GetTickCount64();
+        if (toast_state == 0 && wtoast_active() && wtoast_age_ms() > 700) {
+            crt_shot_req = 1;
+            toast_state = 1;
+        } else if (toast_state == 1 && !crt_shot_req && crt_shot != NULL && crt_shot_w > 0) {
+            toast_keep(&toast_a, &toast_aw, &toast_ah);
+            toast_state = 2;
+        } else if (toast_state == 2 && !wtoast_active()) {
+            if (toast_gone_ms == 0) {
+                toast_gone_ms = now;
+            } else if (now - toast_gone_ms > 600) {
+                crt_shot_req = 1;
+                toast_state = 3;
+            }
+        } else if (toast_state == 3 && !crt_shot_req && crt_shot != NULL && crt_shot_w > 0) {
+            toast_keep(&toast_b, &toast_bw, &toast_bh);
+            toast_state = 4;
+        }
+    }
+}
+
+static void ach_frame(void)
+{
+    int id, fresh = 0;
+
+    if (!ach_on) {
+        return;
+    }
+    ach_step(&ach, &shell.world, (uint32_t)time(NULL));
+    while ((id = ach_take(&ach)) >= 0) {                        /* a toast, a chime and a gold flash of the pad's light bar */
+        wtoast_show(ach_defs[id].name, ach_defs[id].desc);
+        sound_chime(&sfx);
+        haptics_achievement(&hap);
+        fresh = 1;
+    }
+    ach_flush(fresh);
+}
+
+static void hap_update(void)
+{
+    const World *w = &shell.world;
+    HapSnapshot s;
+    int i;
+
+    s.player = w->CurrentPlayer & 1;
+    s.lives = w->Lives[s.player];
+    s.death_freeze = w->DeathFreeze;
+    s.frightened = 0;
+    s.eyes = 0;
+    for (i = 0; i < 4; i++) {
+        s.frightened += (w->GhostState[i] & 0x80) != 0;           /* GS_FRIGHTENED_BIT */
+        s.eyes += (w->GhostState[i] & 0x40) != 0;                 /* bit 6: an eaten ghost on its way home (GS_EYES 0x42, GS_EYES_AT_DOOR 0x44) */
+    }
+    s.level_complete = w->LevelComplete != 0;
+    haptics_step(&hap, &s, &hap_out);
+    hap_paused = 0;
+    hap_send();
+}
+
+static void hap_shutdown(void)
+{
+    int i;
+
+    hap_out.strong = 0;
+    hap_out.weak = 0;
+    for (i = 0; i < 2; i++) {
+        if (xinput_set != NULL && xvib_have[i]) {
+            WORD v[2] = {0, 0};
+            (void)xinput_set((DWORD)i, v);
+        }
+    }
+    wpad_shutdown();
+}
+
+static void ach_frame(void);
+
 static void run_frame(void)
 {
     FrontKeys k;
     FrameInput in;
-    size_t got;
+    size_t got, soft_n;
 
     keys_now(&k);
     front_frame(&front, &k, &in);
@@ -933,6 +1312,8 @@ static void run_frame(void)
         (void)replay_writer_add(&writer, &in);
     }
     last_hash = shell_frame(&shell, &in);
+    hap_update();
+    ach_frame();
     if (interp_wanted()) {                                      /* every frame: the renderer carries the colours of the frame before; the layers are kept for the in-between pictures */
         size_t slot = (size_t)(frames_run % RING), prev = (size_t)((frames_run + RING - 1) % RING);
         InterpFrame *f = &ring[slot];
@@ -951,17 +1332,21 @@ static void run_frame(void)
         unsigned wn = audio_world_writes(&shell.world, wreg, wval);
         got = audio_frame(&audio, &shell.world, pcm, sizeof pcm / sizeof pcm[0]);
         adig = hash_pcm(adig, pcm, got);
-        got = audio_hq_frame(&audio_hq, wreg, wval, wn, pcm, sizeof pcm / sizeof pcm[0]);          /* what the speaker gets */
+        sfx.volume = menu.sound_volume;
+        sfx.mute = menu.sound_mute;
+        sfx.filter = menu.sound_filter;
+        soft_n = audio_hq_frame(&audio_hq, wreg, wval, wn, pcm_soft, sizeof pcm_soft / sizeof pcm_soft[0]);
+        got = sound_process(&sfx, pcm, got, pcm_soft, soft_n, pcm_out, sizeof pcm_out / sizeof pcm_out[0]);   /* what the speaker gets */
     }
     if (wa != NULL && got > 0) {
         if (game_pcm != NULL && game_pcm_n + got <= GAME_PCM_MAX) {
             if (game_pcm_n == 0) {
                 game_t0 = qpc_100ns();
             }
-            memcpy(game_pcm + game_pcm_n, pcm, got * sizeof pcm[0]);
+            memcpy(game_pcm + game_pcm_n, pcm_out, got * sizeof pcm[0]);
             game_pcm_n += got;
         }
-        (void)wa_write(wa, pcm, got);
+        (void)wa_write(wa, pcm_out, got);
         audio_written += (double)got;
     }
     prod_ns[frames_run % PROD_N] = pm_time_ns();
@@ -1044,6 +1429,8 @@ static double game_time(uint64_t now, uint64_t t_start_ns)
 }
 
 /* waits for the next picture time (or not), makes the picture of this moment and shows it; returns 1 when it made one */
+static int toast_was_drawn;                                  /* the toast was in the last picture made: one more is made when it is gone, so that the box goes */
+
 static int interp_step(uint64_t t_start_ns)
 {
     const int target = menu_fps(&menu);
@@ -1189,8 +1576,9 @@ static int interp_step(uint64_t t_start_ns)
     tick_count++;
     if (crt_active) {
         if (changed || target != MENU_FPS_UNCAPPED) {
-            if (changed || !crt_have_last) {
+            if (changed || !crt_have_last || wtoast_active() || toast_was_drawn) {
                 interp_box_x(iout.work, RENDER_W * CRT_SUB, RENDER_H, CRT_SUB, crt_last);
+                toast_was_drawn = wtoast_overlay((uint8_t *)crt_last, RENDER_W, RENDER_H) > 0;        /* the toast goes into the picture the shader gets (and is gone from it when it has ended) */
             }
             crt_have_last = 1;
             crt_render_last();
@@ -1220,6 +1608,7 @@ static void make_bgra(void)
         bgra[4 * i + 2] = rgb[3 * i];
         bgra[4 * i + 3] = 0;
     }
+    (void)wtoast_overlay(bgra, RENDER_W, RENDER_H);                   /* an achievement toast, in the picture itself */
     if (crt_active) {                                                  /* the CRT shader takes this picture (the menu is drawn over it first, so it goes through the shader too) */
         memcpy(crt_last, bgra, sizeof crt_last);
         crt_have_last = 1;
@@ -1259,20 +1648,163 @@ static void put_text(int x, int y, const char *t, unsigned r, unsigned g, unsign
     }
 }
 
-static void draw_menu(void)
+static void dim_picture(void)
 {
-    MenuLine l[MENU_MAX_LINES];
-    int n = menu_lines(&menu, l), i, widest = 0, bx, by, bw, bh;
     size_t k;
 
-    if (n == 0) {
-        return;
-    }
     for (k = 0; k < (size_t)RENDER_W * RENDER_H; k++) {
         bgra[4 * k] = (uint8_t)(bgra[4 * k] >> 2);
         bgra[4 * k + 1] = (uint8_t)(bgra[4 * k + 1] >> 2);
         bgra[4 * k + 2] = (uint8_t)(bgra[4 * k + 2] >> 2);
     }
+}
+
+static void draw_panel(int bx, int by, int bw, int bh)
+{
+    int i, j;
+
+    for (i = by; i < by + bh; i++) {
+        for (j = bx; j < bx + bw; j++) {
+            int edge = i == by || i == by + bh - 1 || j == bx || j == bx + bw - 1;
+            if (edge) {
+                put_px(j, i, 230, 230, 230);
+            } else {
+                put_px(j, i, 0, 0, 0);
+            }
+        }
+    }
+}
+
+/* the Controls page (docs/71): a row for each action, its text on the left and the keys or buttons of the device in use as icons beside it */
+static void draw_controls(void)
+{
+    ControlRow rows[CONTROLS_MAX_ROWS];
+    IconCanvas cv;
+    const char *name = controls_device_name(menu.device);
+    int nr = controls_rows(menu.device, rows), i, actw = 0, glw = 0, bw, bh, bx, by, ry;
+
+    dim_picture();
+    cv.bgra = bgra;
+    cv.w = RENDER_W;
+    cv.h = RENDER_H;
+    cv.font = ram_image + 0xE000;
+    for (i = 0; i < nr; i++) {
+        int a = (int)strlen(rows[i].action) * 8, g = icon_row_width(rows[i].g, rows[i].n, 3);
+        if (a > actw) {
+            actw = a;
+        }
+        if (g > glw) {
+            glw = g;
+        }
+    }
+    bw = 12 + actw + 14 + glw + 12;
+    if (bw < 240) {
+        bw = 240;
+    }
+    bh = 59 + 15 * nr + 2 * 14 + 8 + 8;                      /* the title and the device, the rows (15 lines each), the two items, the hint */
+    bx = (RENDER_W - bw) / 2;
+    by = (RENDER_H - bh) / 2;
+    draw_panel(bx, by, bw, bh);
+    put_text(bx + (bw - 8 * 8) / 2, by + 8, "CONTROLS", 255, 210, 60);
+    put_text(bx + (bw - (int)strlen(name) * 8) / 2, by + 21, name, 230, 230, 230);
+    ry = by + 38;
+    for (i = 0; i < nr; i++, ry += 15) {
+        unsigned tone = rows[i].n > 0 ? 200u : 150u;
+        put_text(bx + 12, ry + 3, rows[i].action, tone, tone, tone);
+        if (rows[i].n > 0) {
+            (void)icon_row_draw(&cv, bx + 12 + actw + 14, ry, rows[i].g, rows[i].n, 3);
+        }
+    }
+    ry += 8;
+    for (i = 0; i < 2; i++, ry += 14) {                      /* the two items: Vibration, Light Bar */
+        char t[40];
+        int ok = i == 0 ? menu.vib_ok : menu.bar_ok, lvl = i == 0 ? menu.vibration : (menu.bar_ok ? menu.lightbar : 0), sel = menu.cursor == i && ok;
+        unsigned tone = !ok ? 70u : sel ? 255u : 150u;                       /* a grayed-out item is dim and cannot be selected */
+        snprintf(t, sizeof t, "%s: < %s >", i == 0 ? "VIBRATION" : "LIGHT BAR", menu_level_name(lvl));
+        put_text(bx + (bw - (int)strlen(t) * 8) / 2, ry, t, tone, tone, tone);
+        if (sel) {
+            put_text(bx + 8, ry, ">", 255, 210, 60);
+        }
+    }
+    put_text(bx + (bw - 9 * 8) / 2, ry + 6, "ESC: BACK", 110, 110, 110);
+}
+
+/* the achievements page (docs/74): eight rows to a page, earned ones in gold, the one under the cursor described below the list (hidden ones are ??? until earned) */
+static void draw_achievements(void)
+{
+    const int bw = 344, bh = 196;
+    int bx = (RENDER_W - bw) / 2, by = (RENDER_H - bh) / 2, first, i, y, cur = menu.cursor;
+    char t[64];
+    unsigned long have, want;
+    const AchDef *d = &ach_defs[cur];
+    int earned = ach_has(&ach, cur);
+
+    dim_picture();
+    draw_panel(bx, by, bw, bh);
+    snprintf(t, sizeof t, "ACHIEVEMENTS  %d/%d", ach_unlocked_count(&ach), ACH_COUNT);
+    put_text(bx + 12, by + 8, t, 255, 210, 60);
+    snprintf(t, sizeof t, "PAGE %d/%d", cur / MENU_ACH_PAGE + 1, (ACH_COUNT + MENU_ACH_PAGE - 1) / MENU_ACH_PAGE);
+    put_text(bx + bw - 12 - (int)strlen(t) * 8, by + 8, t, 150, 150, 150);
+    put_text(bx + 12, by + 20, "SCORE AND LEVEL: GAMES FROM LEVEL 1 ONLY", 110, 110, 110);
+    first = cur - cur % MENU_ACH_PAGE;
+    y = by + 36;
+    for (i = first; i < first + MENU_ACH_PAGE && i < ACH_COUNT; i++, y += 12) {
+        int e = ach_has(&ach, i), sel = i == cur, x, k;
+        const char *nm = (ach_defs[i].hidden && !e) ? "???" : ach_defs[i].name;
+
+        if (sel) {
+            put_text(bx + 8, y, ">", 255, 210, 60);
+        }
+        for (k = 0; k < 7; k++) {                                              /* a small gold cup for an earned one, an empty grey box for the others */
+            for (x = 0; x < 7; x++) {
+                if (e) {
+                    put_px(bx + 22 + x, y + 1 + k, 255, k < 3 ? 225u : 190u, k < 3 ? 90u : 20u);
+                } else if (k == 0 || k == 6 || x == 0 || x == 6) {
+                    put_px(bx + 22 + x, y + 1 + k, 90, 90, 90);
+                }
+            }
+        }
+        put_text(bx + 36, y, nm, e ? 255u : (sel ? 200u : 130u), e ? 255u : (sel ? 200u : 130u), e ? 255u : (sel ? 200u : 130u));
+    }
+    y = by + 36 + 12 * MENU_ACH_PAGE + 6;
+    put_text(bx + 12, y, (d->hidden && !earned) ? "HIDDEN ACHIEVEMENT" : d->desc, 230, 230, 230);
+    y += 12;
+    if (earned) {
+        time_t when = (time_t)ach.when[cur];
+        struct tm *tmv = localtime(&when);
+        if (tmv != NULL) {
+            snprintf(t, sizeof t, "EARNED %04d-%02d-%02d", tmv->tm_year + 1900, tmv->tm_mon + 1, tmv->tm_mday);
+        } else {
+            snprintf(t, sizeof t, "EARNED");
+        }
+        put_text(bx + 12, y, t, 255, 210, 60);
+    } else if (ach_progress(&ach, cur, &have, &want)) {
+        snprintf(t, sizeof t, "PROGRESS %lu / %lu", have > want ? want : have, want);
+        put_text(bx + 12, y, t, 150, 150, 150);
+    } else {
+        put_text(bx + 12, y, d->hidden ? "KEEP PLAYING" : "NOT YET EARNED", 150, 150, 150);
+    }
+    put_text(bx + (bw - 28 * 8) / 2, by + bh - 14, "LEFT/RIGHT: PAGE   ESC: BACK", 110, 110, 110);
+}
+
+static void draw_menu(void)
+{
+    MenuLine l[MENU_MAX_LINES];
+    int n, i, widest = 0, bx, by, bw, bh;
+
+    if (menu.screen == MENU_CONTROLS) {
+        draw_controls();
+        return;
+    }
+    if (menu.screen == MENU_ACH) {
+        draw_achievements();
+        return;
+    }
+    n = menu_lines(&menu, l);
+    if (n == 0) {
+        return;
+    }
+    dim_picture();
     for (i = 0; i < n; i++) {
         int len = (int)strlen(l[i].text);
         if (len > widest) {
@@ -1283,17 +1815,7 @@ static void draw_menu(void)
     bh = n * 14 + 20;
     bx = (RENDER_W - bw) / 2;
     by = (RENDER_H - bh) / 2;
-    for (i = by; i < by + bh; i++) {
-        int j;
-        for (j = bx; j < bx + bw; j++) {
-            int edge = i == by || i == by + bh - 1 || j == bx || j == bx + bw - 1;
-            if (edge) {
-                put_px(j, i, 230, 230, 230);
-            } else {
-                put_px(j, i, 0, 0, 0);
-            }
-        }
-    }
+    draw_panel(bx, by, bw, bh);
     for (i = 0; i < n; i++) {
         int len = (int)strlen(l[i].text), tx = bx + (bw - len * 8) / 2, ty = by + 10 + i * 14;
 
@@ -1317,6 +1839,7 @@ static void show_frame(void)
     if (menu_is_open(&menu)) {
         draw_menu();
     }
+    (void)wtoast_overlay(bgra, RENDER_W, RENDER_H);
     if (crt_active) {
         memcpy(crt_last, bgra, sizeof crt_last);
         crt_have_last = 1;
@@ -1409,7 +1932,7 @@ static long compare_window(void)
 /* ---------------------------------------------------------------- the menu test: real key messages, then what the window really shows */
 
 enum { OP_KEY, OP_SYSKEY, OP_WAIT, OP_FRAMES, OP_CHECK };
-enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP, CK_CRT_REQ, CK_CRT, CK_CRT_SET, CK_DUMP };
+enum { CK_SNAPSHOT, CK_FROZEN, CK_SCREEN, CK_CURSOR, CK_RUNNING, CK_MODE, CK_PICTURE, CK_QUIT, CK_CONTROLS, CK_OPTS, CK_SOUND, CK_SAVED, CK_ACH, CK_FPS_BEGIN, CK_FPS_END, CK_STARTUP, CK_CRT_REQ, CK_CRT, CK_CRT_SET, CK_DUMP };
 
 typedef struct Op {
     int kind, a, b;
@@ -1507,6 +2030,39 @@ static void mt_build(void)
         mt_add(OP_CHECK, CK_QUIT, 1);
         return;
     }
+    if (opt.achtest) {                                  /* the achievements (docs/74): the game is played, a dot is eaten, the unlock is toasted and written; the page shows it; the file read at the start is what the script wrote */
+        mt_add(OP_FRAMES, 900, 0);
+        mt_add(OP_CHECK, CK_ACH, 0);
+        mt_add(OP_WAIT, 1200, 0);
+        mt_add(OP_CHECK, CK_ACH, 2);
+        mt_key(VK_ESCAPE);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+        mt_key(VK_RETURN);
+        mt_add(OP_CHECK, CK_SCREEN, MENU_ACH);
+        mt_add(OP_CHECK, CK_ACH, 1);
+        mt_add(OP_WAIT, 200, 0);
+        mt_add(OP_CHECK, CK_QUIT, 1);
+        return;
+    }
+    if (opt.settingstest) {                             /* the settings kept between runs (docs/73): the file the checking script wrote is what the game starts with; a change is written back */
+        mt_add(OP_WAIT, 600, 0);
+        mt_add(OP_CHECK, CK_SAVED, 0);
+        mt_key(VK_ESCAPE);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+        mt_key(VK_DOWN);
+        mt_key(VK_RETURN);
+        mt_add(OP_CHECK, CK_SCREEN, MENU_SOUND);
+        mt_key(VK_LEFT);                                /* 60 % -> 50 % */
+        mt_key(VK_DOWN);
+        mt_key(VK_RETURN);                              /* unmuted */
+        mt_add(OP_WAIT, 200, 0);
+        mt_add(OP_CHECK, CK_QUIT, 1);
+        return;
+    }
     if (opt.startuptest) {                              /* the game as the player starts it: nothing set */
         mt_add(OP_WAIT, 1500, 0);
         mt_add(OP_CHECK, CK_STARTUP, 0);
@@ -1547,7 +2103,7 @@ static void mt_build(void)
     mt_add(OP_WAIT, 100, 0);
     mt_add(OP_CHECK, CK_SNAPSHOT, 0);
     mt_key(VK_UP);
-    mt_add(OP_CHECK, CK_CURSOR, 2);
+    mt_add(OP_CHECK, CK_CURSOR, 5);                    /* UP from Resume Game: Quit Game, the sixth item */
     mt_key(VK_DOWN);
     mt_add(OP_CHECK, CK_CURSOR, 0);
     mt_key(VK_DOWN);
@@ -1643,9 +2199,80 @@ static void mt_build(void)
     mt_add(OP_CHECK, CK_SCREEN, MENU_CLOSED);
     mt_add(OP_WAIT, 600, 0);
     mt_add(OP_CHECK, CK_RUNNING, 0);
+    mt_key(VK_ESCAPE);                                 /* the Controls page: opened from the menu, a pause like the rest */
+    mt_add(OP_WAIT, 100, 0);
+    mt_add(OP_CHECK, CK_SNAPSHOT, 0);
+    mt_key(VK_DOWN);
+    mt_key(VK_DOWN);
+    mt_add(OP_CHECK, CK_CURSOR, 2);
+    mt_key(VK_RETURN);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_CONTROLS);
+    mt_add(OP_CHECK, CK_CONTROLS, 0);                  /* the page shows the keyboard here (no pad), and its picture holds the icons */
+    mt_add(OP_CHECK, CK_OPTS, 22);                     /* Vibration and Light Bar are both Heavy at the start */
+    mt_key(VK_RIGHT);                                  /* no pad here: both items are grayed out and do not change */
+    mt_key(VK_DOWN);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_key(VK_RETURN);
+    mt_key(VK_LEFT);
+    mt_add(OP_CHECK, CK_OPTS, 22);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_CONTROLS);
+    mt_add(OP_WAIT, 500, 0);
+    mt_add(OP_CHECK, CK_FROZEN, 0);
+    mt_key(VK_ESCAPE);                                 /* ESC: back to the main menu, on Controls */
+    mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
+    mt_add(OP_CHECK, CK_CURSOR, 2);
+    mt_key(VK_DOWN);                                   /* the Achievements page: the list, a page at a time */
+    mt_key(VK_RETURN);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_ACH);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_key(VK_DOWN);
+    mt_add(OP_CHECK, CK_CURSOR, 1);
+    mt_key(VK_RIGHT);
+    mt_add(OP_CHECK, CK_CURSOR, 9);
+    mt_key(VK_UP);
+    mt_key(VK_LEFT);
+    mt_add(OP_CHECK, CK_CURSOR, 0);
+    mt_add(OP_WAIT, 300, 0);
+    mt_add(OP_CHECK, CK_FROZEN, 0);
+    mt_key(VK_ESCAPE);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
+    mt_add(OP_CHECK, CK_CURSOR, 3);
+    mt_key(VK_DOWN);                                   /* the Sound page: Master Volume, Mute, Output Filter */
+    mt_key(VK_RETURN);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_SOUND);
+    mt_add(OP_CHECK, CK_SOUND, 1001);                  /* volume 10 (100 %), not muted, filter 1 (soft) */
+    mt_key(VK_RIGHT);                                  /* the volume stops at 100 % */
+    mt_add(OP_CHECK, CK_SOUND, 1001);
+    mt_key(VK_LEFT);
+    mt_key(VK_LEFT);
+    mt_add(OP_CHECK, CK_SOUND, 801);
+    mt_key(VK_DOWN);
+    mt_key(VK_RETURN);                                 /* muted */
+    mt_add(OP_CHECK, CK_SOUND, 811);
+    mt_key(VK_DOWN);
+    mt_key(VK_RIGHT);                                  /* warm */
+    mt_add(OP_CHECK, CK_SOUND, 812);
+    mt_key(VK_RIGHT);                                  /* off */
+    mt_add(OP_CHECK, CK_SOUND, 810);
+    mt_add(OP_WAIT, 500, 0);
+    mt_add(OP_CHECK, CK_FROZEN, 0);
+    mt_key(VK_RIGHT);                                  /* and everything back as it was: soft, unmuted, 100 % */
+    mt_key(VK_UP);
+    mt_key(VK_RETURN);
+    mt_key(VK_UP);
+    mt_key(VK_RIGHT);
+    mt_key(VK_RIGHT);
+    mt_add(OP_CHECK, CK_SOUND, 1001);
+    mt_key(VK_ESCAPE);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_MAIN);
+    mt_add(OP_CHECK, CK_CURSOR, 4);
+    mt_key(VK_ESCAPE);
+    mt_add(OP_CHECK, CK_SCREEN, MENU_CLOSED);
+    mt_add(OP_WAIT, 600, 0);
+    mt_add(OP_CHECK, CK_RUNNING, 0);
     mt_key(VK_ESCAPE);                                 /* Quit Game */
     mt_key(VK_UP);
-    mt_add(OP_CHECK, CK_CURSOR, 2);
+    mt_add(OP_CHECK, CK_CURSOR, 5);
     mt_key(VK_RETURN);
     mt_add(OP_CHECK, CK_QUIT, 0);
 }
@@ -1844,11 +2471,11 @@ static void mt_check(int id, int arg)
     }
     case CK_SCREEN:
         mt_result(menu.screen == arg, "menu screen", "screen %d, expected %d", menu.screen, arg);
-        if (arg == MENU_MAIN || arg == MENU_GRAPHICS || arg == MENU_HELP) {   /* the picture of the menu, for the eye (the first time each screen is shown) */
-            static int shot[4];
+        if (arg == MENU_MAIN || arg == MENU_GRAPHICS || arg == MENU_HELP || arg == MENU_CONTROLS || arg == MENU_SOUND || arg == MENU_ACH) {   /* the picture of the menu, for the eye (the first time each screen is shown) */
+            static int shot[7];
             if (!shot[arg]) {
                 shot[arg] = 1;
-                dump_bgra(arg == MENU_MAIN ? "logs/menu_main.ppm" : (arg == MENU_HELP ? "logs/menu_help.ppm" : "logs/menu_graphics.ppm"));
+                dump_bgra(arg == MENU_MAIN ? "logs/menu_main.ppm" : (arg == MENU_HELP ? "logs/menu_help.ppm" : (arg == MENU_CONTROLS ? "logs/menu_controls.ppm" : (arg == MENU_SOUND ? "logs/menu_sound.ppm" : (arg == MENU_ACH ? "logs/menu_ach.ppm" : "logs/menu_graphics.ppm")))));
             }
         }
         break;
@@ -1988,6 +2615,84 @@ static void mt_check(int id, int arg)
         mt_result(menu.fps == want_fps && menu_fps(&menu) == menu_fps_values[want_fps] && menu.monitor_hz == mhz, "starts at the monitor's refresh rate", "monitor %d Hz; the FPS chosen is %d (%s)", mhz, menu_fps(&menu),
                   menu_fps(&menu) == mhz ? "exactly the monitor's" : "the nearest");
         mt_result(frames_run > 30 && interp_wanted() == (menu_fps(&menu) != MENU_FPS_NATIVE), "the game is running", "%lu frames in 1.5 s", frames_run);
+        break;
+    }
+    case CK_OPTS:
+        mt_result(menu.screen == MENU_CONTROLS && 10 * menu.vibration + menu.lightbar == arg, "controls page settings", "vibration %d, light bar %d, expected %d", menu.vibration, menu.lightbar, arg);
+        break;
+    case CK_ACH: {                                               /* 0: the first dot is eaten, it is earned, the toast was made, and the file on disk is sealed right and holds it; 1: the page is up and says so */
+        uint8_t buf[ACH_FILE_MAX + 1];
+        PmFile *f = pm_fs_open(ACH_PATH, "rb");
+        size_t n = f != NULL ? pm_fs_read(f, buf, sizeof buf) : 0;
+        Ach back;
+        int ok_file;
+
+        if (f != NULL) {
+            (void)pm_fs_close(f);
+        }
+        ach_init(&back);
+        ok_file = n > 0 && ach_load_bytes(&back, buf, n) == 0 && ach_has(&back, ACH_FIRST_BITE);
+        if (arg == 2) {                                           /* the toast is really in the picture the display gets: where it was put, the picture differs a great deal from the same place after it went */
+            long diff = 0, total = 0, gold = 0;
+            int bx, by, bwid, bhgt;
+            wtoast_box(&bx, &by, &bwid, &bhgt);
+            if (toast_state == 4 && toast_a != NULL && toast_b != NULL && toast_aw == toast_bw && toast_ah == toast_bh) {
+                int x0 = bx * toast_aw / RENDER_W, x1 = (bx + bwid) * toast_aw / RENDER_W, y0 = by * toast_ah / RENDER_H, y1 = (by + bhgt) * toast_ah / RENDER_H, x, y;
+                for (y = y0; y < y1; y++) {
+                    for (x = x0; x < x1; x++) {
+                        const uint8_t *pa = toast_a + 4 * ((size_t)y * (size_t)toast_aw + (size_t)x), *pb = toast_b + 4 * ((size_t)y * (size_t)toast_aw + (size_t)x);
+                        int d = abs((int)pa[0] - (int)pb[0]) + abs((int)pa[1] - (int)pb[1]) + abs((int)pa[2] - (int)pb[2]);
+                        total++;
+                        diff += d > 60;
+                        gold += pa[0] > 200 && pa[1] > 150 && pa[1] < 235 && pa[2] < 120;           /* the readback is RGBA */
+                    }
+                }
+                if (total > 0) {                                      /* the region, for the eye */
+                    PmFile *pp = pm_fs_open("logs/toast_grab.ppm", "wb");
+                    if (pp != NULL) {
+                        pm_fs_printf(pp, "P6%c%d %d%c255%c", 10, x1 - x0, y1 - y0, 10, 10);
+                        for (y = y0; y < y1; y++) {
+                            for (x = x0; x < x1; x++) {
+                                pm_fs_write(pp, toast_a + 4 * ((size_t)y * (size_t)toast_aw + (size_t)x), 3);
+                            }
+                        }
+                        (void)pm_fs_close(pp);
+                    }
+                }
+            }
+            if (!crt_active) {                                        /* without a shader the picture is not read back: it is the overlay's own count */
+                mt_result(wtoast_pictures() > 0, "toast drawn into the pictures", "the toast was drawn into %lu pictures", wtoast_pictures());
+            } else {
+                mt_result(total > 0 && diff * 8 > total && gold > total / 100, "toast in the picture the display gets", "state %d, %ld of %ld pixels of the toast's place differ from the same place after it went, %ld gold, drawn into %lu pictures", toast_state, diff, total, gold, wtoast_pictures());
+            }
+            break;
+        }
+        if (arg == 0) {
+            mt_result(ach_has(&ach, ACH_FIRST_BITE) && ok_file && wtoast_count() >= 1 && ach.dots > 0, "first dot earned, toasted and written",
+                      "earned %d, in the file %d, toasts made %d, dots counted %u", ach_has(&ach, ACH_FIRST_BITE), ok_file, wtoast_count(), (unsigned)ach.dots);
+        } else {
+            mt_result(menu.screen == MENU_ACH && ach_unlocked_count(&ach) >= 1, "achievements page", "screen %d, earned %d of %d", menu.screen, ach_unlocked_count(&ach), ACH_COUNT);
+        }
+        break;
+    }
+    case CK_SAVED: {                                             /* what the file said: windowed 1280 x 800, 90 FPS, no shader, vibration light, light bar off, volume 60 %, muted, warm */
+        int w, h;
+        menu_size(&menu, &w, &h);
+        mt_result(!menu.fullscreen && w == 1280 && h == 800 && menu_fps(&menu) == 90 && menu.crt == 0 && menu.vibration == 1 && menu.lightbar == 0 && menu.sound_volume == 6 && menu.sound_mute == 1 && menu.sound_filter == 2,
+                  "settings read from the file", "fullscreen %d, %dx%d, fps %d, crt %d, vibration %d, light bar %d, volume %d, mute %d, filter %d", menu.fullscreen, w, h, menu_fps(&menu), menu.crt, menu.vibration, menu.lightbar, menu.sound_volume, menu.sound_mute, menu.sound_filter);
+        break;
+    }
+    case CK_SOUND:
+        mt_result(menu.screen == MENU_SOUND && 100 * menu.sound_volume + 10 * menu.sound_mute + menu.sound_filter == arg, "sound page settings", "volume %d, mute %d, filter %d, expected code %d", menu.sound_volume, menu.sound_mute, menu.sound_filter, arg);
+        break;
+    case CK_CONTROLS: {                                          /* the Controls page is up, for the device in use, and its picture holds icons (the keycap / button fill is a colour only they use) */
+        long dark = 0;
+        size_t k;
+
+        for (k = 0; k < (size_t)RENDER_W * RENDER_H; k++) {
+            dark += bgra[4 * k] == 56 && bgra[4 * k + 1] == 48 && bgra[4 * k + 2] == 48;
+        }
+        mt_result(menu.screen == MENU_CONTROLS && menu.device == controls_device() && dark >= 150, "controls page", "screen %d, device %d (now %d), icon pixels %ld", menu.screen, menu.device, controls_device(), dark);
         break;
     }
     case CK_QUIT:
@@ -2272,6 +2977,12 @@ static void parse_args(int argc, char **argv)
         } else if (strcmp(argv[i], "--offtest") == 0) {
             opt.offtest = 1;
             opt.menutest = 1;
+        } else if (strcmp(argv[i], "--achtest") == 0) {
+            opt.achtest = 1;
+            opt.menutest = 1;
+        } else if (strcmp(argv[i], "--settingstest") == 0) {
+            opt.settingstest = 1;
+            opt.menutest = 1;
         } else if (strcmp(argv[i], "--startuptest") == 0) {
             opt.startuptest = 1;
             opt.menutest = 1;
@@ -2288,6 +2999,20 @@ static void parse_args(int argc, char **argv)
             opt.ppm = argv[++i];
         } else if (strcmp(argv[i], "--selftest") == 0 && i + 1 < argc) {
             opt.selftest = atol(argv[++i]);
+        }
+    }
+}
+
+/* the FPS asked for on the command line (a test or a wish) wins over the default and over the saved setting */
+static void apply_fps_option(void)
+{
+    if (opt.fps != NULL) {
+        if (strcmp(opt.fps, "native") == 0) {
+            menu.fps = 0;
+        } else if (strcmp(opt.fps, "uncapped") == 0) {
+            menu.fps = menu_fps_count - 1;
+        } else if (atoi(opt.fps) > 0) {
+            menu.fps = menu_fps_nearest(atoi(opt.fps));
         }
     }
 }
@@ -2321,15 +3046,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         }
         menu.monitor_hz = mhz;
         menu.fps = menu_fps_nearest(mhz);                       /* and the FPS that is its refresh rate, or the nearest number */
-        if (opt.fps != NULL) {                                  /* a test or a wish on the command line */
-            if (strcmp(opt.fps, "native") == 0) {
-                menu.fps = 0;
-            } else if (strcmp(opt.fps, "uncapped") == 0) {
-                menu.fps = menu_fps_count - 1;
-            } else if (atoi(opt.fps) > 0) {
-                menu.fps = menu_fps_nearest(atoi(opt.fps));
-            }
-        }
+        apply_fps_option();
     }
     if (opt.root == NULL) {
         /* Started by a double click, the current folder is the program's own.
@@ -2377,12 +3094,27 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     shell_init(&shell, ram_image + 0x3000, opt.seed, 0);
     (void)shell_make_folders();
+    ach_on = opt.achtest || (opt.selftest <= 0 && !opt.menutest && !opt.crttest && !opt.exact && !opt.startuptest && !opt.offtest);
+    if (ach_on) {
+        ach_load_file();
+    } else {
+        ach_init(&ach);
+    }
+    settings_on = opt.settingstest || (opt.selftest <= 0 && !opt.menutest && !opt.crttest && !opt.exact && !opt.startuptest && !opt.offtest);
+    if (settings_on) {                                          /* what the player set last time; the command line still wins */
+        settings_load();
+        if (opt.windowed) {
+            menu.fullscreen = 0;
+        }
+        apply_fps_option();
+    }
     if (opt.selftest <= 0 && !opt.menutest) {
         (void)shell_highscore_load(&shell);
     }
     render_init(&renderer, ram_image);
     audio_init(&audio, AUDIO_RATE);
     audio_hq_init(&audio_hq, AUDIO_RATE);
+    sound_init(&sfx, AUDIO_RATE);
     front_init(&front, 0);
     ring = (InterpFrame *)malloc((size_t)RING * sizeof(InterpFrame));
     (void)interp_out_init(&iout);
@@ -2401,6 +3133,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         }
     }
     xinput_load();
+    haptics_init(&hap);
+    haptics_idle(&hap_out);
+    wpad_set_log(shell_log_line);
     if (opt.record != NULL || opt.selftest > 0 || opt.menutest) {
         replay_writer_init(&writer, record_buf, sizeof record_buf, opt.seed, 0, 0);
     }
@@ -2428,15 +3163,16 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         return 2;
     }
     (void)rep;
+    wtoast_init(ram_image + 0xE000);
     if (opt.menutest) {
-        mt_log = pm_fs_open(opt.startuptest ? "logs/startuptest.txt" : (opt.offtest ? "logs/offtest.txt" : "logs/menutest.txt"), "wb");
+        mt_log = pm_fs_open(opt.achtest ? "logs/achtest.txt" : opt.settingstest ? "logs/settingstest.txt" : (opt.startuptest ? "logs/startuptest.txt" : (opt.offtest ? "logs/offtest.txt" : "logs/menutest.txt")), "wb");
         mt_build();
     }
     if (opt.crt != NULL && !opt.crttest) {
         menu.crt = strcmp(opt.crt, "guest") == 0 ? 1 : (strcmp(opt.crt, "zfast") == 0 ? 2 : (strcmp(opt.crt, "aperture") == 0 ? 3 : 0));
-        if (menu.crt != 0) {
-            crt_apply();
-        }
+    }
+    if (menu.crt != 0 && !opt.crttest) {                        /* from the command line or from the saved settings */
+        crt_apply();
     }
     if (opt.trace != NULL) {
         trace_file = pm_fs_open(opt.trace, "wb");
@@ -2492,7 +3228,32 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
             pump();
         }
         pad_menu_poll();
+        toast_tick_now();
+        {
+            int cd = controls_device();                          /* the Controls page follows the device the player touched last */
+            int vok = pad_kind_of[0] != 0 || pad_kind_of[1] != 0;             /* Vibration needs a pad, Light Bar a DualShock 4 or a DualSense */
+            int bok = pad_kind_of[0] >= CD_DS4 || pad_kind_of[1] >= CD_DS4;
+
+            if (vok != menu.vib_ok || bok != menu.bar_ok) {
+                menu.vib_ok = vok;
+                menu.bar_ok = bok;
+                if (!bok && menu.cursor == 1 && menu.screen == MENU_CONTROLS) {
+                    menu.cursor = 0;
+                }
+                menu_dirty = 1;
+            }
+            if (cd != menu.device) {
+                menu.device = cd;
+                menu_dirty = 1;
+            }
+        }
         if (menu_is_open(&menu)) {                              /* a pause: no frame of the game, no sound written; the picture behind the menu stays */
+            swallow = 1;                                         /* what is held when the menu closes (the A that chose Resume) must not reach the game */
+            if (!hap_paused) {                                   /* the motors rest while the menu is open */
+                haptics_pause(&hap, &hap_out);
+                hap_paused = 1;
+            }
+            hap_send();
             if (menu_dirty) {
                 show_frame();
                 menu_dirty = 0;
@@ -2566,7 +3327,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
     }
     if (writer.buf != NULL) {
         size_t size = 0;
-        const char *path = opt.record != NULL ? opt.record : (opt.startuptest ? "logs/startuptest.pmrp" : (opt.offtest ? "logs/offtest.pmrp" : (opt.menutest ? "logs/menutest.pmrp" : "logs/selftest.pmrp")));
+        const char *path = opt.record != NULL ? opt.record : (opt.achtest ? "logs/achtest.pmrp" : opt.settingstest ? "logs/settingstest.pmrp" : opt.startuptest ? "logs/startuptest.pmrp" : (opt.offtest ? "logs/offtest.pmrp" : (opt.menutest ? "logs/menutest.pmrp" : "logs/selftest.pmrp")));
         ReplayError e = replay_writer_finish(&writer, &size);
         if (e == REPLAY_OK) {
             (void)shell_make_folders();
@@ -2642,6 +3403,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
             plain_chain = NULL;
         }
     }
+    ach_flush(1);
+    wtoast_shutdown();
+    hap_shutdown();
     crt_gl_close();
     free(crt_shot);
     wl_close(wloop);

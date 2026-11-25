@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../shell/achieve.h"
+#include "../shell/controls.h"
 #include "../shell/menu.h"
 
 static int failures;
@@ -35,7 +37,7 @@ static void test_navigation(void)
 
     menu_key(&m, MK_BACK);
     menu_key(&m, MK_UP);                                   /* wraps to Quit Game */
-    CHECK(m.cursor == 2);
+    CHECK(m.cursor == 5);
     menu_key(&m, MK_DOWN);
     CHECK(m.cursor == 0);
     menu_key(&m, MK_DOWN);
@@ -255,6 +257,192 @@ static void test_help(void)
     }
 }
 
+static void test_controls_page(void)
+{
+    Menu m;
+    MenuLine l[MENU_MAX_LINES];
+    int d, n;
+
+    menu_init(&m, 0, 5, 0, 0);
+    menu_key(&m, MK_BACK);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);                               /* Controls */
+    CHECK(m.screen == MENU_CONTROLS && !m.changed && !m.quit);
+    for (d = 0; d < CD_COUNT; d++) {                       /* each device: a heading, its name, one line per action */
+        ControlRow rows[CONTROLS_MAX_ROWS];
+        int nr = controls_rows(d, rows), i;
+
+        m.device = d;
+        n = menu_lines(&m, l);
+        CHECK(l[0].heading && strstr(l[0].text, "CONTROLS") != NULL);
+        CHECK(strcmp(l[1].text, controls_device_name(d)) == 0);
+        CHECK(n == 3 + nr + 1 + 2 + 1 && n <= MENU_MAX_LINES);
+        for (i = 0; i < nr; i++) {
+            CHECK(strcmp(l[3 + i].text, rows[i].action) == 0 && !l[3 + i].item);
+        }
+    }
+    m.device = CD_DS4;                                     /* the two items under the list: Vibration, Light Bar */
+    n = menu_lines(&m, l);
+    CHECK(l[n - 3].item && l[n - 3].selected && strstr(l[n - 3].text, "VIBRATION: < HEAVY >") && l[n - 2].item && !l[n - 2].selected && strstr(l[n - 2].text, "LIGHT BAR: < HEAVY >"));
+    CHECK(m.vibration == 2 && m.lightbar == 2 && !l[n - 3].disabled && !l[n - 2].disabled);
+    menu_key(&m, MK_RIGHT);                                /* right and select go Off -> Light -> Heavy -> Off, left the other way */
+    CHECK(m.vibration == 0 && m.lightbar == 2 && !m.changed && !m.quit);
+    menu_key(&m, MK_SELECT);
+    CHECK(m.vibration == 1);
+    menu_key(&m, MK_LEFT);
+    menu_key(&m, MK_LEFT);
+    CHECK(m.vibration == 2);
+    menu_key(&m, MK_DOWN);
+    CHECK(m.cursor == 1);
+    menu_key(&m, MK_LEFT);
+    CHECK(m.lightbar == 1);
+    n = menu_lines(&m, l);
+    CHECK(strstr(l[n - 3].text, "VIBRATION: < HEAVY >") && strstr(l[n - 2].text, "LIGHT BAR: < LIGHT >") && l[n - 2].selected);
+    menu_key(&m, MK_LEFT);
+    n = menu_lines(&m, l);
+    CHECK(m.lightbar == 0 && strstr(l[n - 2].text, "LIGHT BAR: < OFF >"));
+    m.bar_ok = 0;                                          /* no PlayStation pad: Light Bar is grayed out, shows OFF, cannot be chosen or changed, the cursor skips it */
+    m.lightbar = 2;
+    n = menu_lines(&m, l);
+    CHECK(l[n - 2].disabled && !l[n - 2].selected && strstr(l[n - 2].text, "LIGHT BAR: < OFF >") && !l[n - 3].disabled);
+    menu_key(&m, MK_RIGHT);
+    CHECK(m.lightbar == 2);
+    menu_key(&m, MK_DOWN);
+    CHECK(m.cursor == 0);
+    m.vib_ok = 0;                                          /* no pad at all: both are grayed out and do nothing */
+    m.vibration = 2;
+    n = menu_lines(&m, l);
+    CHECK(l[n - 3].disabled && l[n - 2].disabled && !l[n - 3].selected && !l[n - 2].selected);
+    menu_key(&m, MK_RIGHT);
+    menu_key(&m, MK_DOWN);
+    CHECK(m.vibration == 2 && m.cursor == 0);
+    m.vib_ok = 1;
+    m.bar_ok = 1;
+    menu_key(&m, MK_HELP);                                 /* the help from here, and back to the page */
+    CHECK(m.screen == MENU_HELP);
+    menu_key(&m, MK_HELP);
+    CHECK(m.screen == MENU_CONTROLS);
+    menu_key(&m, MK_BACK);                                 /* back to the main menu, on Controls */
+    CHECK(m.screen == MENU_MAIN && m.cursor == 2);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);                               /* the Achievements page, the Sound page, then Quit Game is still the last item */
+    CHECK(m.screen == MENU_ACH);
+    menu_key(&m, MK_BACK);
+    CHECK(m.screen == MENU_MAIN && m.cursor == 3);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);
+    CHECK(m.screen == MENU_SOUND);
+    menu_key(&m, MK_BACK);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);
+    CHECK(m.quit);
+}
+
+static void test_ach_page(void)
+{
+    Menu m;
+    MenuLine l[MENU_MAX_LINES];
+    int n, i;
+
+    menu_init(&m, 0, 5, 0, 0);
+    menu_key(&m, MK_BACK);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);                               /* Achievements, after Controls */
+    CHECK(m.screen == MENU_ACH && m.cursor == 0 && !m.changed && !m.quit);
+    n = menu_lines(&m, l);
+    CHECK(n > 0 && l[0].heading && strstr(l[0].text, "ACHIEVEMENTS") != NULL);
+    menu_key(&m, MK_UP);                                   /* round the list */
+    CHECK(m.cursor == ACH_COUNT - 1);
+    menu_key(&m, MK_DOWN);
+    CHECK(m.cursor == 0);
+    menu_key(&m, MK_DOWN);
+    CHECK(m.cursor == 1);
+    menu_key(&m, MK_RIGHT);                                /* a page at a time, stopping at the ends */
+    CHECK(m.cursor == 1 + MENU_ACH_PAGE);
+    for (i = 0; i < 5; i++) {
+        menu_key(&m, MK_RIGHT);
+    }
+    CHECK(m.cursor == ACH_COUNT - 1);
+    menu_key(&m, MK_LEFT);
+    CHECK(m.cursor == ACH_COUNT - 1 - MENU_ACH_PAGE);
+    for (i = 0; i < 5; i++) {
+        menu_key(&m, MK_LEFT);
+    }
+    CHECK(m.cursor == 0);
+    menu_key(&m, MK_SELECT);                               /* Enter does nothing here */
+    CHECK(m.screen == MENU_ACH && m.cursor == 0);
+    menu_key(&m, MK_HELP);
+    menu_key(&m, MK_HELP);
+    CHECK(m.screen == MENU_ACH);
+    menu_key(&m, MK_BACK);                                 /* back to the main menu, on Achievements */
+    CHECK(m.screen == MENU_MAIN && m.cursor == 3);
+}
+
+static void test_sound_page(void)
+{
+    Menu m;
+    MenuLine l[MENU_MAX_LINES];
+    int n, i;
+
+    menu_init(&m, 0, 5, 0, 0);
+    CHECK(m.sound_volume == 10 && m.sound_mute == 0 && m.sound_filter == 1);
+    menu_key(&m, MK_BACK);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);                               /* Sound */
+    CHECK(m.screen == MENU_SOUND && m.cursor == 0 && !m.changed && !m.quit);
+    n = menu_lines(&m, l);
+    CHECK(l[0].heading && strstr(l[0].text, "SOUND") && n <= MENU_MAX_LINES);
+    CHECK(l[2].item && l[2].selected && strstr(l[2].text, "MASTER VOLUME: < 100% >"));
+    CHECK(l[3].item && strstr(l[3].text, "MUTE: < OFF >") && l[4].item && strstr(l[4].text, "OUTPUT FILTER: < SOFT >"));
+    menu_key(&m, MK_RIGHT);                                /* stops at 100 % */
+    CHECK(m.sound_volume == 10);
+    menu_key(&m, MK_SELECT);                               /* Enter does nothing to the volume */
+    CHECK(m.sound_volume == 10);
+    for (i = 0; i < 12; i++) {                             /* ... and at 0 % */
+        menu_key(&m, MK_LEFT);
+    }
+    CHECK(m.sound_volume == 0);
+    n = menu_lines(&m, l);
+    CHECK(strstr(l[2].text, "MASTER VOLUME: < 0% >"));
+    menu_key(&m, MK_RIGHT);
+    menu_key(&m, MK_RIGHT);
+    CHECK(m.sound_volume == 2);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_SELECT);
+    CHECK(m.sound_mute == 1 && m.sound_volume == 2);
+    n = menu_lines(&m, l);
+    CHECK(strstr(l[3].text, "MUTE: < ON >") && l[3].selected);
+    menu_key(&m, MK_LEFT);
+    CHECK(m.sound_mute == 0);
+    menu_key(&m, MK_DOWN);
+    menu_key(&m, MK_RIGHT);                                /* soft -> warm -> off -> soft, and back the other way */
+    CHECK(m.sound_filter == 2);
+    n = menu_lines(&m, l);
+    CHECK(strstr(l[4].text, "OUTPUT FILTER: < WARM >"));
+    menu_key(&m, MK_RIGHT);
+    CHECK(m.sound_filter == 0);
+    menu_key(&m, MK_SELECT);
+    CHECK(m.sound_filter == 1);
+    menu_key(&m, MK_LEFT);
+    menu_key(&m, MK_LEFT);
+    CHECK(m.sound_filter == 2);
+    menu_key(&m, MK_DOWN);                                 /* the cursor wraps */
+    CHECK(m.cursor == 0);
+    menu_key(&m, MK_UP);
+    CHECK(m.cursor == 2);
+    menu_key(&m, MK_HELP);
+    menu_key(&m, MK_HELP);
+    CHECK(m.screen == MENU_SOUND);
+    menu_key(&m, MK_BACK);                                 /* back to the main menu, on Sound */
+    CHECK(m.screen == MENU_MAIN && m.cursor == 4 && m.sound_filter == 2 && m.sound_volume == 2);
+}
+
 static void test_text(void)
 {
     Menu m;
@@ -269,8 +457,8 @@ static void test_text(void)
         items += l[i].item;
         sel += l[i].selected;
     }
-    CHECK(n > 0 && items == 3 && sel == 1);
-    CHECK(strstr(l[2].text, "RESUME GAME") && strstr(l[3].text, "GRAPHICS OPTIONS") && strstr(l[4].text, "QUIT GAME"));
+    CHECK(n > 0 && items == 6 && sel == 1);
+    CHECK(strstr(l[2].text, "RESUME GAME") && strstr(l[3].text, "GRAPHICS OPTIONS") && strstr(l[4].text, "CONTROLS") && strstr(l[5].text, "ACHIEVEMENTS") && strstr(l[6].text, "SOUND") && strstr(l[7].text, "QUIT GAME"));
     menu_key(&m, MK_DOWN);
     menu_key(&m, MK_SELECT);
     n = menu_lines(&m, l);
@@ -364,6 +552,9 @@ int main(void)
     test_fps();
     test_crt();
     test_nearest_resolution();
+    test_controls_page();
+    test_sound_page();
+    test_ach_page();
     test_text();
     test_list();
     test_fit();

@@ -28,7 +28,7 @@ note "system: $(uname -sr) $(uname -m)"
 for d in platform core app assets render audio shell; do
   mkdir -p "$OUT/obj/$d"
   case $d in
-    shell) files="replay.c shell.c frontend.c menu.c" ;;
+    shell) files="replay.c shell.c frontend.c menu.c controls.c icons.c haptics.c padhid.c sound.c settings.c achieve.c sha256.c" ;;
     assets) files="assets.c sha256.c rom_layout.c rom_install.c" ;;
     *) files=$(cd $S/$d && ls *.c | grep -v '^main.c$' | grep -v '^install_assets.c$') ;;
   esac
@@ -63,6 +63,10 @@ exe audio_selftest "" $S/tests/audio_selftest.c
 exe shell_selftest "" $S/tests/shell_selftest.c
 exe frontend_check "" $S/tests/frontend_check.c
 exe menu_check "" $S/tests/menu_check.c
+exe controls_check "" $S/tests/controls_check.c
+exe sound_check "" $S/tests/sound_check.c
+exe settings_check "" $S/tests/settings_check.c
+exe achieve_check "" $S/tests/achieve_check.c
 exe interp_check "" $S/tests/interp_check.c
 exe slang_check "" $S/tests/slang_check.c
 
@@ -94,6 +98,10 @@ run_expect audio_selftest "" $B/audio_selftest
 run_expect shell_selftest "shell_selftest: OK" $B/shell_selftest
 run_expect frontend_check "frontend_check: OK" $B/frontend_check
 run_expect menu_check "menu_check: OK" $B/menu_check
+run_expect controls_check "controls_check: OK" $B/controls_check
+run_expect sound_check "sound_check: OK" $B/sound_check
+run_expect settings_check "settings_check: OK" $B/settings_check
+run_expect achieve_check "achieve_check: OK" $B/achieve_check
 run_expect interp_check "interp_check: OK" $B/interp_check
 run_expect slang_check "slang_check: OK" $B/slang_check
 

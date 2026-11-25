@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "achieve.h"
+#include "controls.h"
 #include "menu.h"
 
 const MenuResolution menu_resolutions[] = {
@@ -19,13 +21,20 @@ const char *const menu_crt_names[] = {"OFF", "CRT-GUEST-ADVANCED-NTSC", "ZFAST-C
 const char *const menu_crt_files[] = {"", "third-party/crt-shaders/crt/crt-guest-advanced-ntsc.slangp", "third-party/crt-shaders/crt/zfast-crt-composite.slangp", "third-party/crt-shaders/crt/crt-aperture.slangp"};
 const int menu_crt_count = (int)(sizeof menu_crt_names / sizeof menu_crt_names[0]);
 
-#define MAIN_ITEMS 3        /* Resume Game, Graphics Options, Quit Game */
+#define MAIN_ITEMS 6        /* Resume Game, Graphics Options, Controls, Achievements, Sound, Quit Game */
+#define SOUND_ITEMS 3       /* Master Volume, Mute, Output Filter */
 #define GRAPHICS_ITEMS 4    /* Display Mode, Resolution, FPS, CRT Shader */
 
 void menu_init(Menu *m, int fullscreen, int res, int custom_w, int custom_h)
 {
     memset(m, 0, sizeof *m);
     m->fps = menu_fps_nearest(60);
+    m->vibration = 2;
+    m->lightbar = 2;
+    m->vib_ok = 1;
+    m->sound_volume = 10;
+    m->sound_filter = 1;
+    m->bar_ok = 1;
     m->fullscreen = fullscreen != 0;
     m->res = (res >= 0 && res < menu_resolution_count) ? res : -1;
     m->custom_w = custom_w;
@@ -165,9 +174,97 @@ void menu_key(Menu *m, MenuKey k)
             } else if (m->cursor == 1) {
                 m->screen = MENU_GRAPHICS;
                 m->cursor = 0;
+            } else if (m->cursor == 2) {
+                m->screen = MENU_CONTROLS;
+                m->cursor = 0;
+            } else if (m->cursor == 3) {
+                m->screen = MENU_ACH;
+                m->cursor = 0;
+            } else if (m->cursor == 4) {
+                m->screen = MENU_SOUND;
+                m->cursor = 0;
             } else {
                 m->quit = 1;
             }
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    if (m->screen == MENU_ACH) {                           /* the list of achievements: up and down move through it (round), left and right a page; back returns to the main menu, on "Achievements" */
+        switch (k) {
+        case MK_UP:
+            m->cursor = (m->cursor + ACH_COUNT - 1) % ACH_COUNT;
+            break;
+        case MK_DOWN:
+            m->cursor = (m->cursor + 1) % ACH_COUNT;
+            break;
+        case MK_LEFT:
+            m->cursor = m->cursor >= MENU_ACH_PAGE ? m->cursor - MENU_ACH_PAGE : 0;
+            break;
+        case MK_RIGHT:
+            m->cursor = m->cursor + MENU_ACH_PAGE < ACH_COUNT ? m->cursor + MENU_ACH_PAGE : ACH_COUNT - 1;
+            break;
+        case MK_BACK:
+            m->screen = MENU_MAIN;
+            m->cursor = 3;
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    if (m->screen == MENU_SOUND) {                         /* Master Volume, Mute, Output Filter; back returns to the main menu, on "Sound" */
+        switch (k) {
+        case MK_UP:
+            m->cursor = (m->cursor + SOUND_ITEMS - 1) % SOUND_ITEMS;
+            break;
+        case MK_DOWN:
+            m->cursor = (m->cursor + 1) % SOUND_ITEMS;
+            break;
+        case MK_LEFT:
+        case MK_RIGHT:
+        case MK_SELECT:
+            if (m->cursor == 0) {                          /* the volume moves in tenths and stops at the ends; Enter does nothing here */
+                if (k == MK_LEFT && m->sound_volume > 0) {
+                    m->sound_volume--;
+                } else if (k == MK_RIGHT && m->sound_volume < 10) {
+                    m->sound_volume++;
+                }
+            } else if (m->cursor == 1) {
+                m->sound_mute = !m->sound_mute;
+            } else {
+                m->sound_filter = (m->sound_filter + (k == MK_LEFT ? 2 : 1)) % 3;
+            }
+            break;
+        case MK_BACK:
+            m->screen = MENU_MAIN;
+            m->cursor = 4;
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    if (m->screen == MENU_CONTROLS) {                      /* the list is to read; under it two items: Vibration, Light Bar; back returns to the main menu, on "Controls" */
+        switch (k) {
+        case MK_UP:
+        case MK_DOWN:
+            m->cursor = m->bar_ok && m->vib_ok ? 1 - m->cursor : 0;       /* a grayed-out item is skipped */
+            break;
+        case MK_LEFT:
+        case MK_RIGHT:
+        case MK_SELECT:
+            if (m->cursor == 0 && m->vib_ok) {
+                m->vibration = (m->vibration + (k == MK_LEFT ? 2 : 1)) % 3;
+            } else if (m->cursor == 1 && m->bar_ok) {
+                m->lightbar = (m->lightbar + (k == MK_LEFT ? 2 : 1)) % 3;
+            }
+            break;
+        case MK_BACK:
+            m->screen = MENU_MAIN;
+            m->cursor = 2;
             break;
         default:
             break;
@@ -203,6 +300,11 @@ void menu_key(Menu *m, MenuKey k)
     }
 }
 
+const char *menu_level_name(int level)
+{
+    return level == 2 ? "HEAVY" : level == 1 ? "LIGHT" : "OFF";
+}
+
 static void put_line(MenuLine *l, const char *text, int heading, int item, int selected)
 {
     snprintf(l->text, sizeof l->text, "%s", text);
@@ -231,7 +333,10 @@ int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
         put_line(&out[n++], "", 0, 0, 0);
         put_line(&out[n++], "RESUME GAME", 0, 1, m->cursor == 0);
         put_line(&out[n++], "GRAPHICS OPTIONS", 0, 1, m->cursor == 1);
-        put_line(&out[n++], "QUIT GAME", 0, 1, m->cursor == 2);
+        put_line(&out[n++], "CONTROLS", 0, 1, m->cursor == 2);
+        put_line(&out[n++], "ACHIEVEMENTS", 0, 1, m->cursor == 3);
+        put_line(&out[n++], "SOUND", 0, 1, m->cursor == 4);
+        put_line(&out[n++], "QUIT GAME", 0, 1, m->cursor == 5);
         put_line(&out[n++], "", 0, 0, 0);
         put_line(&out[n++], "ESC: RESUME", 0, 0, 0);
     } else if (m->screen == MENU_HELP) {                   /* the function keys and what they do; the lines are as wide as each other so that centring lines them up */
@@ -244,6 +349,42 @@ int menu_lines(const Menu *m, MenuLine out[MENU_MAX_LINES])
         put_key_line(&out[n++], "F11", "FULL SCREEN / WINDOWED");
         put_line(&out[n++], "", 0, 0, 0);
         put_line(&out[n++], "F1: CLOSE", 0, 0, 0);
+    } else if (m->screen == MENU_ACH) {                     /* the front end draws the list itself (it knows what is earned); these lines are the page's heading and hint */
+        put_line(&out[n++], "ACHIEVEMENTS", 1, 0, 0);
+        put_line(&out[n++], "", 0, 0, 0);
+        put_line(&out[n++], "ESC: BACK", 0, 0, 0);
+    } else if (m->screen == MENU_SOUND) {
+        static const char *const filter_names[3] = {"OFF", "SOFT", "WARM"};
+
+        put_line(&out[n++], "SOUND", 1, 0, 0);
+        put_line(&out[n++], "", 0, 0, 0);
+        snprintf(buf, sizeof buf, "MASTER VOLUME: < %d%% >", m->sound_volume * 10);
+        put_line(&out[n++], buf, 0, 1, m->cursor == 0);
+        snprintf(buf, sizeof buf, "MUTE: < %s >", m->sound_mute ? "ON" : "OFF");
+        put_line(&out[n++], buf, 0, 1, m->cursor == 1);
+        snprintf(buf, sizeof buf, "OUTPUT FILTER: < %s >", filter_names[m->sound_filter % 3]);
+        put_line(&out[n++], buf, 0, 1, m->cursor == 2);
+        put_line(&out[n++], "", 0, 0, 0);
+        put_line(&out[n++], "ESC: BACK", 0, 0, 0);
+    } else if (m->screen == MENU_CONTROLS) {                /* the text of the page: heading, the device, one line per action (the front end draws the icons beside them) */
+        ControlRow rows[CONTROLS_MAX_ROWS];
+        int nr = controls_rows(m->device, rows), i;
+
+        put_line(&out[n++], "CONTROLS", 1, 0, 0);
+        snprintf(buf, sizeof buf, "%s", controls_device_name(m->device));
+        put_line(&out[n++], buf, 0, 0, 0);
+        put_line(&out[n++], "", 0, 0, 0);
+        for (i = 0; i < nr && n < MENU_MAX_LINES - 4; i++) {
+            put_line(&out[n++], rows[i].action, 0, 0, 0);
+        }
+        put_line(&out[n++], "", 0, 0, 0);
+        snprintf(buf, sizeof buf, "VIBRATION: < %s >", menu_level_name(m->vibration));
+        put_line(&out[n++], buf, 0, 1, m->cursor == 0 && m->vib_ok);
+        out[n - 1].disabled = !m->vib_ok;
+        snprintf(buf, sizeof buf, "LIGHT BAR: < %s >", menu_level_name(m->bar_ok ? m->lightbar : 0));
+        put_line(&out[n++], buf, 0, 1, m->cursor == 1 && m->bar_ok);
+        out[n - 1].disabled = !m->bar_ok;
+        put_line(&out[n++], "ESC: BACK", 0, 0, 0);
     } else if (m->screen == MENU_GRAPHICS) {
         menu_size(m, &w, &h);
         put_line(&out[n++], "GRAPHICS OPTIONS", 1, 0, 0);

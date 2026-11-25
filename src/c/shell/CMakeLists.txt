@@ -1,5 +1,5 @@
 # the headless shell: replays, state hashes, the high score and the options (stage 80d)
-add_library(pm_shell STATIC replay.c shell.c frontend.c menu.c)
+add_library(pm_shell STATIC replay.c shell.c frontend.c menu.c controls.c icons.c haptics.c padhid.c sound.c settings.c achieve.c sha256.c)
 target_include_directories(pm_shell PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(pm_shell PUBLIC pm_app pm_core pm_platform)
 
