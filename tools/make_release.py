@@ -28,7 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "build", "release")
 NAME = "pacman-a8-port"
-VERSION = "0.1.0"
+VERSION = open(os.path.join(ROOT, "VERSION"), encoding="utf-8").read().strip()      # one place: the file VERSION
 STAMP = (2026, 11, 24, 0, 0, 0)                 # the one time stamp of every member (no clock is read: the archive is reproducible)
 MANIFEST = "RELEASE-MANIFEST.json"
 EXCLUDE_DIRS = ("original/", "resources/", "build/", "external-tools/")

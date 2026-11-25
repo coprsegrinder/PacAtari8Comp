@@ -3,6 +3,15 @@
 cmake_minimum_required(VERSION 3.16)
 project(pacman_a8 C)
 
+# the version of the program: one line in the file VERSION at the top of the project (the release scripts read the same file)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../VERSION)
+  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/../../VERSION PM_VERSION_RAW)
+  string(STRIP "${PM_VERSION_RAW}" PM_VERSION)
+else()
+  set(PM_VERSION "dev")
+endif()
+add_compile_definitions(PM_VERSION="${PM_VERSION}")
+
 # without a build type asked for, the optimized one: the program does a picture every few milliseconds (docs/67, 69, 70), and an unoptimized build is too slow for it
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "build type" FORCE)
