@@ -6,6 +6,7 @@
 |---|---|
 | `win_main.c` | `WinMain`: the window (1.6 : 1 picture, whole-number scale where it fits, black around it, F11 / Alt+Enter full screen), the pause menu and graphics options (docs/68), keys and pads to `FrontKeys`, the frame clock (the sound device's buffer, or the system timer with `--no-audio`), the replay recorder (`--record`), the self test (`--selftest FRAMES`, `--menutest`) |
 | `win_gl.[ch]` | the CRT shaders (docs/70): an OpenGL 4.5 context in a child window and the runtime of the libretro slang presets (the passes, framebuffers, feedback, lookup textures); `render/slang.[ch]` and `render/png.[ch]` read the presets, the shaders and the PNG tables |
+| `win_pad.[ch]` | the PlayStation pads (DualShock 4, DualSense) through the raw HID interface (`hid`, `setupapi`): found, read with overlapped reads, sent rumble and light bar colour (docs/71); the bytes of the reports are in `shell/padhid.c`. **Not yet tried with a real pad (OV-81)** |
 | `win_audio.[ch]` | WASAPI shared mode at 44,100 Hz (`wa_*`), and the loopback capture the self test measures with (`wl_*`: this process's sound only, Windows 10 2004 and later; the endpoint's whole mix otherwise) |
 
 The input logic (what keys become the joystick, console and pause key of the Atari) is portable C99 in `shell/frontend.[ch]`, tested by `ctest frontend_check`. `tools/check_front_end.py` runs the whole front end against the headless shell.
@@ -16,6 +17,12 @@ pacman_a8_play [--root DIR] [--fps N|native|uncapped] [--crt off|guest|zfast|ape
 
 The game **always starts in borderless fullscreen**, at the resolution of the list (docs/68) that is the monitor's size or the nearest to it, and at the FPS (docs/69) that is its refresh rate or the nearest number. Test options: `--windowed [--scale N]`, `--trace FILE`, `--selftest FRAMES`, `--menutest`, `--startuptest`, `--crttest`, `--exact`.
 
-Keys: arrows / WASD stick; Ctrl, Z, X, Enter fire (Enter is also START); F1 help (what the function keys do); F2 START, F3 SELECT, F4 OPTION; Space or P pause; Alt+Enter or F11 full screen; Esc the pause menu (Resume Game, Graphics Options with Display Mode, Resolution and FPS, Quit Game: docs/68, docs/69). Pads: D-pad or left stick; A / B fire; Start = START, Back = SELECT, X / Y = OPTION; pad 2 is player 2; the keyboard drives both ports. In the menu the pad's D-pad or stick moves, A selects, B goes back; Start + Back together open it.
+Keys: arrows / WASD stick; Ctrl, Z, X, Enter fire (Enter is also START); F1 help (what the function keys do); F2 START, F3 SELECT, F4 OPTION; Space or P pause; Alt+Enter or F11 full screen; Esc the pause menu (Resume Game, Graphics Options with Display Mode, Resolution and FPS, Quit Game: docs/68, docs/69). Pads (XInput, DualShock 4, DualSense): D-pad or left stick; A / B (Cross / Circle) fire; Start (Options) = START, Back (Share / Create) = SELECT, X / Y (Square / Triangle) = OPTION; pad 2 is player 2; the keyboard drives both ports. The pause menu has a Controls page that lists the controls of the device in use with icons, and the pads rumble (and a PlayStation pad's light bar changes colour) with the game's events: docs/71. In the menu the pad's D-pad or stick moves, A selects, B goes back; Start + Back together open it.
 
 Windows keeps a mute and a volume for each program **by its name** in the volume mixer. If `pacman_a8_play.exe` is muted there it is silent whatever it plays; the program writes a line to `logs/shell.log` when it finds that, and never changes the player's mixer. The self test therefore runs under its own name (`tools/check_front_end.py` copies the program to `pacman_a8_selftest.exe`) and at a low volume.
+
+**Sound page (docs/72):** the pause menu's Sound page sets a master volume, a mute and an output filter (Off / Soft / Warm) in the program's own gain stage (`shell/sound.c`), not in the Windows mixer.
+
+**Saved settings (docs/73):** the menu's settings are kept in `save/settings.ini` in the game's folder, written when one changes and read at the start; `--settingstest` checks it.
+
+**Achievements (docs/74):** found from the game's state after each frame, shown by a toast window (`win_toast.c`), a chime and a gold flash on a pad, listed on the pause menu's Achievements page, kept in `save/achievements.pma` (sealed); `--achtest` checks it.

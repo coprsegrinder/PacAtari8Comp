@@ -9,3 +9,11 @@ a hash of the state after every frame, the high score / options / log under `sav
 Replays are made by `tools/make_replay.py` (from a recorded session, or from a text script) or by a front end. No window, sound device or input library (decision D3): a front end gives `FrameInput`
 records and takes `render_to_rgb` and `audio_frame` buffers. The first run makes `resources/pack/assets.pmab` from `original/Pac-Man.rom`. Checked by `tests/test_shell.py` and `ctest shell_selftest`;
 see OPEN-VERIFICATION.md C-116.
+
+The pieces of the interactive front end that are portable (no system call) live here too and are unit-tested: `frontend.[ch]` (keys to the Atari's inputs), `menu.[ch]` (the pause menu, docs/68), `controls.[ch]` (what the controls of each device are, for the Controls page), `icons.[ch]` (the page's icons, drawn in code), `haptics.[ch]` (rumble and light bar from the game's events) and `padhid.[ch]` (the DualShock 4 / DualSense report layouts): docs/71, `ctest controls_check`.
+
+- `sound.[ch]`: the Sound page's volume, mute and output filter applied to the speaker's sound (docs/72); `ctest sound_check`.
+
+- `settings.[ch]`: the menu's settings as text and back, for `save/settings.ini` (docs/73); `ctest settings_check`.
+
+- `achieve.[ch]`, `sha256.[ch]`: the achievements and the seal of their file (docs/74); `ctest achieve_check`.
