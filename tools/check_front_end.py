@@ -149,7 +149,8 @@ def one(cc):
         gaps = [ts[i + 1] - ts[i] for i in range(len(ts) - 1)]
         rate = 1000.0 * len(gaps) / sum(gaps) if gaps and sum(gaps) > 0 else 0.0
         late = sum(1 for g in gaps if g > 1.6 * 1000.0 / hz) if gaps else 0
-        step("%s: fullscreen at the monitor's rate (%d Hz): the pictures a second are the rate (97 to 103 %%), at most 2 %% of them later than 1.6 refreshes" % (cc, hz), bool(gaps) and 0.97 * hz <= rate <= 1.03 * hz and late <= 0.02 * len(gaps), "%.1f pictures/s, %d of %d later than 1.6 refreshes" % (rate, late, len(gaps)))
+        pinned = sum(1 for r in rows if float(r[2]) - float(r[1]) < 0.05)                         # pictures whose game time is at the newest frame made: no frame ahead to see where the objects go, the picture waits for the game
+        step("%s: fullscreen at the monitor's rate (%d Hz): the pictures a second are the rate (97 to 103 %%), at most 2 %% of them later than 1.6 refreshes, at most 1 %% of them at the newest frame made (the pauses of Pac-Man)" % (cc, hz), bool(gaps) and 0.97 * hz <= rate <= 1.03 * hz and late <= 0.02 * len(gaps) and pinned <= 0.01 * len(rows), "%.1f pictures/s, %d of %d later than 1.6 refreshes, %d pictures at the newest frame" % (rate, late, len(gaps), pinned))
     # the game's own logic does not depend on how the picture is made: the same scenario with several FPS choices and CRT shaders, each recorded and replayed headless (the state, run, video and sound digests of the
     # recording equal the replay's), the game at its own speed, the sound not running dry more than the start of a shader makes it
     for label, extra in (("native", ["--fps", "native"]), ("native + guest shader", ["--fps", "native", "--crt", "guest"]), ("75 + zfast shader", ["--fps", "75", "--crt", "zfast"]),

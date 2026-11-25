@@ -332,9 +332,10 @@ static const uint8_t *shown_colour;      /* the colours of the nearest game fram
 static double audio_written;             /* samples handed to the sound device */
 static double tau_a;                     /* the game time (in frames) of the picture to show, as of tau_t0 */
 static uint64_t tau_t0;
+#define PROD_N 256
+static uint64_t prod_ns[PROD_N];       /* when each of the last frames of the game was made (the picture's game time is made from these) */
 static int tau_valid;
 static int tau_grid_hz;                  /* when the pictures are made on the refreshes of the monitor: its rate; the game time then advances by whole refreshes (0: by the clock) */
-static double tau_age;                   /* seconds since the game time was set from the sound device */
 static uint64_t next_tick_ns;
 static PmFile *trace_file;                /* --trace FILE: every picture made, with the game time and where the objects are drawn (for the analysis of the motion) */
 static unsigned long still_last = ~0ul;   /* the game frame the picture shows when there are fewer pictures a second than the game makes: a picture is made when this changes */
@@ -963,6 +964,7 @@ static void run_frame(void)
         (void)wa_write(wa, pcm, got);
         audio_written += (double)got;
     }
+    prod_ns[frames_run % PROD_N] = pm_time_ns();
     frames_run++;
 }
 
@@ -985,21 +987,32 @@ static const InterpFrame *ring_get(unsigned long id)
  * pulled to the device's position slowly (the device's queue is read in steps), so the speed of the game is the original's whatever the display does */
 static double game_time(uint64_t now, uint64_t t_start_ns)
 {
-    double pred, meas, dt, gain;
-    int q;
+    double pred, dt, target, cmin = 1e30, err, up, down;
+    unsigned long j, lo, newest;
+    static uint64_t ref_ns;
 
-    if (wa == NULL) {
+    if (wa == NULL || frames_run == 0) {
         return (double)(now - t_start_ns) * FRAME_HZ / 1e9;
     }
-    q = wa_queued(wa);
-    if (q < 0) {
-        q = 0;
+    if (ref_ns == 0) {
+        ref_ns = now;
     }
-    meas = (audio_written - (double)q) / SAMPLES_PER_FRAME + PICTURE_AHEAD;
+    /* The game time of the picture is a clock that runs at exactly the game's rate and is never ahead of the game: frame j was made at the time prod_ns[j], and the picture must not be at frame j before it
+     * is made, and needs the frame after it as well to see where the objects go: so tau(prod_ns[j]) <= j - 1 for every frame j of the last 2.5 s.  The latest frame made, relative to that clock, fixes where the
+     * clock is (the sound device's queue, which was read before, is read in steps and has a noise as large as the margin: the pictures then stood still at the newest frame for up to a second, the pauses of Pac-Man).
+     * The frames are made as the device needs them, so on average the picture stays with the sound; it is a frame or two behind the newest frame made, as the in-between pictures need. */
+    newest = frames_run - 1u;
+    lo = newest > 150u ? newest - 150u : 0u;
+    for (j = lo; j <= newest; j++) {
+        double v = (double)j - FRAME_HZ * (double)((int64_t)(prod_ns[j % PROD_N] - ref_ns)) / 1e9;
+        if (v < cmin) {
+            cmin = v;
+        }
+    }
+    target = FRAME_HZ * (double)((int64_t)(now - ref_ns)) / 1e9 + cmin - 1.0;
     if (!tau_valid) {
-        tau_a = meas;
+        tau_a = target;
         tau_t0 = now;
-        tau_age = 0.0;
         tau_valid = 1;
         return tau_a;
     }
@@ -1016,9 +1029,17 @@ static double game_time(uint64_t now, uint64_t t_start_ns)
         tau_t0 = now;
     }
     pred = tau_a + dt * FRAME_HZ;
-    tau_age += dt;
-    gain = 1.0 - exp(-dt / (tau_age < 2.0 ? 0.25 : 3.0));       /* found quickly, then followed slowly: the device's queue is read in steps of about 10 ms, and a noisy game time makes some frames last one picture more or less than the others (the mouth of Pac-Man would not flap evenly) */
-    tau_a = pred + gain * (meas - pred);
+    err = target - pred;
+    up = 0.01 * FRAME_HZ * dt;                                  /* the clock may run 1 % fast to come forward, 10 % slow to go back: never a jump, and never ahead of the game for long */
+    down = 0.10 * FRAME_HZ * dt;
+    if (err > 0.0 && err < 0.8) {                               /* behind the limit by less than 0.8 frame: leave the clock alone, so that the pictures keep their place among the refreshes (a frame lasts the same number of pictures every time) */
+        err = 0.0;
+    } else if (err > up) {
+        err = up;
+    } else if (err < -down) {
+        err = -down;
+    }
+    tau_a = pred + err;
     return tau_a;
 }
 
