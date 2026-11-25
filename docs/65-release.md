@@ -6,7 +6,7 @@ Checklist stage 99: "Establish a repeatable build process, organize release file
 
 One source archive, `build/release/pacman-a8-port-<version>-src.zip` (git-ignored; version in `tools/make_release.py`, now `0.1.0`), with its `.sha256` and a `release-info.json` beside it. It holds every file Git tracks or would track (`git ls-files -co --exclude-standard`): the C port (`src/c`), the disassembly (`src/asm`), the Python tools and tests, the documentation and the evidence summaries (`analysis/`), `third-party/` with the font licence, `LICENSE`, `NOTICE`, and `RELEASE-MANIFEST.json` (every file with its size and SHA-256).
 
-**Never in it** (checked, not just intended): the cartridge ROM and the OS ROMs (`original/`, any `*.rom`), the derived data (`resources/`, rebuilt on the user's machine), builds (`build/`), the emulator and tools (`external-tools/`), compiled files, pictures, logs, and `Personal notes.txt`.
+**Never in it, and not in the repository either**: `src/asm/pacman.s` (the cartridge program in assembler text: made from the player's own ROM by `tools/make_asm.py`, in `.gitignore` and in `EXCLUDE_FILES` of the release tool). **Never in it** (checked, not just intended): the cartridge ROM and the OS ROMs (`original/`, any `*.rom`), the derived data (`resources/`, rebuilt on the user's machine), builds (`build/`), the emulator and tools (`external-tools/`), compiled files, pictures, logs, and `Personal notes.txt`.
 
 The user supplies the ROM at `original/Pac-Man.rom`; the port installs its non-code data from it at start-up (C-112, C-113).
 

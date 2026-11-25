@@ -177,7 +177,8 @@ def structures():
 
 
 def asm_labels():
-    lines = read(os.path.join(ROOT, "src", "asm", "pacman.s")).splitlines()
+    import asm_source
+    lines = read(asm_source.path()).splitlines()
     out = {}
     for i, l in enumerate(lines):
         m = re.match(r"^([A-Za-z_][A-Za-z0-9_]*):\s*$", l)

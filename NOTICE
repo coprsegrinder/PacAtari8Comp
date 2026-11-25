@@ -7,10 +7,12 @@ What the MIT licence in LICENSE covers
 
 What it does NOT cover
   1. The original game. "Pac-Man" and the Atari 8-bit cartridge program are the
-     property of their owners. src/asm/pacman.s is a disassembly of that
-     program, kept for preservation and study; the MIT licence gives no right
-     in the original code, only in this project's own annotations and tooling.
-     The cartridge ROM itself is NOT part of this release.
+     property of their owners. The cartridge ROM itself is NOT part of this
+     release, and neither is its disassembly: src/asm/pacman.s (the program in
+     assembler text, which assembles to the ROM) is made on the machine of
+     someone who owns the ROM, by tools/make_asm.py, and is never stored in the
+     repository or in any release. The MIT licence gives no right in the
+     original code, only in this project's own annotations and tooling.
   2. The Atari operating system ROMs. Not part of this release.
   3. Third-party material under third-party/, each under its own licence:
        EightBit Atari-Regular font (Steve Boswell, 2018), SIL Open Font

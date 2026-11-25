@@ -45,9 +45,13 @@ def compare(built, original):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--source", default=os.path.join(ROOT, "src", "asm", "pacman.s"))
+    ap.add_argument("--source", default=None, help="default: src/asm/pacman.s, made from original/Pac-Man.rom when it is not there")
     ap.add_argument("--out", default=os.path.join(ROOT, "build"))
     args = ap.parse_args()
+    if args.source is None:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import asm_source
+        args.source = asm_source.path()
     try:
         rom = build(args.source, args.out)
     except subprocess.CalledProcessError:

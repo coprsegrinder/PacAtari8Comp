@@ -9,12 +9,18 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 import labels as LB  # noqa: E402
 
 
+def _asm():
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import asm_source
+    return asm_source.path()                  # made from the ROM when it is not there
+
+
 class Names(unittest.TestCase):
     def test_names(self):
         self.assertEqual((LB.zp_name(0x34), LB.zp_name(0x36), LB.zp_name(0x9C), LB.zp_name(0xAD)), ("DotsEatenLo", "DotsEatenHi", "SirenStep", "ChaseTimer"))
 
     def test_source(self):
-        src = open(os.path.join(ROOT, "src", "asm", "pacman.s"), encoding="utf-8").read()
+        src = open(_asm(), encoding="utf-8").read()
         for line in ("DotsEatenLo = $34", "DotsEatenHi = $36", "SirenStep = $9C"):
             self.assertIn(line, src)
         self.assertIn("inc z:DotsEatenLo,x        ; B388  F6 34", src)
@@ -38,7 +44,7 @@ class Names(unittest.TestCase):
 
     def test_no_generic_name_is_left_in_the_source(self):
         import re
-        src = open(os.path.join(ROOT, "src", "asm", "pacman.s"), encoding="utf-8").read()
+        src = open(_asm(), encoding="utf-8").read()
         self.assertEqual(re.findall(r"zp_[0-9A-F]{2}", src), [])
         self.assertRegex(src, r"(?m)^EatPause\s+= \$E5$")
         self.assertIn("Lives+1", src)
@@ -56,7 +62,7 @@ class Names(unittest.TestCase):
         import tempfile
         import build_rom as B
         with tempfile.TemporaryDirectory() as d:
-            rom = B.build(os.path.join(ROOT, "src", "asm", "pacman.s"), d)
+            rom = B.build(_asm(), d)
             built = open(rom, "rb").read()
         orig = open(os.path.join(ROOT, "original", "Pac-Man.rom"), "rb").read()
         self.assertEqual(hashlib.sha256(built).hexdigest(), hashlib.sha256(orig).hexdigest())

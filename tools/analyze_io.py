@@ -82,8 +82,9 @@ PURPOSE = {
 
 
 def names():
+    import asm_source
     out = {}
-    with open(os.path.join(ROOT, "src", "asm", "pacman.s"), encoding="utf-8") as fh:
+    with open(asm_source.path(), encoding="utf-8") as fh:
         for line in fh:
             m = re.match(r"^(\w+)\s*=\s*\$([0-9A-F]+)", line)
             if m:

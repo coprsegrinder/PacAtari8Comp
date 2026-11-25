@@ -12,7 +12,9 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 import build_rom as B  # noqa: E402
 
 ORIG = os.path.join(ROOT, "original", "Pac-Man.rom")
-SRC = os.path.join(ROOT, "src", "asm", "pacman.s")
+import asm_source  # noqa: E402
+
+SRC = asm_source.path()                          # made from the ROM when it is not there
 
 
 class Rebuild(unittest.TestCase):

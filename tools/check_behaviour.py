@@ -97,7 +97,8 @@ def bodies(entries):
 
 def asm_labels():
     """routine label -> address of its first instruction, from src/asm/pacman.s"""
-    with open(os.path.join(ROOT, "src", "asm", "pacman.s"), encoding="utf-8") as fh:
+    import asm_source
+    with open(asm_source.path(), encoding="utf-8") as fh:
         lines = fh.read().splitlines()
     out = {}
     for i, l in enumerate(lines):

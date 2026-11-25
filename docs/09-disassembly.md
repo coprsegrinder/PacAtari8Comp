@@ -1,5 +1,7 @@
 # 09 – Full Disassembly (Step C9)
 
+> **`src/asm/pacman.s` is not stored in this repository (decision of 2026-11-26).** It is the cartridge program in assembler text - assembling it gives the ROM byte for byte - so it is made, on the machine of someone who owns the ROM, from `original/Pac-Man.rom` by `python -I tools/make_asm.py` (with this project's own names and notes, `tools/labels.py`). The result is the same file every time. The tools and tests that read it (`tools/asm_source.py`) make it first when it is not there. Everything in this chapter that names it assumes it has been made.
+
 Written 2026-11-10. Covers checklist stages 23–25 (disassembly produced, entry points, code/data split).
 
 ## Deliverables

@@ -43,7 +43,7 @@ python -I tools/check_win_release.py     # the zip as a player meets it: only a 
 
 | Layer | What | Where |
 |---|---|---|
-| Analysis | the disassembly of the cartridge, byte-exact rebuild, routine and variable catalogues, control flow, the sound chip, the original's architecture | `src/asm`, `docs/01`-`docs/66`, `tools/`, `analysis/` |
+| Analysis | the disassembly of the cartridge (made from your own ROM by `tools/make_asm.py`, never stored here), byte-exact rebuild, routine and variable catalogues, control flow, the sound chip, the original's architecture | `src/asm`, `docs/01`-`docs/66`, `tools/`, `analysis/` |
 | Core | the game in C99, routine for routine: the world state, ghosts, Pac-Man, scoring, levels, sound | `src/c/core`, `src/c/app`, `src/c/audio`, `src/c/render` |
 | Shell | what a front end needs: the menu, controls, achievements, settings, sound stage, pad protocol - portable, no system calls | `src/c/shell` |
 | Windows front end | the window, OpenGL CRT shaders, WASAPI sound, XInput and raw HID pads | `src/c/platform/win32` |
@@ -58,6 +58,6 @@ Equivalence is checked by **whole state, every frame** against the original prog
 
 ## Licence
 
-The work of this project (the C port, the tools, the documentation) is under the **MIT licence** ([LICENSE](LICENSE)). It does **not** cover the original game or its disassembly's source material, which belong to their owners; the ROM is never part of this repository or its releases. The CRT shaders in `third-party/crt-shaders` are GPL-licensed files by their authors, read by the program when a shader is chosen; the font in `third-party/EightBit-Atari-Fonts` is under the SIL OFL. Details and credits in [NOTICE](NOTICE).
+The work of this project (the C port, the tools, the documentation) is under the **MIT licence** ([LICENSE](LICENSE)). It does **not** cover the original game, which belongs to its owners: neither the ROM nor its disassembly (`src/asm/pacman.s`, which `tools/make_asm.py` makes from your own ROM) is part of this repository or its releases. The CRT shaders in `third-party/crt-shaders` are GPL-licensed files by their authors, read by the program when a shader is chosen; the font in `third-party/EightBit-Atari-Fonts` is under the SIL OFL. Details and credits in [NOTICE](NOTICE).
 
 "Pac-Man" and "Atari" are trademarks of their owners; this project is not affiliated with or endorsed by them.

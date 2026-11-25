@@ -57,3 +57,6 @@ tools/wcet_sets/program.txt
 # Run folders of the program: what the player's own game wrote (settings, achievements, high score) and the test and log output - never committed
 /save/
 /logs/
+
+# The cartridge program in assembler text: it assembles to the ROM, so it is made on the machine of someone who owns the ROM (python -I tools/make_asm.py) and never stored here
+/src/asm/pacman.s

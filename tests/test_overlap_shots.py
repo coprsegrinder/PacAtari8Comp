@@ -24,7 +24,9 @@ class Priority(unittest.TestCase):
         self.assertEqual(0x14 & 0x0F, 0x04)                                 # PF0-PF1 in front of the players during the pop-up
 
     def test_only_three_writes(self):
-        src = open(os.path.join(ROOT, "src", "asm", "pacman.s"), encoding="utf-8").read()
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        import asm_source
+        src = open(asm_source.path(), encoding="utf-8").read()
         self.assertEqual(src.count("sta GPRIOR"), 3)
 
 
