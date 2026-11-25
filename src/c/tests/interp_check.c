@@ -689,6 +689,85 @@ static void test_partial_equals_full(void)
     }
 }
 
+/* the mixture of two game frames (o.blend): with the objects not moved (still) the picture at the moment n + a is, pixel for pixel and channel for channel, the picture of frame n and the picture of frame n + 1 mixed
+ * with the weight a / 256 for the second; at a whole frame it is that frame's picture; and the places given in d bring the last picture shown to this one, with the objects gliding too */
+static uint32_t mix_px(uint32_t pa, uint32_t pb, int a8)
+{
+    uint32_t wa = (uint32_t)(256 - a8), wb = (uint32_t)a8;
+
+    if (pa == pb) {
+        return pa;
+    }
+    return 0xFF000000u | (((((pa >> 16) & 255u) * wa + ((pb >> 16) & 255u) * wb + 128u) >> 8) << 16) | (((((pa >> 8) & 255u) * wa + ((pb >> 8) & 255u) * wb + 128u) >> 8) << 8) | ((((pa & 255u) * wa + (pb & 255u) * wb + 128u) >> 8));
+}
+
+static void test_blend(void)
+{
+    InterpOut o;
+    InterpDirty d;
+    uint32_t *ra = (uint32_t *)malloc((size_t)OW * OH * sizeof(uint32_t)), *rb = (uint32_t *)malloc((size_t)OW * OH * sizeof(uint32_t)), *shown = (uint32_t *)malloc((size_t)OW * OH * sizeof(uint32_t));
+    unsigned long n;
+    int k, wrong = 0, whole_wrong = 0, short_d = 0, mixed = 0, glide_short = 0;
+    size_t px = (size_t)OW * OH, i;
+
+    CHECK(ra != NULL && rb != NULL && shown != NULL && interp_out_init(&o) == 0 && interp_out_size(&o, OW, OH) == 0);
+    g_limit = NFRAMES - 1;
+    o.still = 1;
+    o.blend = 1;
+    for (n = 400; n < 440; n++) {
+        for (k = 0; k < 4; k++) {
+            int a8 = k * 64;
+            double t = (double)n + (double)a8 / 256.0;
+            interp_render(&o, get_game, NULL, t, g_limit, &d);
+            reference(&frames[n], ra);
+            reference(&frames[n + 1], rb);
+            if (a8 == 0) {
+                whole_wrong += diff(o.work, ra, px) != 0;
+            } else {
+                int bad = 0;
+                for (i = 0; i < px; i++) {
+                    bad += o.work[i] != mix_px(ra[i], rb[i], a8);
+                    mixed += ra[i] != rb[i];
+                }
+                wrong += bad != 0;
+            }
+        }
+    }
+    CHECK(whole_wrong == 0);
+    CHECK(wrong == 0);
+    CHECK(mixed > 0);                                                         /* and the frames do differ: the test means something */
+    o.still = 0;                                                              /* with the objects gliding: the places in d are enough */
+    interp_out_free(&o);
+    interp_out_init(&o);
+    interp_out_size(&o, OW, OH);
+    o.blend = 1;
+    interp_render(&o, get_game, NULL, 400.0, g_limit, &d);
+    memcpy(shown, o.work, px * sizeof(uint32_t));
+    for (n = 400; n < 520; n++) {
+        for (k = 0; k < 3; k++) {
+            int j, y;
+            interp_render(&o, get_game, NULL, (double)n + (double)k / 3.0, g_limit, &d);
+            if (d.full) {
+                memcpy(shown, o.work, px * sizeof(uint32_t));
+            } else {
+                for (j = 0; j < d.n; j++) {
+                    for (y = d.r[j][1]; y < d.r[j][3]; y++) {
+                        memcpy(shown + (size_t)y * OW + d.r[j][0], o.work + (size_t)y * OW + d.r[j][0], (size_t)(d.r[j][2] - d.r[j][0]) * sizeof(uint32_t));
+                    }
+                }
+            }
+            short_d += diff(shown, o.work, px) != 0;
+            glide_short += 0;
+        }
+    }
+    CHECK(short_d == 0);
+    CHECK(glide_short == 0);
+    interp_out_free(&o);
+    free(ra);
+    free(rb);
+    free(shown);
+}
+
 int main(void)
 {
     if (assets_load(&assets, ASSET_DEFAULT_PATH, blob_buf, sizeof blob_buf) != ASSETS_OK || assets_install_tables(&assets) != ASSETS_OK) {
@@ -709,6 +788,7 @@ int main(void)
     test_every_frame_shown();
     test_still_mode();
     test_partial_equals_full();
+    test_blend();
     test_crt_source();
     test_jumps();
     test_score_replaces_pacman();

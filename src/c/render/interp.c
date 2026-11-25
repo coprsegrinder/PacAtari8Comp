@@ -154,14 +154,18 @@ int interp_out_init(InterpOut *o)
 
 int interp_out_size(InterpOut *o, int ow, int oh)
 {
-    uint32_t *b, *w;
+    uint32_t *b, *w, *sc;
+    int *xm;
 
     if (ow == o->ow && oh == o->oh && o->base != NULL) {
         return 0;
     }
     free(o->base);
     free(o->work);
-    o->base = o->work = NULL;
+    free(o->scratch);
+    free(o->xmap);
+    o->base = o->work = o->scratch = NULL;
+    o->xmap = NULL;
     o->ow = o->oh = 0;
     o->base_valid = 0;
     o->nrect = 0;
@@ -170,13 +174,19 @@ int interp_out_size(InterpOut *o, int ow, int oh)
     }
     b = (uint32_t *)malloc((size_t)ow * (size_t)oh * sizeof(uint32_t));
     w = (uint32_t *)malloc((size_t)ow * (size_t)oh * sizeof(uint32_t));
-    if (b == NULL || w == NULL) {
+    sc = (uint32_t *)malloc((size_t)ow * (size_t)oh * sizeof(uint32_t));
+    xm = (int *)malloc((size_t)ow * (size_t)(1 + INTERP_OBJECTS) * sizeof(int));
+    if (b == NULL || w == NULL || sc == NULL || xm == NULL) {
         free(b);
         free(w);
+        free(sc);
+        free(xm);
         return 1;
     }
     o->base = b;
     o->work = w;
+    o->scratch = sc;
+    o->xmap = xm;
     o->ow = ow;
     o->oh = oh;
     return 0;
@@ -186,7 +196,10 @@ void interp_out_free(InterpOut *o)
 {
     free(o->base);
     free(o->work);
-    o->base = o->work = NULL;
+    free(o->scratch);
+    free(o->xmap);
+    o->base = o->work = o->scratch = NULL;
+    o->xmap = NULL;
     o->ow = o->oh = 0;
     o->base_valid = 0;
 }
@@ -245,51 +258,92 @@ static void base_rect(InterpOut *o, const InterpFrame *f, int x0, int y0, int x1
     }
 }
 
-/* the nearer frame changed from `oldf` to `f`: only the places that differ (bands of 8 rows of the picture, as wide as the change) and the places the objects were drawn at are made again, and said in d: the
- * whole picture (13 MB at 2304 x 1440) is not made and sent to the screen sixty times a second for a few moving things.  0 when it is not worth it (more than half of the picture changes) */
-static int rebuild_partial(InterpOut *o, const InterpFrame *oldf, const InterpFrame *f, InterpDirty *d)
+/* the places where the colours of two frames differ, as rectangles of the shown picture: in each band of 8 rows the runs of tiles of 8 picture pixels that differ (a gap of one tile is bridged), a little wider all
+ * round.  At most `max` rectangles: when there would be more, one rectangle round them all.  Returns how many */
+static int changed_places(const InterpOut *o, const InterpFrame *a, const InterpFrame *b, int rects[][4], int max)
 {
-    int rects[INTERP_MAX_RECTS][4], nr = 0, b, i;
-    long area = 0;
+    int nr = 0, band, x, y, t;
     double sx_scale = (double)o->ow / RENDER_W, sy_scale = (double)o->oh / RENDER_H;
+    int minx = o->ow, miny = o->oh, maxx = 0, maxy = 0;
 
-    for (b = 0; b < RENDER_H / 8 && nr < INTERP_MAX_RECTS - INTERP_OBJECTS; b++) {
-        int y, x, minx = RENDER_W, maxx = -1;
-        for (y = b * 8; y < b * 8 + 8; y++) {
-            const uint8_t *a = oldf->colour + y * RENDER_W, *c = f->colour + y * RENDER_W;
-            if (memcmp(a, c, RENDER_W) != 0) {
+    for (band = 0; band < RENDER_H / 8; band++) {
+        uint8_t tile[RENDER_W / 8];
+        int any = 0;
+
+        memset(tile, 0, sizeof tile);
+        for (y = band * 8; y < band * 8 + 8; y++) {
+            const uint8_t *pa = a->colour + y * RENDER_W, *pb = b->colour + y * RENDER_W;
+            if (memcmp(pa, pb, RENDER_W) != 0) {
                 for (x = 0; x < RENDER_W; x++) {
-                    if (a[x] != c[x]) {
-                        if (x < minx) { minx = x; }
-                        if (x > maxx) { maxx = x; }
+                    if (pa[x] != pb[x]) {
+                        tile[x >> 3] = 1;
+                        any = 1;
                     }
                 }
             }
         }
-        if (maxx >= 0) {
-            rects[nr][0] = (int)(minx * sx_scale) - 2;
-            rects[nr][1] = (int)(b * 8 * sy_scale) - 2;
-            rects[nr][2] = (int)((maxx + 1) * sx_scale) + 3;
-            rects[nr][3] = (int)((b * 8 + 8) * sy_scale) + 3;
+        for (t = 0; any && t < RENDER_W / 8; t++) {
+            int t1;
+            if (!tile[t]) {
+                continue;
+            }
+            t1 = t;
+            while (t1 + 1 < RENDER_W / 8 && (tile[t1 + 1] || (t1 + 2 < RENDER_W / 8 && tile[t1 + 2]))) {
+                t1++;
+            }
+            if (nr < max) {
+                rects[nr][0] = (int)(t * 8 * sx_scale) - 2;
+                rects[nr][1] = (int)(band * 8 * sy_scale) - 2;
+                rects[nr][2] = (int)((t1 + 1) * 8 * sx_scale) + 3;
+                rects[nr][3] = (int)((band * 8 + 8) * sy_scale) + 3;
+            }
+            if (nr >= max || nr == max - 1) {
+                /* keep going only to learn the bounding box */
+            }
+            {
+                int r0 = (int)(t * 8 * sx_scale) - 2, r1 = (int)(band * 8 * sy_scale) - 2, r2 = (int)((t1 + 1) * 8 * sx_scale) + 3, r3 = (int)((band * 8 + 8) * sy_scale) + 3;
+                if (r0 < minx) { minx = r0; }
+                if (r1 < miny) { miny = r1; }
+                if (r2 > maxx) { maxx = r2; }
+                if (r3 > maxy) { maxy = r3; }
+            }
             nr++;
+            t = t1;
         }
     }
-    if (b < RENDER_H / 8) {
-        return 0;
+    if (nr > max) {
+        rects[0][0] = minx;
+        rects[0][1] = miny;
+        rects[0][2] = maxx;
+        rects[0][3] = maxy;
+        nr = 1;
     }
+    for (t = 0; t < nr; t++) {
+        if (rects[t][0] < 0) { rects[t][0] = 0; }
+        if (rects[t][1] < 0) { rects[t][1] = 0; }
+        if (rects[t][2] > o->ow) { rects[t][2] = o->ow; }
+        if (rects[t][3] > o->oh) { rects[t][3] = o->oh; }
+    }
+    return nr;
+}
+
+/* the nearer frame changed from `oldf` to `f`: only the places that differ and the places the objects were drawn at are made again, and said in d: the whole picture (13 MB at 2304 x 1440) is not made and sent
+ * to the screen sixty times a second for a few moving things.  0 when it is not worth it (more than half of the picture changes) */
+static int rebuild_partial(InterpOut *o, const InterpFrame *oldf, const InterpFrame *f, InterpDirty *d)
+{
+    int rects[INTERP_MAX_RECTS][4], nr, i;
+    long area = 0;
+
+    nr = changed_places(o, oldf, f, rects, 48);
     for (i = 0; i < o->nrect && nr < INTERP_MAX_RECTS; i++) {
         memcpy(rects[nr++], o->rect[i], sizeof rects[0]);
     }
     for (i = 0; i < nr; i++) {
-        if (rects[i][0] < 0) { rects[i][0] = 0; }
-        if (rects[i][1] < 0) { rects[i][1] = 0; }
-        if (rects[i][2] > o->ow) { rects[i][2] = o->ow; }
-        if (rects[i][3] > o->oh) { rects[i][3] = o->oh; }
         if (rects[i][2] > rects[i][0] && rects[i][3] > rects[i][1]) {
             area += (long)(rects[i][2] - rects[i][0]) * (rects[i][3] - rects[i][1]);
         }
     }
-    if (area * 2 > (long)o->ow * o->oh || nr > INTERP_MAX_RECTS - INTERP_OBJECTS) {
+    if (area * 2 > (long)o->ow * o->oh || d->n + nr > INTERP_MAX_RECTS) {
         return 0;
     }
     for (i = 0; i < nr; i++) {
@@ -302,30 +356,76 @@ static int rebuild_partial(InterpOut *o, const InterpFrame *oldf, const InterpFr
     return 1;
 }
 
-/* redraw the rectangle [x0, x1) x [y0, y1) of work from the layers of f, the objects drawn at their offsets (1/FIX pixels) */
-static void redraw(InterpOut *o, const InterpFrame *f, const int offx[INTERP_OBJECTS], const int offy[INTERP_OBJECTS], int x0, int y0, int x1, int y1)
+/* redraw the rectangle [x0, x1) x [y0, y1) of `dst` (a picture of the size of work: work or scratch) from the layers of f, the objects drawn at their offsets (1/FIX pixels) */
+static void redraw_to(InterpOut *o, uint32_t *dst, const InterpFrame *f, const int offx[INTERP_OBJECTS], const int offy[INTERP_OBJECTS], int x0, int y0, int x1, int y1)
 {
-    int ox, oy, k;
+    int ox, oy, k, n = x1 - x0;
+    int *bx = o->xmap, *objx[INTERP_OBJECTS];
 
+    for (k = 0; k < INTERP_OBJECTS; k++) {
+        objx[k] = o->xmap + (size_t)(k + 1) * (size_t)o->ow;
+    }
+    for (ox = x0; ox < x1; ox++) {
+        bx[ox - x0] = src_index(ox, o->ow, RENDER_W, 0);
+        for (k = 0; k < INTERP_OBJECTS; k++) {
+            if (f->obj[k].present) {
+                objx[k][ox - x0] = src_index(ox, o->ow, RENDER_W, offx[k]);
+            }
+        }
+    }
+    (void)n;
     for (oy = y0; oy < y1; oy++) {
         int sy = src_index(oy, o->oh, RENDER_H, 0);
-        uint32_t *row = o->work + (size_t)oy * (size_t)o->ow;
+        uint32_t *row = dst + (size_t)oy * (size_t)o->ow;
+        int py[INTERP_OBJECTS], act[INTERP_OBJECTS], nact = 0;
+
+        for (k = 0; k < INTERP_OBJECTS; k++) {
+            py[k] = f->obj[k].present ? src_index(oy, o->oh, RENDER_H, offy[k]) : -1;
+            if (py[k] >= f->obj[k].y0 && py[k] < f->obj[k].y1) {                 /* only the objects that have this row */
+                act[nact++] = k;
+            }
+        }
         for (ox = x0; ox < x1; ox++) {
-            int sx = src_index(ox, o->ow, RENDER_W, 0);
+            int sx = bx[ox - x0], ai;
             uint8_t cov = 0;
 
-            for (k = 0; k < INTERP_OBJECTS; k++) {
-                int px, py;
-                if (!f->obj[k].present) {
-                    continue;
-                }
-                px = src_index(ox, o->ow, RENDER_W, offx[k]);
-                py = src_index(oy, o->oh, RENDER_H, offy[k]);
-                if (px >= 0 && px < RENDER_W && py >= 0 && py < RENDER_H) {
-                    cov |= (uint8_t)(f->layers.cov[py * RENDER_W + px] & object_mask(k));
+            for (ai = 0; ai < nact; ai++) {
+                int px;
+                k = act[ai];
+                px = objx[k][ox - x0];
+                if (px >= f->obj[k].x0 && px < f->obj[k].x1) {
+                    cov |= (uint8_t)(f->layers.cov[py[k] * RENDER_W + px] & object_mask(k));
                 }
             }
             row[ox] = o->lut[render_compose(f->layers.regs[sy], f->layers.prior, f->layers.pri[sy * RENDER_W + sx], f->layers.col[sy * RENDER_W + sx], cov)];
+        }
+    }
+}
+
+static void redraw(InterpOut *o, const InterpFrame *f, const int offx[INTERP_OBJECTS], const int offy[INTERP_OBJECTS], int x0, int y0, int x1, int y1)
+{
+    redraw_to(o, o->work, f, offx, offy, x0, y0, x1, y1);
+}
+
+/* the rectangle [x0, x1) x [y0, y1) of work becomes the mixture of `from` (base, or work itself) and scratch, scratch with the weight a8 / 256 (per channel) */
+static void mix_rect(InterpOut *o, const uint32_t *from, int x0, int y0, int x1, int y1, int a8)
+{
+    int ox, oy;
+    uint32_t wa = (uint32_t)(256 - a8), wb = (uint32_t)a8;
+
+    for (oy = y0; oy < y1; oy++) {
+        uint32_t *a = o->work + (size_t)oy * (size_t)o->ow;
+        const uint32_t *fr = from + (size_t)oy * (size_t)o->ow;
+        const uint32_t *b = o->scratch + (size_t)oy * (size_t)o->ow;
+        for (ox = x0; ox < x1; ox++) {
+            uint32_t pa = fr[ox], pb = b[ox];
+            a[ox] = pa;
+            if (pa != pb) {
+                uint32_t r = (((pa >> 16) & 255u) * wa + ((pb >> 16) & 255u) * wb + 128u) >> 8;
+                uint32_t g = (((pa >> 8) & 255u) * wa + ((pb >> 8) & 255u) * wb + 128u) >> 8;
+                uint32_t bl = ((pa & 255u) * wa + (pb & 255u) * wb + 128u) >> 8;
+                a[ox] = 0xFF000000u | (r << 16) | (g << 8) | bl;
+            }
         }
     }
 }
@@ -461,37 +561,20 @@ static int object_target(InterpGet get, void *ctx, unsigned long f, unsigned lon
     return 1;
 }
 
-void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned long newest, InterpDirty *d)
+/* the offsets (1/FIX of a picture pixel) at which the objects of frame g are drawn at the game time t, from the frame f the time is in */
+static void object_offsets(const InterpOut *o, InterpGet get, void *ctx, unsigned long f, unsigned long newest, double t, const InterpFrame *g, int offx[INTERP_OBJECTS], int offy[INTERP_OBJECTS])
 {
-    const InterpFrame *near_f;
-    unsigned long f, near_id;
-    int offx[INTERP_OBJECTS], offy[INTERP_OBJECTS], k, i;
-    int rebuilt = 0;
-    double sx_scale, sy_scale;
+    double sx_scale = (double)o->ow / RENDER_W, sy_scale = (double)o->oh / RENDER_H;
+    int k;
 
-    memset(d, 0, sizeof *d);
-    if (o->base == NULL || t < 0.0) {
-        return;
-    }
-    f = (unsigned long)floor(t);
-    near_id = (t - (double)f >= 0.5) ? f + 1 : f;
-    if (near_id > newest || get(ctx, near_id) == NULL) {
-        near_id = f;
-    }
-    near_f = get(ctx, near_id);
-    if (near_f == NULL) {
-        return;
-    }
-    sx_scale = (double)o->ow / RENDER_W;
-    sy_scale = (double)o->oh / RENDER_H;
     for (k = 0; k < INTERP_OBJECTS; k++) {
         double tx, ty;
         offx[k] = offy[k] = 0;
-        if (near_f->obj[k].present && f <= newest && !o->still && object_target(get, ctx, f, newest, t, k, &tx, &ty)) {
-            /* the offset is the way the object is from the place its nearer frame has it, a whole number of pixels of the picture shown: two moments that put the object on the same pixels make the same picture */
-            double dx = tx - near_f->px[k], dy = ty - near_f->py[k];
+        if (g->obj[k].present && f <= newest && !o->still && object_target(get, ctx, f, newest, t, k, &tx, &ty)) {
+            /* the offset is the way the object is from the place its frame has it, a whole number of pixels of the picture shown: two moments that put the object on the same pixels make the same picture */
+            double dx = tx - g->px[k], dy = ty - g->py[k];
             double px, py;
-            if (near_f->run[k] != get(ctx, f)->run[k] || fabs(dx) > 2.0 * INTERP_MAX_MOVE || fabs(dy) > 2.0 * INTERP_MAX_MOVE) {
+            if (g->run[k] != get(ctx, f)->run[k] || fabs(dx) > 2.0 * INTERP_MAX_MOVE || fabs(dy) > 2.0 * INTERP_MAX_MOVE) {
                 continue;
             }
             px = floor(dx * sx_scale + 0.5);
@@ -500,11 +583,71 @@ void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned lo
             offy[k] = (int)floor(py * FIX / sy_scale + 0.5);
         }
     }
-    if (o->base_valid && o->base_id == near_id && memcmp(offx, o->last_offx, sizeof offx) == 0 && memcmp(offy, o->last_offy, sizeof offy) == 0) {
+}
+
+/* the box of object ob of its frame drawn at the offset (where it is in its frame and where it is drawn), in the shown picture; 0 when nothing */
+static int object_box(const InterpOut *o, const InterpObject *ob, int offx, int offy, int r[4])
+{
+    double sx_scale = (double)o->ow / RENDER_W, sy_scale = (double)o->oh / RENDER_H;
+    double ox0 = ob->x0 + (offx < 0 ? (double)offx / FIX : 0.0), ox1 = ob->x1 + (offx > 0 ? (double)offx / FIX : 0.0);
+    double oy0 = ob->y0 + (offy < 0 ? (double)offy / FIX : 0.0), oy1 = ob->y1 + (offy > 0 ? (double)offy / FIX : 0.0);
+
+    r[0] = (int)(ox0 * sx_scale) - 1;
+    r[2] = (int)(ox1 * sx_scale) + 2;
+    r[1] = (int)(oy0 * sy_scale) - 1;
+    r[3] = (int)(oy1 * sy_scale) + 2;
+    if (r[0] < 0) { r[0] = 0; }
+    if (r[1] < 0) { r[1] = 0; }
+    if (r[2] > o->ow) { r[2] = o->ow; }
+    if (r[3] > o->oh) { r[3] = o->oh; }
+    return r[0] < r[2] && r[1] < r[3];
+}
+
+void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned long newest, InterpDirty *d)
+{
+    const InterpFrame *near_f, *f1 = NULL;
+    unsigned long f, near_id;
+    int offx[INTERP_OBJECTS], offy[INTERP_OBJECTS], boffx[INTERP_OBJECTS], boffy[INTERP_OBJECTS], k, i;
+    int rebuilt = 0, a8 = 0;
+
+    memset(d, 0, sizeof *d);
+    memset(boffx, 0, sizeof boffx);
+    memset(boffy, 0, sizeof boffy);
+    if (o->base == NULL || t < 0.0) {
+        return;
+    }
+    f = (unsigned long)floor(t);
+    near_id = (t - (double)f >= 0.5) ? f + 1 : f;
+    if (near_id > newest || get(ctx, near_id) == NULL) {
+        near_id = f;
+    }
+    if (o->blend && f + 1 <= newest && get(ctx, f) != NULL && get(ctx, f + 1) != NULL) {
+        a8 = (int)((t - (double)f) * 256.0 + 0.5);
+        if (a8 > 255) {
+            a8 = 255;
+        }
+        if (a8 > 0) {
+            f1 = get(ctx, f + 1);
+            near_id = f;                                    /* the picture is the mixture of f and f + 1, and what is the same in both is the base of f */
+        }
+    }
+    near_f = get(ctx, near_id);
+    if (near_f == NULL) {
+        return;
+    }
+    object_offsets(o, get, ctx, f, newest, t, near_f, offx, offy);
+    if (f1 != NULL) {
+        object_offsets(o, get, ctx, f, newest, t, f1, boffx, boffy);
+    }
+    if (o->base_valid && o->base_id == near_id && o->last_a8 == a8 && memcmp(offx, o->last_offx, sizeof offx) == 0 && memcmp(offy, o->last_offy, sizeof offy) == 0
+        && memcmp(boffx, o->last_boffx, sizeof boffx) == 0 && memcmp(boffy, o->last_boffy, sizeof boffy) == 0) {
         return;                                             /* the same picture as the last one: nothing to do, nothing changed */
     }
     memcpy(o->last_offx, offx, sizeof offx);
     memcpy(o->last_offy, offy, sizeof offy);
+    memcpy(o->last_boffx, boffx, sizeof boffx);
+    memcpy(o->last_boffy, boffy, sizeof boffy);
+    o->last_a8 = a8;
     if (o->base_valid && o->base_id != near_id && o->base_id < near_id + 64 && get(ctx, o->base_id) != NULL && rebuild_partial(o, get(ctx, o->base_id), near_f, d)) {
         o->base_id = near_id;                                /* only the places that changed were made again (they are in d) */
     } else if (!o->base_valid || o->base_id != near_id) {
@@ -521,40 +664,75 @@ void interp_render(InterpOut *o, InterpGet get, void *ctx, double t, unsigned lo
             for (yy = o->rect[i][1]; yy < o->rect[i][3]; yy++) {
                 memcpy(o->work + (size_t)yy * (size_t)o->ow + o->rect[i][0], o->base + (size_t)yy * (size_t)o->ow + o->rect[i][0], (size_t)(o->rect[i][2] - o->rect[i][0]) * sizeof(uint32_t));
             }
-            memcpy(d->r[d->n++], o->rect[i], sizeof o->rect[i]);
+            if (d->n < INTERP_MAX_RECTS) {
+                memcpy(d->r[d->n++], o->rect[i], sizeof o->rect[i]);
+            } else {
+                d->full = 1;
+            }
         }
         o->nrect = 0;
     }
-    for (k = 0; k < INTERP_OBJECTS; k++) {
-        const InterpObject *ob = &near_f->obj[k];
-        double ox0, ox1, oy0, oy1;
-        int rx0, ry0, rx1, ry1;
+    if (f1 != NULL) {
+        /* the mixture: the places where the two frames differ, and where their objects are drawn, are made from each frame (the objects of each at the place of this moment) and mixed by how far the moment is */
+        int rects[INTERP_MAX_RECTS][4], nr = changed_places(o, near_f, f1, rects, 40), r[4];
 
-        if (!ob->present || (offx[k] == 0 && offy[k] == 0)) {
-            continue;
+        for (i = 0; i < nr && o->nrect < INTERP_MAX_RECTS && d->n < INTERP_MAX_RECTS; i++) {      /* what differs between the frames, objects not moved: the frame f's picture (the base) and the colours of f + 1 */
+            int oy;
+            if (rects[i][2] <= rects[i][0] || rects[i][3] <= rects[i][1]) {
+                continue;
+            }
+            for (oy = rects[i][1]; oy < rects[i][3]; oy++) {
+                const uint8_t *src = f1->colour + src_index(oy, o->oh, RENDER_H, 0) * RENDER_W;
+                uint32_t *dst = o->scratch + (size_t)oy * (size_t)o->ow;
+                int ox;
+                for (ox = rects[i][0]; ox < rects[i][2]; ox++) {
+                    dst[ox] = o->lut[src[src_index(ox, o->ow, RENDER_W, 0)]];
+                }
+            }
+            mix_rect(o, o->base, rects[i][0], rects[i][1], rects[i][2], rects[i][3], a8);
+            memcpy(o->rect[o->nrect++], rects[i], sizeof rects[0]);
+            memcpy(d->r[d->n++], rects[i], sizeof rects[0]);
         }
-        ox0 = ob->x0 + (offx[k] < 0 ? (double)offx[k] / FIX : 0.0);        /* the box the object covers: where it is in its frame and where it is drawn */
-        ox1 = ob->x1 + (offx[k] > 0 ? (double)offx[k] / FIX : 0.0);
-        oy0 = ob->y0 + (offy[k] < 0 ? (double)offy[k] / FIX : 0.0);
-        oy1 = ob->y1 + (offy[k] > 0 ? (double)offy[k] / FIX : 0.0);
-        rx0 = (int)(ox0 * sx_scale) - 1;
-        rx1 = (int)(ox1 * sx_scale) + 2;
-        ry0 = (int)(oy0 * sy_scale) - 1;
-        ry1 = (int)(oy1 * sy_scale) + 2;
-        if (rx0 < 0) { rx0 = 0; }
-        if (ry0 < 0) { ry0 = 0; }
-        if (rx1 > o->ow) { rx1 = o->ow; }
-        if (ry1 > o->oh) { ry1 = o->oh; }
-        if (rx0 >= rx1 || ry0 >= ry1) {
-            continue;
+        for (k = 0; k < INTERP_OBJECTS; k++) {                                                      /* the objects that are drawn at a place of this moment: each frame's drawing of them, mixed */
+            int bx0[4], bx1[4], have0 = 0, have1 = 0;
+            if (o->nrect >= INTERP_MAX_RECTS - 1 || d->n >= INTERP_MAX_RECTS - 1) {
+                break;
+            }
+            if (near_f->obj[k].present && (offx[k] != 0 || offy[k] != 0)) {
+                have0 = object_box(o, &near_f->obj[k], offx[k], offy[k], bx0);
+            }
+            if (f1->obj[k].present && (boffx[k] != 0 || boffy[k] != 0)) {
+                have1 = object_box(o, &f1->obj[k], boffx[k], boffy[k], bx1);
+            }
+            if (!have0 && !have1) {
+                continue;
+            }
+            if (have0 && have1) {
+                r[0] = bx0[0] < bx1[0] ? bx0[0] : bx1[0];
+                r[1] = bx0[1] < bx1[1] ? bx0[1] : bx1[1];
+                r[2] = bx0[2] > bx1[2] ? bx0[2] : bx1[2];
+                r[3] = bx0[3] > bx1[3] ? bx0[3] : bx1[3];
+            } else {
+                memcpy(r, have0 ? bx0 : bx1, sizeof r);
+            }
+            redraw(o, near_f, offx, offy, r[0], r[1], r[2], r[3]);
+            redraw_to(o, o->scratch, f1, boffx, boffy, r[0], r[1], r[2], r[3]);
+            mix_rect(o, o->work, r[0], r[1], r[2], r[3], a8);
+            memcpy(o->rect[o->nrect++], r, sizeof r);
+            memcpy(d->r[d->n++], r, sizeof r);
         }
-        redraw(o, near_f, offx, offy, rx0, ry0, rx1, ry1);
-        o->rect[o->nrect][0] = rx0;
-        o->rect[o->nrect][1] = ry0;
-        o->rect[o->nrect][2] = rx1;
-        o->rect[o->nrect][3] = ry1;
-        o->nrect++;
-        memcpy(d->r[d->n++], o->rect[o->nrect - 1], sizeof o->rect[0]);
+    } else {
+        for (k = 0; k < INTERP_OBJECTS; k++) {
+            const InterpObject *ob = &near_f->obj[k];
+            int r[4];
+
+            if (!ob->present || (offx[k] == 0 && offy[k] == 0) || !object_box(o, ob, offx[k], offy[k], r)) {
+                continue;
+            }
+            redraw(o, near_f, offx, offy, r[0], r[1], r[2], r[3]);
+            memcpy(o->rect[o->nrect++], r, sizeof r);
+            memcpy(d->r[d->n++], r, sizeof r);
+        }
     }
     if (rebuilt) {
         d->full = 1;

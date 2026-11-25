@@ -1082,6 +1082,7 @@ static int interp_step(uint64_t t_start_ns)
         still_tau = (double)id;
     }
     iout.still = still;
+    iout.blend = 1;                                             /* the pictures between two game frames are mixtures of them where they differ (C-154) */
     if (still) {
         /* no clock: see above */
     } else if (target == MENU_FPS_UNCAPPED) {

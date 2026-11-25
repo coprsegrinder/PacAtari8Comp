@@ -49,6 +49,8 @@ typedef struct InterpPair {
     int similar[INTERP_OBJECTS];  /* the share of the joined pixels of the two shapes that is on both, at the best shift (percent) */
 } InterpPair;
 
+#define INTERP_MAX_RECTS 96       /* the places of the picture that changed: runs of tiles in bands of 8 rows when the nearer frame changes, the places of the objects before and after, and what was drawn last time */
+
 /* the picture shown: BGRA, ow x oh, made of the nearest frame's picture with the moving objects drawn again */
 typedef struct InterpOut {
     int ow, oh;
@@ -57,7 +59,11 @@ typedef struct InterpOut {
     unsigned long base_id;        /* which frame base is of */
     int base_valid;
     int nrect;
-    int rect[INTERP_OBJECTS][4];  /* the places on work that are not base (x0, y0, x1, y1) */
+    int rect[INTERP_MAX_RECTS][4];   /* the places on work that are not base (x0, y0, x1, y1) */
+    int blend;                    /* set by the caller: the picture is the mixture of the two game frames the time is between, by how far it is (the places where they differ: an animation changes by degrees, however the pictures fall among the refreshes) */
+    uint32_t *scratch;            /* the second frame's picture of a place, for the mixture */
+    int *xmap;                    /* the columns of the picture seen from the picture and from each object, for the drawing of a place */
+    int last_a8, last_boffx[INTERP_OBJECTS], last_boffy[INTERP_OBJECTS];   /* the weight of the second frame (0 to 255) and its objects' offsets the picture was made with */
     int last_offx[INTERP_OBJECTS], last_offy[INTERP_OBJECTS];   /* the offsets work was made with (1/1024 picture pixel) */
     uint32_t lut[256];            /* the GTIA colour byte as BGRA */
     int still;                    /* set by the caller: the picture is the nearer frame as the game made it, no object moved (the choices of fewer pictures a second than the game makes) */
@@ -77,8 +83,6 @@ int interp_place(InterpGet get, void *ctx, double t, unsigned long newest, int k
 
 /* how the objects of `a` moved to `b` */
 void interp_pair(const InterpFrame *a, const InterpFrame *b, InterpPair *p);
-
-#define INTERP_MAX_RECTS 48       /* 30 bands of the picture that changed when the nearer frame changes, and the places of the objects before and after */
 
 /* what changed on `work` since the previous picture: all of it (`full`), or the rectangles r[i] = x0, y0, x1, y1 (x1 and y1 not included) */
 typedef struct InterpDirty {
