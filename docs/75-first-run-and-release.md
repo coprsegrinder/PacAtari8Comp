@@ -18,7 +18,7 @@ The ROM is checked by exact size and SHA-256 (only the NTSC cartridge); **nothin
 
 `python -I tools/make_win_release.py` builds the program (clang, Release; it links only the Windows system libraries and the Universal C Runtime) and makes `build/release/pacman-a8-port-<version>-win64.zip` with its `.sha256`: a folder with `pacman_a8_play.exe`, `README.txt` (for the player), `LICENSE`, `NOTICE`, `VERSION`, `FILES.sha256`, the shader files the Graphics Options read (`src/shaders`, `third-party/crt-shaders` with the GPL text), the font's licence, and `original/README.txt`. **No ROM, no derived data, no saved data.** The zip is deterministic (sorted names, one time stamp, LF text): the same program gives the same bytes. The version is the one line of the file `VERSION` (0.2.0); the program writes it to `logs/shell.log` at every start; `tools/make_release.py` (the source archive) reads the same file.
 
-## 3. How it was checked (`tools/check_win_release.py`, 20 steps)
+## 3. How it was checked (`tools/check_win_release.py`, 30 steps, for the clang package and for the gcc package)
 
 The zip is unpacked into an empty folder, as a player would, and only a ROM is given:
 
@@ -38,10 +38,21 @@ The zip is unpacked into an empty folder, as a player would, and only a ROM is g
 | **the dialogs** (a real desktop): with no ROM the question appears (it names the ROM, 8,192 bytes, once), OK opens the file chooser, closing it leaves with exit 2 and makes nothing | pass |
 | **the real file chooser, driven** (the file name typed into the system's chooser, Open pressed, on a real desktop): a wrong file is refused with the reason ("sha256 differs") and an offer of another file, **Retry brings the chooser back, and the right ROM then makes the data file and starts the game** (the ROM is not copied into the folder, the game window is closed and the exit is 0); **Cancel on the refusal leaves with exit 2** and nothing made; the right ROM chosen at once starts the game | pass |
 | a damaged data file with dialogs allowed: the question says the data file is damaged and has to be made again; Cancel leaves with exit 2 and the file as it was | pass |
+| **paths with any character** (Cyrillic and spaces, accented letters, Japanese and Chinese, an emoji) in the game folder and in the ROM path: first start with `--rom`, second start without it; and the same kind of path typed into the real file chooser | pass (**a bug found and fixed**: see section 5) |
+| the file chooser navigated into a folder (the folder typed, the chooser goes into it, then the file name alone) | pass |
+| **a game folder that cannot be written to** (access denied to the user by ACL, as Program Files is to a standard user): the first start with a ROM chosen says the folder is write-protected and where to move it, leaves with exit 2, makes nothing; the game started normally (data file already made) runs, the menu works, a setting can be changed (not saved, silently), closes with exit 0, no message window, **nothing in the folder changed** | pass |
+| only DLLs that Windows has are imported (the system libraries and the Universal C Runtime: no compiler runtime to ship), and the manifest is in the program | pass |
+| the first start under the Windows 8 and Windows 7 compatibility layers (an older version reported to the program) | pass |
 | `ctest rom_install_check`: the same logic below the front end (wrong sizes, one byte changed, zeros; written once; a damaged file replaced by identical bytes; a refused ROM leaves a good file alone; a blocked folder) | pass |
 
-## 4. Limits (OV-84)
+## 4. The packages
 
-- The chooser itself is the system's; the check drives it by typing the file name and pressing Open (as a player would by typing a path), not by browsing folders with the mouse.
-- Tried on Windows 11 only (not Windows 10); not run under a reduced-rights account or from Program Files; the executable is **not signed**, so Windows SmartScreen may warn on the first start of a downloaded copy.
-- Only the clang build is packaged; gcc builds the same sources (the headless parts are tested with both) but its executable is not packaged or checked.
+Both compilers' packages are made and pass the same 30 steps: `make_win_release.py` (clang, the one to publish: 359 KB) and `make_win_release.py --cc gcc` (`...-win64-gcc.zip`, 394 KB; the same files, a gcc-built program). The gcc one imports only Windows DLLs too.
+
+## 5. A bug this found: paths with any character
+
+Windows programs that use the narrow ("ANSI") file and dialog calls only understand the characters of the system's ANSI code page (here Windows-1251). A game folder or a ROM path with `é`, `ü`, Japanese letters or an emoji in it made the first start fail with no message at all (not even a log: the log is in the same folder). The fix is one resource: **an application manifest with `activeCodePage` UTF-8** (`src/c/platform/win32/pacman_a8_play.manifest`, `.rc`, compiled by windres in the CMake file), which makes every narrow call of the program (file opening, the file chooser, command-line, module name, message boxes) UTF-8. It needs **Windows 10 version 1903 (May 2019) or later**, which is why the README says so; on an older build the manifest is ignored and the program writes a line to `logs/shell.log` saying the ANSI code page is in use. The same manifest asks to run as the player (no elevation) and names Windows 10 / 11 as supported.
+
+## 6. Where it was run
+
+On Windows 11 (x64); the first start also under the Windows 8 and Windows 7 compatibility layers. A game folder with write access denied stood in for Program Files and a standard-user account; the file chooser was driven by typing a file name or a folder. The program is not code-signed (the README says what Windows SmartScreen may say and how to check the download).

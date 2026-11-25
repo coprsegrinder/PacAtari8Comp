@@ -4,11 +4,12 @@ A study and a port of the **Atari 8-bit (400/800/XL/XE) Pac-Man cartridge** (NTS
 
 > **No ROM is included, and none is needed to build.** To play you need **your own copy of the cartridge ROM** (the NTSC version, a file of exactly 8,192 bytes). The program asks for it the first time it starts, reads it once to make the game's data files, and never needs it again. See [NOTICE](NOTICE) for what the licence does and does not cover.
 
-## Playing (Windows 10 / 11, 64-bit)
+## Playing (Windows 10 version 1903 or later, or Windows 11; 64-bit)
 
 1. Download the release zip `pacman-a8-port-<version>-win64.zip` and unpack it anywhere you can write to.
 2. Run `pacman_a8_play.exe`. The first time, choose your ROM file. The program checks it (exact size and SHA-256), makes `resources/pack/assets.pmab` from the parts that are data, and does not copy or keep the ROM.
-3. Play. Everything - settings, achievements, high score, log - stays in that folder: the game is **portable**. Delete `save/` to start afresh.
+3. The first time Windows may say "Windows protected your PC" (the program is not code-signed): choose "More info", then "Run anyway"; compare the download's SHA-256 with the `.sha256` file if you want to be sure. No installation or administrator rights are needed, and the program writes only inside its own folder.
+4. Play. Everything - settings, achievements, high score, log - stays in that folder: the game is **portable**. Delete `save/` to start afresh.
 
 | | Keyboard | Pad (Xbox, DualShock 4, DualSense) |
 |---|---|---|

@@ -7,7 +7,7 @@ does (NTSC, 59.92 frames a second). This is the version listed in the file
 VERSION of the project.
 
 WHAT YOU NEED
-  - Windows 10 or 11, 64-bit.
+  - Windows 10 (version 1903, May 2019, or later) or Windows 11, 64-bit.
   - Your own copy of the Pac-Man (Atari 8-bit) cartridge ROM: the NTSC version,
     a file of exactly 8,192 bytes. The ROM is NOT included and is not for sale
     here; the program recognises the right file by its size and SHA-256.
@@ -43,6 +43,15 @@ CONTROLS
   using, with its icons; vibration and light bar for PlayStation pads),
   Achievements (27, kept in the folder save), Sound (volume, mute, output
   filter). Your choices are remembered.
+
+WINDOWS MAY WARN BEFORE THE FIRST START
+  The program is not code-signed (a signing certificate is a purchase this
+  project has not made), so Windows SmartScreen can say "Windows protected your
+  PC" for a downloaded copy. Choose "More info", then "Run anyway". To be sure the
+  file is the one that was published, compare its SHA-256 with the .sha256 file
+  next to the download (PowerShell: Get-FileHash file.zip). Every file in this
+  folder is listed with its SHA-256 in FILES.sha256. The program needs no
+  installation, no administrator rights, and writes only inside its own folder.
 
 IF SOMETHING GOES WRONG
   Look at logs\shell.log in this folder: it says what the program found and why
