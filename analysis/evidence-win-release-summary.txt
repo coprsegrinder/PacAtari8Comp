@@ -1,14 +1,14 @@
-Windows release check (tools/check_win_release.py), version 0.2.0: 30 steps, 0 failed
+Windows release check (tools/check_win_release.py), version 1.0.0: 30 steps, 0 failed
 PASS  zip: every file equals FILES.sha256, and FILES.sha256 lists all the others (41 files)  (differ: [])
 PASS  zip: the files a player needs are there; the folder original holds only its README  (missing: [])
 PASS  zip: no ROM file; nothing of the cartridge and nothing of the OS ROM but the font's glyph bytes (63 pieces, the open font's bit-for-bit copy of the OS glyphs) in any file, the program included  (hits: [])
-PASS  made again from the same program, the zip is byte-identical  (sha256 d23e67430d3a2b95)
+PASS  made again from the same program, the zip is byte-identical  (sha256 a107c6d6bb2cd1a7)
 PASS  first start with the ROM given from outside the folder: runs; the data file is made; the ROM is not copied into the folder  (exit 0, data file 9392 bytes)
 PASS  second start, no ROM anywhere: runs; the data file is untouched (the ROM is read once)  (exit 0)
 PASS  started from another current folder (a shortcut): the same game folder, no new data file  (exit 0, files made in the other folder: [])
 PASS  no ROM and no data file: stops with exit 2, says why in logs/shell.log, makes nothing  (exit 2)
 PASS  not the cartridge (a file of the wrong size, one byte changed, all zeros, the Atari OS ROM): refused with exit 2, nothing made
-PASS  the reason is in the log (the size, the hash)  (C:\Users\User\AppData\Local\Temp\pm-release-vgdxn5h7\wrong.bin: the ROM is not 8192 bytes)
+PASS  the reason is in the log (the size, the hash)  (C:\Users\User\AppData\Local\Temp\pm-release-331pzcd_\wrong.bin: the ROM is not 8192 bytes)
 PASS  a ROM file that cannot be opened: said so (exit 2)
 PASS  a damaged data file with the ROM given: made again, equal to the first time  (exit 0)
 PASS  a damaged data file and no ROM: stops with exit 2 (it would ask for the ROM), the damaged file is left  (exit 2)
