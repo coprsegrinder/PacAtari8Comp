@@ -1,6 +1,6 @@
 """The Windows release of the program (docs/75): a zip with the game, its shader files and the licences, which the player needs only the cartridge ROM to play.
 
-  python -I tools/make_win_release.py                    build the program (clang, Release) in build/win-release and make build/release/pacman-a8-port-<version>-win64.zip (+ .sha256)
+  python -I tools/make_win_release.py                    build the program (clang, Release) in build/win-release and make build/release/pacman-a8-port-<version>-win64.zip (+ .sha256, and release-notes-<version>.md: the text of the GitHub release, from packaging/windows/release-notes.md)
   python -I tools/make_win_release.py --exe PATH         use this built program instead of building one
   python -I tools/make_win_release.py --cc gcc           another compiler (the default is clang: it links only the Windows system libraries)
 
@@ -98,6 +98,11 @@ def main():
     digest = hashlib.sha256(open(path, "rb").read()).hexdigest()
     with open(path + ".sha256", "w", encoding="ascii", newline="\n") as fh:
         fh.write("%s  %s\n" % (digest, os.path.basename(path)))
+    if cc != "gcc":                                            # the text of the GitHub release: the template of packaging/windows/release-notes.md with this version and this zip's SHA-256
+        tpl = open(os.path.join(ROOT, "packaging", "windows", "release-notes.md"), encoding="utf-8").read().replace("\r\n", "\n")
+        notes = os.path.join(OUT, "release-notes-%s.md" % VERSION)
+        with open(notes, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(tpl.replace("{version}", VERSION).replace("{sha256}", digest))
     print("%s  %d files, %d bytes, sha256 %s" % (path, len(files), os.path.getsize(path), digest))
 
 

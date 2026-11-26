@@ -61,7 +61,7 @@
 #define TITLE "Pac-Man (Atari 8-bit) - C port"
 
 typedef struct Options {
-    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest, offtest, settingstest, achtest, no_dialogs;
+    int scale, fullscreen, no_audio, exact, menutest, windowed, startuptest, crttest, offtest, settingstest, achtest, no_dialogs, device;
     const char *fps, *trace, *crt, *rom;
     long selftest;
     uint32_t seed;
@@ -382,6 +382,9 @@ static int controls_device(void)
 {
     int i;
 
+    if (opt.device != 0) {                                       /* --device NAME: shown as if this controller were in use (the README's pictures) */
+        return opt.device;
+    }
     if (!last_is_keyboard) {
         for (i = 0; i < 2; i++) {
             if (pad_kind_of[i] != 0) {
@@ -2751,6 +2754,17 @@ static void mt_check(int id, int arg)
                         gold += pa[0] > 200 && pa[1] > 150 && pa[1] < 235 && pa[2] < 120;           /* the readback is RGBA */
                     }
                 }
+                if (total > 0) {                                      /* the whole picture the display got, for the eye (the README shows it) */
+                    PmFile *pf = pm_fs_open("logs/toast_full.ppm", "wb");
+                    if (pf != NULL) {
+                        int q;
+                        pm_fs_printf(pf, "P6%c%d %d%c255%c", 10, toast_aw, toast_ah, 10, 10);
+                        for (q = 0; q < toast_aw * toast_ah; q++) {
+                            pm_fs_write(pf, toast_a + 4 * (size_t)q, 3);
+                        }
+                        (void)pm_fs_close(pf);
+                    }
+                }
                 if (total > 0) {                                      /* the region, for the eye */
                     PmFile *pp = pm_fs_open("logs/toast_grab.ppm", "wb");
                     if (pp != NULL) {
@@ -3083,6 +3097,9 @@ static void parse_args(int argc, char **argv)
             opt.menutest = 1;
         } else if (strcmp(argv[i], "--rom") == 0 && i + 1 < argc) {
             opt.rom = argv[++i];
+        } else if (strcmp(argv[i], "--device") == 0 && i + 1 < argc) {
+            const char *d = argv[++i];
+            opt.device = strcmp(d, "xbox") == 0 ? CD_XINPUT : strcmp(d, "ds4") == 0 ? CD_DS4 : strcmp(d, "dualsense") == 0 ? CD_DUALSENSE : CD_KEYBOARD;
         } else if (strcmp(argv[i], "--no-dialogs") == 0) {
             opt.no_dialogs = 1;
         } else if (strcmp(argv[i], "--achtest") == 0) {
@@ -3365,8 +3382,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
         toast_tick_now();
         {
             int cd = controls_device();                          /* the Controls page follows the device the player touched last */
-            int vok = pad_kind_of[0] != 0 || pad_kind_of[1] != 0;             /* Vibration needs a pad, Light Bar a DualShock 4 or a DualSense */
-            int bok = pad_kind_of[0] >= CD_DS4 || pad_kind_of[1] >= CD_DS4;
+            int vok = opt.device != CD_KEYBOARD || pad_kind_of[0] != 0 || pad_kind_of[1] != 0;             /* Vibration needs a pad, Light Bar a DualShock 4 or a DualSense */
+            int bok = opt.device >= CD_DS4 || pad_kind_of[0] >= CD_DS4 || pad_kind_of[1] >= CD_DS4;
 
             if (vok != menu.vib_ok || bok != menu.bar_ok) {
                 menu.vib_ok = vok;

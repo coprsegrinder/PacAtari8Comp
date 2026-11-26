@@ -1,8 +1,32 @@
 # Pac-Man (Atari 8-bit) - a faithful C port
 
-A study and a port of the **Atari 8-bit (400/800/XL/XE) Pac-Man cartridge** (NTSC): the original 6502 program was disassembled and documented routine by routine, and then re-written in portable **C99** so that it runs on a modern machine **frame for frame as the original does** (59.92 frames a second), with a Windows front end that adds what a modern player expects: any resolution, borderless fullscreen, frame rates up to uncapped, CRT shaders, Xbox / DualShock 4 / DualSense pads with rumble and light bar, a pause menu, saved settings and achievements.
+A study and a port of the **Atari 8-bit (400/800/XL/XE) Pac-Man cartridge** (NTSC): the original 6502 program was disassembled and documented routine by routine, and then re-written in portable **C99** so that it runs on a modern machine **frame for frame as the original does** (59.92 frames a second), with a Windows front end that adds what a modern player expects (see **Modernization** below): any resolution, borderless fullscreen, frame rates up to uncapped, CRT shaders, Xbox / DualShock 4 / DualSense pads with rumble and light bar, a pause menu, saved settings and achievements.
 
 > **No ROM is included, and none is needed to build.** To play you need **your own copy of the cartridge ROM** (the NTSC version, a file of exactly 8,192 bytes). The program asks for it the first time it starts, reads it once to make the game's data files, and never needs it again. See [NOTICE](NOTICE) for what the licence does and does not cover.
+
+## Screenshots
+
+All pictures are the program's own output (`python -I tools/make_screenshots.py`), the game's pictures enlarged three times without smoothing, or the CRT shaders' result on screen.
+
+| The title, the game, the ghosts closing in |
+|---|
+| <img src="docs/images/gameplay-title.png" width="32%"> <img src="docs/images/gameplay-play.png" width="32%"> <img src="docs/images/gameplay-chase.png" width="32%"> |
+
+| CRT shaders: crt-guest-advanced-ntsc, zfast-crt-composite, crt-aperture |
+|---|
+| <img src="docs/images/crt-guest-advanced-ntsc.png" width="32%"> <img src="docs/images/crt-zfast.png" width="32%"> <img src="docs/images/crt-aperture.png" width="32%"> |
+
+| The pause menu, the Graphics Options, the Sound page |
+|---|
+| <img src="docs/images/menu-main.png" width="32%"> <img src="docs/images/menu-graphics.png" width="32%"> <img src="docs/images/menu-sound.png" width="32%"> |
+
+| The Controls page for the keyboard, an Xbox pad and a DualSense |
+|---|
+| <img src="docs/images/menu-controls-keyboard.png" width="32%"> <img src="docs/images/menu-controls-xbox.png" width="32%"> <img src="docs/images/menu-controls-dualsense.png" width="32%"> |
+
+| The Achievements page (a prepared save file, to show the page), and the toast when one is earned (the first dot, with a CRT shader) |
+|---|
+| <img src="docs/images/menu-achievements.png" width="48%"> <img src="docs/images/achievement-toast.png" width="48%"> |
 
 ## Playing (Windows 10 version 1903 or later, or Windows 11; 64-bit)
 
@@ -23,6 +47,35 @@ A study and a port of the **Atari 8-bit (400/800/XL/XE) Pac-Man cartridge** (NTS
 | Help / Full screen | F1 / F11, Alt+Enter | |
 
 The **pause menu** (the game is paused while it is open): **Graphics Options** (windowed or borderless fullscreen, 20 resolutions, FPS from native 59.92 to uncapped with in-between pictures, three CRT shaders), **Controls** (the controls of the device you are using, with its icons; vibration and light bar settings: Off / Light / Heavy), **Achievements** (27, with a toast, a chime and a gold flash on the pad when one is earned), **Sound** (master volume, mute, output filter Off / Soft / Warm). The game itself - its rules, speed, sounds - is the original's; the Select / Option / Start choices work as on the real machine.
+
+## Modernization
+
+The game itself - its rules, speed, sounds, ghosts, levels - is the original's, frame for frame. Everything below is added **around** it, and none of it changes the game's own state (its digests are the same with or without any of it).
+
+**Picture**
+- Windowed or **borderless fullscreen**, 20 resolutions in 4:3, 16:9, 16:10 and 21:9; the picture is always 1.6:1, centred, and uses a whole-number scale when that fits well.
+- **Frame rate from native (59.92) up to uncapped**, or 75 to 180 a second paced to the monitor's refresh: the pictures between two game frames show the places where the two differ as a mixture of both, so objects glide while the game itself still runs at its own speed.
+- **Three CRT shaders** (crt-guest-advanced-ntsc, zfast-crt-composite, crt-aperture), run on OpenGL 4.5 and chosen live in the menu, or none.
+
+**Controls**
+- Keyboard and **Xbox pads**; **DualShock 4 and DualSense, over USB and Bluetooth** (read and written directly, so no extra software is needed), with a second pad as player 2; the pad drives the menu too.
+- **Rumble** on every pad and the **light bar** of PlayStation pads follow the game: a power pellet (blue light), a ghost eaten, Pac-Man caught (red), an extra life, a board cleared. Vibration and light bar each have Off / Light / Heavy, and are grayed out when no pad that can do them is connected.
+- A **Controls page** that lists the controls of the device you are using, with its icons (keycaps, D-pad, stick, Xbox and PlayStation buttons) drawn by the program.
+- A button held down from the menu never reaches the game.
+
+**Sound**
+- The chip's sound is made at four times the rate and low-passed before it reaches the speaker, so the start tune's very high tone no longer folds down into an audible whine.
+- A **Sound page**: master volume (an audio taper, in steps of 10 %), mute, and an output filter: Off (the raw chip), Soft (the default) or Warm (a small TV speaker).
+
+**Around the game**
+- A **pause menu** (Esc, or Menu + View on a pad; the game is paused while it is open) with Resume, Graphics Options, Controls, Achievements, Sound and Quit; F1 shows the function keys.
+- **27 achievements** (three of them hidden) found by watching the game's state: firsts, ghost combos, a board cleared without dying, score and level tiers, a 15-minute game, lifetime totals. A toast, a chime and a gold flash on the pad's light bar tell you. Score and level achievements count only in games started at level 1. They are kept in a **sealed file**: one edited by hand is put aside.
+- **Everything you set is remembered**, in text files in the game folder.
+
+**Installing and running**
+- **Portable**: no installer, no registry, nothing outside the folder; folders and ROM paths with any characters (accented letters, Japanese, emoji) work.
+- **Only your ROM is needed**: it is read once to make the game's data files, and not copied or needed again. The program asks for it by itself; a wrong, missing or damaged file is explained, not a crash.
+- The release zip is **reproducible**, and checked as a player meets it (see `docs/75`).
 
 ## Building from source
 

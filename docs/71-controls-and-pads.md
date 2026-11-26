@@ -96,3 +96,7 @@ Reported: Bluetooth detection and the pads work; (1) choosing Resume Game (or ba
 2. **Vibration and Light Bar are `OFF / LIGHT / HEAVY`** (Right / Enter / Space go Off, Light, Heavy, Off...; Left goes the other way; both start at HEAVY). HEAVY is the strength of section 3; LIGHT is 40 % of the rumble and 35 % of the light bar's brightness (choices, not measurements). **Vibration is grayed out when no pad is connected** (keyboard only); **Light Bar is grayed out and shows OFF (nothing is sent) unless a DualShock 4 or a DualSense is connected** (an XInput pad can rumble but has no light). A grayed-out item cannot be selected or changed (the cursor skips it); the choice made earlier is kept and comes back when a pad is connected.
 
 Checked: `ctest menu_check` (cycle both ways, grayed-out items inert and skipped, text), the real program's `--menutest` (no pad is not the case on the owner's machine: see below). **Not checked with a real pad:** the hold-off with a real button press (the test machine has no way to press one; it is exercised by reading the code and by the keyboard path of `--menutest`) (OV-81).
+
+## 8. `--device`, for looking at the pages (2026-11-26)
+
+`pacman_a8_play.exe --device xbox|ds4|dualsense` shows the Controls page (and enables Vibration and Light Bar as a pad would) as if that controller were in use, with none connected: for the README's pictures (`tools/make_screenshots.py`) and for looking at a page without the pad. It changes nothing else.

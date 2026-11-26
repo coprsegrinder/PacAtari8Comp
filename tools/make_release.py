@@ -34,7 +34,7 @@ MANIFEST = "RELEASE-MANIFEST.json"
 EXCLUDE_DIRS = ("original/", "resources/", "build/", "external-tools/")
 EXCLUDE_FILES = ("Personal notes.txt", "a800.zip", "src/asm/pacman.s")      # pacman.s is the cartridge program in text: made from the player's own ROM (tools/make_asm.py), never published
 EXCLUDE_SUFFIX = (".rom", ".bin", ".car", ".atr", ".xex", ".a8", ".5200", ".os", ".exe", ".obj", ".o", ".lst", ".lab", ".pyc", ".log", ".png", ".jpg")
-KEEP_PREFIX = ("third-party/crt-shaders/",)        # the CRT shaders of docs/70 with their lookup textures (small PNG files the shaders read): kept whatever the suffix
+KEEP_PREFIX = ("third-party/crt-shaders/", "docs/images/")        # the CRT shaders of docs/70 with their lookup textures (small PNG files the shaders read): kept whatever the suffix
 REQUIRED = ("LICENSE", "NOTICE", "docs/63-build-and-dependencies.md", "docs/65-release.md", "src/c/CMakeLists.txt", "third-party/EightBit-Atari-Fonts/OFL.txt", "tools/check_clean_build.py")
 ROMS = ("Pac-Man.rom", "Atari OS Rev B (19xx)(Atari)(NTSC)[400-800].rom", "Atari OS Rev B (19xx)(Atari)(PAL)[a800.zip MAME].rom")
 

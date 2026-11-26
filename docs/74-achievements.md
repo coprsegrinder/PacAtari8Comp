@@ -74,3 +74,7 @@ Pause menu: Resume Game, Graphics Options, Controls, **Achievements**, Sound, Qu
 - **A game is counted at its end** by the game-over countdown; a game left by Start, Select or Option, or by closing the window, is not counted. The lifetime counts are written every 10 seconds at most, so a crash can lose a few seconds of counts (not an unlock: that is written at once).
 - The achievements are not tied to a replay: only live play is watched. The owner's own, earlier game progress is not looked for.
 
+
+## 7. The pictures of the README (2026-11-26)
+
+`--achtest` also writes `logs/toast_full.ppm`, the whole picture read back from the OpenGL window while the toast is up; `tools/make_screenshots.py` turns it into `docs/images/achievement-toast.png`.
