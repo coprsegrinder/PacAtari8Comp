@@ -16,6 +16,7 @@
 #define PAD_PRODUCT_DUALSENSE 0x0CE6
 #define PAD_PRODUCT_DUALSENSE_EDGE 0x0DF2
 
+/* the kinds of PlayStation pad */
 typedef enum PadKind { PAD_NONE = 0, PAD_DS4 = 1, PAD_DUALSENSE = 2 } PadKind;
 
 /* the buttons of PadState.buttons */
@@ -34,6 +35,7 @@ typedef enum PadKind { PAD_NONE = 0, PAD_DS4 = 1, PAD_DUALSENSE = 2 } PadKind;
 #define PB_PS 0x1000u
 #define PB_TOUCH 0x2000u
 
+/* a pad's state after one input report: the direction cross, the left stick, the buttons */
 typedef struct PadState {
     int up, down, left, right;   /* the direction cross */
     int lx, ly;                  /* the left stick, -32768..32767, up and right positive (as XInput) */
@@ -49,7 +51,7 @@ int padhid_parse(PadKind kind, const uint8_t *rep, size_t n, PadState *out);
 /* the output report for these motor strengths (strong: the big, low-pitched motor; weak: the small, high one) and light bar colour; `bluetooth` selects the framing, `seq` counts the Bluetooth reports,
  * `setup` (DualSense) also asks the pad to put out its own start-up light so the colour is the only light.  buf holds at least PADHID_OUT_MAX bytes; returns the report's length (0 for PAD_NONE) */
 #define PADHID_OUT_MAX 78
-size_t padhid_build_output(PadKind kind, int bluetooth, unsigned seq, int setup, uint8_t strong, uint8_t weak, uint8_t r, uint8_t g, uint8_t b, uint8_t *buf);
+size_t padhid_build_output(PadKind kind, int bluetooth, unsigned seq, int setup, uint8_t strong, uint8_t weak, uint8_t r, uint8_t g, uint8_t b, uint8_t *buf);   /* writes the output report into buf and returns its length */
 
 /* CRC-32 (the usual one: polynomial 0xEDB88320, start and end 0xFFFFFFFF) of `seed` followed by p[0..n) */
 uint32_t padhid_crc32(uint8_t seed, const uint8_t *p, size_t n);

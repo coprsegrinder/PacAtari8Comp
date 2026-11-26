@@ -42,7 +42,7 @@ Not tried (OV-72): MSVC, macOS, a 32-bit or big-endian target, other C libraries
 ## 3. How the C port is built
 
 - **CMake 3.16 or later**, C standard 99 with extensions off, and for clang and gcc `-Wall -Wextra -Wpedantic -Wconversion -Werror`. No option of its own: the compiler is chosen with `-DCMAKE_C_COMPILER`, the build type with `-DCMAKE_BUILD_TYPE` (Release and Debug are tested).
-- **7 libraries** (`pm_app`, `pm_assets`, `pm_audio`, `pm_core`, `pm_platform`, `pm_render`, `pm_shell`), **20 executables** (`assets_check`, `audio_check`, `audio_selftest`, `constants_check`, `frontend_check`, `fs_sandbox`, `install_assets`, `interp_audit`, `interp_check`, `menu_check`, `pacman_a8`, `pacman_a8_play`, `platform_check`, `render_check`, `shell_selftest`, `slang_check`, `toolchain_check`, `vector_runner`, `vector_runner_swapped`, `world_check`) and **43 tests** under `ctest`. The program is `shell/pacman_a8`; the installer `assets/install_assets` makes the asset blob from the ROM.
+- **7 libraries** (`pm_app`, `pm_assets`, `pm_audio`, `pm_core`, `pm_platform`, `pm_render`, `pm_shell`), **25 executables** (`achieve_check`, `assets_check`, `audio_check`, `audio_selftest`, `constants_check`, `controls_check`, `frontend_check`, `fs_sandbox`, `install_assets`, `interp_audit`, `interp_check`, `menu_check`, `pacman_a8`, `pacman_a8_play`, `platform_check`, `render_check`, `rom_install_check`, `settings_check`, `shell_selftest`, `slang_check`, `sound_check`, `toolchain_check`, `vector_runner`, `vector_runner_swapped`, `world_check`) and **48 tests** under `ctest`. The program is `shell/pacman_a8`; the installer `assets/install_assets` makes the asset blob from the ROM.
 - **No library but the C standard library** (`-lm` on Unix for the sound model); everything else is in `platform/` behind a small interface: files only through `fs.c` under the main folder, the clock through `timer.c`.
 - **Configuration at run time**: none in files or the environment. The **main folder** is the current folder, or `--root DIR`; the ROM is `original/Pac-Man.rom` under it, the blob `resources/pack/assets.pmab`, the high score and options `save/`, the log `logs/`; nothing outside the main folder is ever read or written.
 
@@ -124,11 +124,11 @@ every test module (103 of them); the long ones (the comparisons with the ROM) ta
 
 ## 5. The Python side
 
-**201 tools** in `tools/` and **103 test modules** in `tests/`, all Python 3 with the standard library, **except**:
+**205 tools** in `tools/` and **103 test modules** in `tests/`, all Python 3 with the standard library, **except**:
 
 | Module | Files that import it | Used for |
 |---|---|---|
-| `PIL` | 10 (`asset_pack.py`, `check_assets.py`, `check_ghost_screenshots.py`, `check_item_shots.py`, ...) | the font, PNG previews, screenshot comparison |
+| `PIL` | 11 (`asset_pack.py`, `check_assets.py`, `check_ghost_screenshots.py`, `check_item_shots.py`, ...) | the font, PNG previews, screenshot comparison |
 | `numpy` | 25 (`analyze_full_waveform.py`, `analyze_ghost_sweep.py`, `analyze_tail_sound.py`, `analyze_tune_wav.py`, ...) | spectra and correlations of the sound recordings |
 
 **Neither module is needed to build or run the port, to make the recorded vectors (recipe C) or the replays (recipe D), to compare the C with the ROM (`check_c_vs_rom.py`, `check_behaviour.py`) or to rebuild the ROM.** The scripts of the recipes that import Pillow, directly or through `asset_pack.py`, are: `make_c_assets`, `make_c_rom_layout`, `analyze_binary_docs`, `analyze_data_docs`, `analyze_resources_docs`. So recipe E (two of the six generators), the documentation generators and the Python tests of `run_regression.py` that use them need Pillow; no recipe script imports numpy; other third-party modules reached: test_app_frame.
@@ -143,7 +143,7 @@ The C sources `core/world.[ch]`, `tables.[ch]`, `constants.h`, `assets/rom_layou
 
 ## 8. Checked on a clean copy
 
-`python -I tools/check_clean_build.py` copies every file Git would keep (no `build/`, no `resources/`, no `original/`) into `build/clean-check/tree`, adds only your cartridge ROM, and then does recipes A, C, A again and D: **the build has no warnings; `ctest` with no derived data passes its tests and skips the ones that need the vectors; the vectors are made from the ROM; `ctest` then runs and passes all 43 tests; a replay is made and played, and its state, run, video and audio digests equal those of the golden game** (`analysis/evidence-clean-build-summary.txt`). The copy has no file that is not in the project.
+`python -I tools/check_clean_build.py` copies every file Git would keep (no `build/`, no `resources/`, no `original/`) into `build/clean-check/tree`, adds only your cartridge ROM, and then does recipes A, C, A again and D: **the build has no warnings; `ctest` with no derived data passes its tests and skips the ones that need the vectors; the vectors are made from the ROM; `ctest` then runs and passes all 48 tests; a replay is made and played, and its state, run, video and audio digests equal those of the golden game** (`analysis/evidence-clean-build-summary.txt`). The copy has no file that is not in the project.
 
 ## 9. Limits
 

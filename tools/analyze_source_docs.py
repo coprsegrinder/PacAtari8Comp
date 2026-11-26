@@ -156,20 +156,23 @@ def structures():
         lines = t.splitlines()
         for i, l in enumerate(lines):
             s = re.match(r"^typedef struct (\w+)?\s*\{", l)
-            if s:
-                j = i
-                while j < len(lines) and not re.match(r"^\}\s*(\w+);", lines[j]):
-                    j += 1
-                name = re.match(r"^\}\s*(\w+);", lines[j]).group(1) if j < len(lines) else s.group(1)
-                nf = sum(1 for k in range(i + 1, j) if re.search(r";", lines[k]))
-                out.append((m, f, name, "struct", nf, describe(lines, i)))
             e = re.match(r"^typedef enum (\w+)?\s*\{", l)
-            if e:
-                j = i
-                while j < len(lines) and not re.match(r"^\}\s*(\w+);", lines[j]):
-                    j += 1
-                name = re.match(r"^\}\s*(\w+);", lines[j]).group(1) if j < len(lines) else e.group(1)
-                out.append((m, f, name, "enum", sum(1 for k in range(i + 1, j) if lines[k].strip()), describe(lines, i)))
+            if s or e:
+                one = re.search(r"\}\s*(\w+);", l)                    # a typedef that is all on one line: `typedef enum X { A, B } X;`
+                if one:
+                    j, name = i, one.group(1)
+                else:
+                    j = i
+                    while j < len(lines) and not re.match(r"^\}\s*(\w+);", lines[j]):
+                        j += 1
+                    name = re.match(r"^\}\s*(\w+);", lines[j]).group(1) if j < len(lines) else (s or e).group(1)
+                if s:
+                    nf = sum(1 for k in range(i + 1, j) if re.search(r";", lines[k]))
+                    out.append((m, f, name, "struct", nf, describe(lines, i)))
+                else:
+                    n = l[l.index("{"):l.index("}")].count(",") + 1 if one else sum(1 for k in range(i + 1, j) if lines[k].strip())
+                    out.append((m, f, name, "enum", n, describe(lines, i)))
+                continue
             e = re.match(r"^enum (\w+)\s*\{", l)
             if e:
                 out.append((m, f, e.group(1), "enum", 0, describe(lines, i)))

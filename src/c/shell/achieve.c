@@ -41,7 +41,7 @@ const AchDef ach_defs[ACH_COUNT] = {
 #define HIGH_MIN 1000L
 
 /* the seal's key: it keeps a hand-edited file from being taken (a file that is not sealed with it is put aside); it is in the source, so it is no secret from someone who reads the source */
-static const uint8_t seal_key[32] = {0x50, 0x61, 0x63, 0x2D, 0x4D, 0x61, 0x6E, 0x20, 0x41, 0x74, 0x61, 0x72, 0x69, 0x20, 0x38, 0x2D, 0x62, 0x69, 0x74, 0x20, 0x61, 0x63, 0x68, 0x69, 0x65, 0x76, 0x65, 0x6D, 0x65, 0x6E, 0x74, 0x73};
+static const char seal_key[] = "Pac-Man Atari 8-bit achievements";
 
 void ach_init(Ach *a)
 {
@@ -358,7 +358,7 @@ size_t ach_save_bytes(const Ach *a, uint8_t out[ACH_FILE_MAX])
     for (i = 0; i < ACH_COUNT; i++) {
         put32(out + FILE_HEAD + 16 + 4 * i, a->when[i]);
     }
-    hmac_sha256(seal_key, sizeof seal_key, out, FILE_BODY, out + FILE_BODY);
+    hmac_sha256((const uint8_t *)seal_key, sizeof seal_key - 1u, out, FILE_BODY, out + FILE_BODY);
     return FILE_BODY + 32;
 }
 
@@ -371,7 +371,7 @@ int ach_load_bytes(Ach *a, const uint8_t *buf, size_t n)
     if (n != FILE_BODY + 32 || memcmp(buf, "PMAC", 4) != 0 || buf[4] != 1 || buf[5] != 0 || buf[6] != ACH_COUNT || buf[7] != 0) {
         return 1;
     }
-    hmac_sha256(seal_key, sizeof seal_key, buf, FILE_BODY, mac);
+    hmac_sha256((const uint8_t *)seal_key, sizeof seal_key - 1u, buf, FILE_BODY, mac);
     for (i = 0; i < 32; i++) {
         diff = (uint8_t)(diff | (mac[i] ^ buf[FILE_BODY + i]));
     }

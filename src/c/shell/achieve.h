@@ -15,12 +15,14 @@
 #define ACH_PATH "save/achievements.pma"
 #define ACH_BAD_PATH "save/achievements.bad"
 
+/* the achievements, in the order of the table ach_defs (and of the bits of the saved file) */
 typedef enum AchId {
     ACH_FIRST_BITE, ACH_POWER_UP, ACH_GHOST_BUSTER, ACH_DOUBLE_TROUBLE, ACH_TRIPLE_THREAT, ACH_GHOST_SWEEP, ACH_CLEAN_SWEEP, ACH_CLOSE_CALL, ACH_FRUIT_SALAD,
     ACH_BONUS_LIFE, ACH_HIGH_ROLLER, ACH_SIX_FIGURES, ACH_ARCADE_LEGEND, ACH_NEW_RECORD, ACH_WARMING_UP, ACH_FIVE_ALIVE, ACH_VETERAN, ACH_UNSTOPPABLE,
     ACH_MARATHON, ACH_SURVIVOR, ACH_DOT_COLLECTOR, ACH_DOT_HOARDER, ACH_GHOST_HUNTER, ACH_REGULAR, ACH_TWOS_COMPANY, ACH_PELLET_POPPER, ACH_QUICK_DRAW
 } AchId;
 
+/* an achievement's entry in the table: name, description, whether it is hidden, the lifetime count its progress is of, and whether it needs a game from level 1 */
 typedef struct AchDef {
     const char *name;            /* at most 20 characters */
     const char *desc;            /* at most 40 characters */
@@ -32,6 +34,7 @@ typedef struct AchDef {
 
 extern const AchDef ach_defs[ACH_COUNT];
 
+/* the achievements of the player (what is kept in the file) and the state of the game being watched (what is not) */
 typedef struct Ach {
     /* kept in the file */
     uint32_t unlocked;           /* bit per AchId */
@@ -53,17 +56,17 @@ typedef struct Ach {
     } prev;
 } Ach;
 
-void ach_init(Ach *a);
+void ach_init(Ach *a);   /* all locked, no counts, no game being watched */
 /* one game frame has run: look for what it did; `now` is the time (seconds since 1970) given to new unlocks */
 void ach_step(Ach *a, const World *w, uint32_t now);
 int ach_take(Ach *a);                                          /* the next new unlock to show, or -1 */
 int ach_has(const Ach *a, int id);
-int ach_unlocked_count(const Ach *a);
+int ach_unlocked_count(const Ach *a);   /* how many are earned */
 /* progress of a counting achievement: returns 1 and the count and the target, or 0 when it has no count */
 int ach_progress(const Ach *a, int id, unsigned long *cur, unsigned long *target);
 
 /* the file: "PMAC", version, count, the bits, the counts, the times, and a 32-byte HMAC-SHA-256 seal over all of it.  ach_load_bytes takes it only when the seal is right (0), else 1 and `a` is untouched. */
 size_t ach_save_bytes(const Ach *a, uint8_t out[ACH_FILE_MAX]);
-int ach_load_bytes(Ach *a, const uint8_t *buf, size_t n);
+int ach_load_bytes(Ach *a, const uint8_t *buf, size_t n);   /* takes the file's bytes when the seal is right (0), else 1 and `a` is untouched */
 
 #endif

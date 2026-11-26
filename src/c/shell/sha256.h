@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void sha256(const uint8_t *data, size_t n, uint8_t out[32]);
-void hmac_sha256(const uint8_t *key, size_t keylen, const uint8_t *data, size_t n, uint8_t out[32]);
+void sha256(const uint8_t *data, size_t n, uint8_t out[32]);   /* the SHA-256 of n bytes */
+void hmac_sha256(const uint8_t *key, size_t keylen, const uint8_t *data, size_t n, uint8_t out[32]);   /* the HMAC-SHA-256 of n bytes (at most 1,024) under a key */
 
 #endif

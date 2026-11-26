@@ -21,7 +21,8 @@ class Release(unittest.TestCase):
         for n in names:
             self.assertFalse(n.startswith(R.EXCLUDE_DIRS), n)
             self.assertNotIn(n, R.EXCLUDE_FILES)
-            self.assertFalse(n.lower().endswith(R.EXCLUDE_SUFFIX), n)
+            # the CRT shaders' lookup textures (small PNG files the shaders read) are kept on purpose: R.KEEP_PREFIX; nothing else with a forbidden suffix
+            self.assertFalse(n.lower().endswith(R.EXCLUDE_SUFFIX) and not n.startswith(R.KEEP_PREFIX), n)
         self.assertNotIn("Personal notes.txt", names)
 
     def test_line_ends_are_normalised_and_binary_is_not(self):

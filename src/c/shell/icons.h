@@ -10,6 +10,7 @@
 
 #define ICON_H 14                /* every icon is this tall (a row of the page is 16 lines) */
 
+/* a picture to draw into: BGRA pixels, its size, and the game's font for text */
 typedef struct IconCanvas {
     uint8_t *bgra;               /* w x h pixels, 4 bytes each: blue, green, red, unused */
     int w, h;
@@ -22,7 +23,7 @@ int icon_width(const ControlGlyph *g);
 int icon_draw(IconCanvas *c, int x, int y, const ControlGlyph *g);
 /* the width of a whole row of glyphs, with `gap` pixels between glyphs, and its drawing */
 int icon_row_width(const ControlGlyph *g, int n, int gap);
-int icon_row_draw(IconCanvas *c, int x, int y, const ControlGlyph *g, int n, int gap);
+int icon_row_draw(IconCanvas *c, int x, int y, const ControlGlyph *g, int n, int gap);   /* draws the row of glyphs at x, y with `gap` pixels between them; returns its width */
 /* text in the game's font (upper case; other characters are skipped); returns the width */
 int icon_text(IconCanvas *c, int x, int y, const char *t, unsigned r, unsigned g, unsigned b);
 

@@ -7,9 +7,10 @@
 #define CONTROLS_MAX_ROWS 10
 #define CONTROLS_MAX_GLYPHS 8
 
+/* the devices the Controls page can show the controls of */
 typedef enum ControlDevice { CD_KEYBOARD = 0, CD_XINPUT = 1, CD_DS4 = 2, CD_DUALSENSE = 3, CD_COUNT = 4 } ControlDevice;
 
-/* the pictures a row can show; IC_KEY is a keycap with the text of `label` */
+/* IconId: the pictures a row can show; IC_KEY is a keycap with the text of `label` */
 typedef enum IconId {
     IC_NONE = 0,
     IC_KEY,                      /* a keycap with a label */
@@ -28,11 +29,13 @@ typedef enum IconId {
     IC_COUNT
 } IconId;
 
+/* one picture of a row: which icon, and the text of a keycap */
 typedef struct ControlGlyph {
     int icon;                    /* IconId */
     const char *label;           /* the text of an IC_KEY, else NULL */
 } ControlGlyph;
 
+/* one line of the Controls page: the action's text and the glyphs that do it */
 typedef struct ControlRow {
     const char *action;          /* upper case, at most CONTROLS_ACTION_CHARS */
     int n;                       /* glyphs, 0 for a row that is only text */

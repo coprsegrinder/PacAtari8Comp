@@ -8,13 +8,16 @@
 
 #define SOUND_VOLUME_STEPS 10    /* the master volume goes 0 .. 10 (0 % .. 100 %) */
 
+/* the output filters of the Sound page */
 typedef enum SoundFilter { SF_OFF = 0, SF_SOFT = 1, SF_WARM = 2, SF_COUNT = 3 } SoundFilter;
 
+/* the coefficients and the state of one second-order filter */
 typedef struct SoundBiquad {
     double b0, b1, b2, a1, a2;
     double z1, z2;
 } SoundBiquad;
 
+/* the Sound page's settings and the state of the sound stage: volume, mute, filter, the gain now, the Warm filters, the chime */
 typedef struct SoundFx {
     int volume;                  /* 0 .. SOUND_VOLUME_STEPS */
     int mute;
@@ -25,10 +28,10 @@ typedef struct SoundFx {
     SoundBiquad lp, hp;          /* Warm: a low-pass at 5 kHz and a high-pass at 140 Hz, run on the Soft sound all the time so that choosing Warm starts from settled filters */
 } SoundFx;
 
-void sound_init(SoundFx *s, double rate);
+void sound_init(SoundFx *s, double rate);   /* the defaults (100 %, not muted, Soft) for a sound of `rate` samples a second */
 /* the gain of a volume step: 0 .. 1 on an audio taper (the square of the fraction), so that each step is about as loud a step as the next */
 float sound_gain_of(int volume, int mute);
-const char *sound_filter_name(int filter);
+const char *sound_filter_name(int filter);   /* "OFF", "SOFT" or "WARM" */
 /* the chime of an achievement: four rising notes of about a third of a second, added to the speaker's sound before the volume and the mute (so they apply to it); starting it again restarts it */
 void sound_chime(SoundFx *s);
 /* makes the speaker's sound of one frame from the plain output (`plain`, nplain samples) and the Soft output (`soft`, nsoft samples); returns the number of samples written to `out` (at most cap):

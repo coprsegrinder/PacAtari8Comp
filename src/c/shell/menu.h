@@ -42,9 +42,9 @@ extern const int menu_crt_count;
 
 /* which screen of the menu is shown (closed: the game runs) */
 typedef enum MenuScreen { MENU_CLOSED = 0, MENU_MAIN = 1, MENU_GRAPHICS = 2, MENU_HELP = 3, MENU_CONTROLS = 4, MENU_SOUND = 5, MENU_ACH = 6 } MenuScreen;
-/* the keys the menu understands (the front end maps keyboard and pad onto them) */
 #define MENU_ACH_PAGE 8        /* the achievements page moves by this many at a time with left and right (and shows this many rows) */
 
+/* the keys the menu understands (the front end maps keyboard and pad onto them) */
 typedef enum MenuKey { MK_UP, MK_DOWN, MK_LEFT, MK_RIGHT, MK_SELECT, MK_BACK, MK_HELP } MenuKey;
 
 /* the menu's whole state: the screen shown, the cursor, and the two display settings */
